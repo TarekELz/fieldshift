@@ -157,3 +157,7 @@ radwan2019: 74,600 ha of Delta farmland went to urban use in 1992-2015 (about 3,
 - Candidate 6 is new, and among the Egypt problems it matches the brief's wording on growing seasons and rotation sequence best.
 - Candidates 4 (water) and 6 (calendar) connect: the summer crop (rice, maize or cotton) sets both water use and when wheat can be sown.
 - The list is not stable yet: loop 3 produced a new leading Egypt candidate. Another loop focused on 6 (farmer surveys of wheat sowing dates in the central Delta) would be needed to call it settled.
+
+## Other Field Shift repos checked (novelty risk)
+- ALBOU517/Field-Shift (team NASA-LARPERS, Quebec; checked 2026-11-14, last push 2026-11-10): web app where a farmer draws a field, then all 1-4 year rotations of five crops (maize, soy, spring and winter wheat, barley) are scored on yield, resilience, soil, water and income, with normal/dry/hot scenarios and horizons up to 30 years. Data, prices and climate trend are fictitious in v1.1; rotation effects come from US studies; NASA data not yet connected. No licence file. Overlaps strongly with candidate 2; no overlap with candidates 4-10.
+- Also seen earlier (README headers only): huiliijiang/spaceapp26 (Saskatchewan rotation advisor), Zul-Qarnain/field-shift (Bangladesh), chhra/field-shift (generic).
