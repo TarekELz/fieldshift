@@ -100,3 +100,17 @@ All are global, so they cover every Delta governorate. "Granules" counts come fr
 3. POWER at the chosen points (no token, minutes).
 4. NEX-GDDP-CMIP6 max/min temperature at the chosen points, 2030s and 2050s (no token).
 5. Optional: ECOSTRESS ESI on a few dates; HLS for one demo field; NASADEM for the north.
+
+## Proposed main Delta areas (Tarek: whole Delta, a number of main areas if point data is limited)
+Gridded products (POWER, MCD12Q2, MOD16, SMAP, NEX-GDDP) cover the whole Delta, so the engines can run anywhere in it. Point pulls and demo examples use a few areas chosen to match where the literature studied farmers:
+
+| Area | Why | Literature | Candidate point | Point check |
+|---|---|---|---|---|
+| North Delta, Kafr El-Sheikh | Rice-wheat-berseem belt; salinity in the north; main research station (Sakha) | kassem2019, sorour2018, abokhadra2019, elbasyoni2018 | 31.10N 30.91E | OpenStreetMap shows a rural road, not checked on imagery |
+| North-east, Damietta | Saline coastal land; teammate's NDVI already pulled | hagage2024 (NE Delta) | damietta3 (31.35N 31.75E) | damietta3 NDVI median 0.76 looks like cropland; damietta1 and 2 (median 0.41) may mix town edge (OpenStreetMap places damietta1 near New Damietta) |
+| West, El-Beheira | Tail-end canal water shortage; drainage water reuse | ghazouani2014, kassem2019, hautbout2025 | 30.94N 30.15E | rural road per OpenStreetMap |
+| Central, Gharbia (move off Tanta city) | Old lands, our original pilot | attaher2009 | 30.86N 31.05E | village area per OpenStreetMap |
+| South, Menoufia | Small old-land holdings, less salinity | (general Delta surveys) | 30.54N 30.95E | rural road per OpenStreetMap |
+| East, Sharqia (Zankalon) | Remote-sensing water-productivity study area | ayyad2024 | 30.49N 31.43E | rural road per OpenStreetMap |
+
+OpenStreetMap reverse lookup is only a rough check. Before pulling data, each point should be confirmed as cropland with MODIS land cover (MCD12Q1, token) or by eye on imagery. Cost: about 30 minutes once a token exists.
