@@ -67,10 +67,66 @@ ecostress_et_lst:
   used_by: [water (check)]
 
 nex_gddp_cmip6:
-  source: NASA NEX-GDDP-CMIP6
-  access: open (AWS)
+  source: NASA NEX-GDDP-CMIP6 (AWS S3 bucket nex-gddp-cmip6, us-west-2; also NCCS THREDDS)
+  access: open, no account
+  resolution: 0.25 deg daily, 1950-2100
   status: not downloaded; optional
   used_by: [calendar (future)]
 
 usda_cdl, prism, ssurgo, nwis:
   status: on disk for Mead only; not used by the Egypt engines
+
+mcd12q2_phenology:
+  source: NASA LP DAAC MCD12Q2 v061 (MODIS land cover dynamics)
+  access: Earthdata token
+  resolution: 500 m, yearly, 2001 onwards; up to two vegetation cycles per year
+  status: not downloaded (top priority for the calendar engine)
+  used_by: [calendar]
+
+mod16a2gf_et:
+  source: NASA LP DAAC MOD16A2GF v061
+  access: Earthdata token (AppEEARS for points)
+  resolution: 500 m, 8-day, 2000 onwards
+  status: not downloaded
+  used_by: [water]
+
+fldas_noah_monthly:
+  source: NASA GES DISC FLDAS_NOAH01_C_GL_M v001
+  access: Earthdata token
+  resolution: 0.1 deg, monthly, 1982 onwards
+  status: not downloaded
+  used_by: [water]
+
+spl2smap_s:
+  source: NASA NSIDC SMAP/Sentinel-1 L2 soil moisture v003
+  access: Earthdata token
+  resolution: 3 km, 2015 onwards
+  status: not downloaded
+  used_by: [water]
+
+opera_dswx_hls:
+  source: NASA PO.DAAC OPERA DSWx-HLS v1
+  access: Earthdata token
+  resolution: 30 m, 2016 onwards
+  status: not downloaded; rice-flooding use is untested
+  used_by: [water, salt (optional)]
+
+nasadem:
+  source: NASA LP DAAC NASADEM_HGT v001
+  access: Earthdata token
+  resolution: 30 m
+  status: not downloaded
+  used_by: [salt (low-lying proxy)]
+
+mcd12q1_landcover:
+  source: NASA LP DAAC MCD12Q1 v061
+  access: Earthdata token
+  resolution: 500 m, yearly
+  status: not downloaded; needed to confirm points are cropland
+  used_by: [point checks]
+
+firms_active_fire:
+  source: NASA FIRMS (MCD14ML)
+  access: open
+  status: optional, not in the three engines
+  used_by: []
