@@ -1,0 +1,41 @@
+# Main Nile Delta areas used for data pulls and demo examples.
+# The engines can run anywhere in the Delta; these are example points, matched to where
+# the literature studied farmers (see docs/data_plan.md). Coordinates are approximate farm
+# locations chosen off towns; "cropland_check" is filled by scripts from MODIS NDVI.
+sites:
+  kafr_el_sheikh:
+    name_en: Kafr El-Sheikh (north Delta)
+    lat: 31.10
+    lon: 30.91
+    why: rice-wheat-berseem belt; salinity in the north; Sakha research station
+    evidence: [kassem2019, elbasyoni2018]
+  damietta:
+    name_en: Damietta (north-east Delta)
+    lat: 31.35
+    lon: 31.75
+    why: saline coastal land; teammate's NDVI point damietta3
+    evidence: [hagage2024]
+  beheira:
+    name_en: El-Beheira (west Delta)
+    lat: 30.94
+    lon: 30.15
+    why: canal tail-end water shortage; drainage water reuse
+    evidence: [ghazouani2014, kassem2019, hautbout2025]
+  gharbia:
+    name_en: Gharbia (central Delta, near Tanta)
+    lat: 30.86
+    lon: 31.05
+    why: old lands; original pilot area, moved off Tanta city
+    evidence: [attaher2009]
+  menoufia:
+    name_en: Menoufia (south Delta)
+    lat: 30.54
+    lon: 30.95
+    why: small old-land holdings
+    evidence: []
+  sharqia:
+    name_en: Sharqia (east Delta, Zankalon area)
+    lat: 30.49
+    lon: 31.43
+    why: remote-sensing water productivity study area
+    evidence: [ayyad2024]

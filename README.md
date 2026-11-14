@@ -64,4 +64,4 @@ NASA Space Apps 2026 team, Egypt.
 | **Youssef** (Youssefnada-Engineer) | Voice assistant and app |
 | **Eyad** (EyadM0hamed) | Salt engine and integration |
 
-Backups, priorities and cut order: [`docs/tasks.md`](docs/tasks.md). Detailed tasks follow once the methods are chosen.
+**What each person does, step by step:** [`docs/tasks.md`](docs/tasks.md).
