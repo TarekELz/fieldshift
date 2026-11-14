@@ -33,7 +33,7 @@ A **voice assistant in Egyptian Arabic** that a farmer (or their son, or an exte
 - The tool **supports, and does not replace,** the farmer's judgement and local agricultural experts.
 
 ### Region and data (gate G2, not yet decided)
-Egypt is the headline. The NASA products are global, so the engines can cover the whole Delta; we will use a few main areas for data pulls and demo examples (Kafr El-Sheikh, Damietta, El-Beheira, Gharbia, Menoufia, Sharqia). Details, resolutions and what each dataset can and cannot say about a 1 ha farm: [`docs/data_plan.md`](docs/data_plan.md) and [`data/catalog.yaml`](data/catalog.yaml).
+Egypt is the headline. The NASA products are global, so the engines can cover the whole Delta; we will use a few main areas for data pulls and demo examples (Kafr El-Sheikh, Damietta, El-Beheira, Gharbia, Menoufia, Sharqia). Already downloaded by the team for the whole Delta: NASA GPM IMERG daily rain (2015-2025), MODIS NDVI statistics (2015-2025; rasters coming), and SRTM 30 m elevation tiles. Details, resolutions and what each dataset can and cannot say about a 1 ha farm: [`docs/data_plan.md`](docs/data_plan.md) and [`data/catalog.yaml`](data/catalog.yaml).
 
 ## Repository map
 | Path | What is in it |
