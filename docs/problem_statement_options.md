@@ -109,3 +109,51 @@ Written 2026-11-14 after Step 3. This file describes problems only. It contains 
 - **Scale.** No NASA product in the brief resolves a 1 ha Delta holding except Landsat (30 m) and ECOSTRESS (70 m). POWER and SMAP describe a district, not a field.
 - **Ground truth.** Mead has AmeriFlux, PRISM, CDL and SSURGO. For the Delta we hold no soil, crop-history or ground weather data.
 - **Papers I could not open** are listed in the G1 message. Four are paywalled; several open-access ones blocked automated access and were not read for lack of time.
+
+
+---
+
+# Loop 3: more problems from the Egyptian literature (added 2026-11-14 at Tarek's request)
+
+Search: 6 more queries, Egypt only (ids 9-14 in `literature/search_log.csv`). 18 papers added to `literature/papers.csv`; 4 opened in full text. Several Egyptian journal PDFs and ScienceDirect pages showed a browser check, which I did not bypass, so those stay abstract-only. Same rules as above: problems only, ordered by full-text evidence, data fit in separate columns.
+
+| # | Problem | Full-text sources | Abstract-only signals | Site | Can NASA data address it? | Do we hold that data? | Rough demo feasibility |
+|---|---|---|---|---|---|---|---|
+| 6 | Rotation calendar squeeze: the previous crop finishes late, wheat goes in late, and late wheat meets spring heat and rust | 2 (elbasyoni2018, elfetyany2026), plus kassem2019 on changed planting dates | mohiy2021, ali2020, gamal2024, dadrasi2024, sorour2018, abokhadra2019, eid2007 | Egypt, whole Delta | Yes, centrally: daily max/min temperature, heat days at flowering, growing degree days | POWER daily Tmax/Tmin 1990-2025 at the Delta point (yes) | Medium to high |
+| 7 | Forage squeeze: smallholders rely on berseem and fodder maize for animals; feed costs and rents are rising and families are selling animals | 1 (hautbout2025), plus ayyad2024 on berseem area | abuzaid2021, abdalla2023a | Egypt | Partly: berseem water demand and season length; not prices | POWER (yes) | Medium |
+| 8 | Pests and diseases rising with heat | 2 (kassem2019: 81.4% report more; elbasyoni2018: heat raised rust) | none added | Egypt | Partly: weather that favours disease; not pest counts | POWER (yes) | Low to medium |
+| 9 | Rice straw burning (the "black cloud") | 1 (kassem2019: 45.4% compost partly to reduce it) | elsafty2020, zaghloul2018 (about 3 million t straw a year) | Egypt rice areas | Detection yes (NASA FIRMS active fire), but FIRMS is not in the brief's list | No | Medium |
+| 10 | Farmland lost to buildings and split by inheritance | 2 (radwan2019: 74,600 ha lost 1992-2015; hautbout2025: most farms under 0.5 ha) | sattar2024, abay2022 | Egypt | Mapping yes (Landsat), but it is land policy, not rotation choice | No | Low for this brief |
+
+## 6. The rotation calendar squeeze (Egypt)
+**Statement.** In the Delta the winter and summer crops follow each other with little slack. When the previous crop is harvested late, or farmers fit in a short cash crop first, wheat is sown late. Late wheat flowers and fills grain in hotter weather and loses yield.
+
+**Full-text evidence**
+- elbasyoni2018 (Delta clay and reclaimed sand, 3 seasons): late sowing caused about 40% yield loss, partly because heat raised leaf and stem rust. The authors state that, because of limited land and water, several growers sow wheat after sugar beet, carrot or pea, around mid-January.
+- elfetyany2026 (Fayoum, 2 years): wheat sowing date "determines the planting window for subsequent summer crops". Early wheat then cotton gave 10.7% less wheat but 212% higher net return than wheat then maize. The authors call it site-specific, and the design mixes sowing date with the following crop.
+- kassem2019: 82% of Kafr El-Sheikh farmers name changing planting dates as an adaptation they know.
+
+**Abstract-only signals (not evidence):** mohiy2021 (wheat after sugarcane lost 37.7%), ali2020 (models: wheat down 8.7% to 13.2% by the 2030s-2080s; shifting sowing helps), gamal2024 (night temperatures rising and hurting wheat), dadrasi2024 (global meta-analysis: late sowing down 24%), sorour2018 and abokhadra2019 (a short berseem "fahl" crop in the gap between rice or maize and wheat raised wheat yield and saved nitrogen).
+
+**Fit to the brief.** It is a rotation-sequence problem: what goes in during summer decides when wheat can go in. The brief names "seasons when current crops appear more vulnerable", crops that "fall outside expected growing seasons", and "times when fields are typically bare".
+**NASA data.** POWER daily Tmax and Tmin since 1990 cover heat-at-flowering and growing-degree-day measures; we already hold them. MODIS/VIIRS NDVI could show green-up and harvest timing, but 250 m is coarse for 1 ha plots.
+**Scale.** Air temperature changes little across flat Delta land, so a 50 km POWER cell matters less here than for soil or water.
+**Novelty risk.** Low. None of the other Field Shift repos found frames rotation as a calendar.
+**Gaps.** No full-text farmer survey yet says how often wheat is sown late in the central Delta, or why. Most evidence is from field trials.
+
+## 7. The forage squeeze (Egypt)
+hautbout2025 (Behera, interviews 2023): the main fodder system is berseem in winter and fodder maize in summer; rising land rents and feed prices forced landless families to sell large animals; Nile water reduced and soil fertility declining; most farms under half a hectare. ayyad2024 projects berseem at 18% of harvested area by 2050. NASA data helps only partly (season length, water demand). My own inference, not stated in the texts read: less berseem would also mean less legume nitrogen in the rotation.
+
+## 8. Pests and diseases rising with heat (Egypt)
+kassem2019: 81.4% of 792 farmers report more pests and diseases. elbasyoni2018: heat raised rust. Weather data can describe risk conditions; satellites cannot see pests. Thin, and overlaps with 6.
+
+## 9. Rice straw burning (Egypt)
+Only kassem2019 in full text. A study from India (not Egypt) ties burning to the short gap before wheat; I found no Egyptian full text saying so. NASA FIRMS fire detections could show it. It is more an air-quality problem than a rotation choice.
+
+## 10. Land loss and fragmentation (Egypt)
+radwan2019: 74,600 ha of Delta farmland went to urban use in 1992-2015 (about 3,108 ha a year), with 87,000 ha more projected by 2030. hautbout2025: inheritance leaves most farms under half a hectare. Serious, but a land-policy problem rather than a rotation choice.
+
+## How loop 3 changes the picture
+- Candidate 6 is new, and among the Egypt problems it matches the brief's wording on growing seasons and rotation sequence best.
+- Candidates 4 (water) and 6 (calendar) connect: the summer crop (rice, maize or cotton) sets both water use and when wheat can be sown.
+- The list is not stable yet: loop 3 produced a new leading Egypt candidate. Another loop focused on 6 (farmer surveys of wheat sowing dates in the central Delta) would be needed to call it settled.
