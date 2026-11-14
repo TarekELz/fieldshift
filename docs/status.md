@@ -1,5 +1,16 @@
 # Project status
 
+**Current step: 3/10, waiting for Tarek at gate G1 (which problem).**
+
+AUDIT 2026-11-14 about 15:20: Steps 2 and 3 outputs written (docs/brief.md, docs/submission-rules.md, literature/search_log.csv, literature/papers.csv, docs/problem_statement_options.md). No new data on disk. MODIS retry (PID 27152) still running after about 3 hours with no output folder; probably hung, left alone pending Tarek's word. Still no `.env`. Three other public Field Shift repos found on GitHub (huiliijiang/spaceapp26, Zul-Qarnain/field-shift, chhra/field-shift).
+
+Rule changes found in Step 2 that affect later steps: demo is a 30-second video or 7 slides; AI may not be used to come up with the solution idea; AI-generated code must be acknowledged in the project; final project link must be public.
+
+Open for Tarek: G1 choice; four paywalled papers (see G1 message); AI-disclosure wording vs AGENTS.md; overwrite docs/agent_prompt.md; Youssefnada-Engineer repo access; teammate roles; which Local Event (sets the deadline clock).
+
+---
+Step 1 audit follows (2026-11-14 12:50).
+
 Last audit: 2026-11-14 12:50 local (Step 1, full audit). Files were opened and checked, not assumed.
 
 ## DONE (verified)
