@@ -7,4 +7,10 @@ id,loop,tool,query,results_returned,where_the_terms_came_from
 6,2,Consensus,"crop rotation diversity and maize yield under drought and extreme weather, long-term experiments North America; irrigated continuous maize Nebraska rotation water",8,"terms raised by sutton2025, kluger2025, socolar2021 (drought and rotation), shekhar2022 (Nebraska)"
 7,2,GitHub search (read-only),field shift space apps | adapting farms nasa data | crop rotation nasa space apps 2026 | fieldshift nasa | field-shift | space apps 2026 crop rotation,4,critique step: other Field Shift repos
 8,2,Web search,existing crop rotation decision support tool farmers satellite data limitations,10,critique step: existing tools
-note,,,All searches run 2026-11-14 between about 13:20 and 15:10 local. Semantic Scholar connector failed to connect; alphaXiv not used (arXiv coverage is weak for agronomy). Metadata and citation counts from OpenAlex API.,,
+9,3,Consensus,main problems and constraints facing smallholder farmers in Egypt old lands survey,25,"Tarek asked for more ideas from Egyptian farming literature; broad, no stressor named"
+10,3,Consensus,"climate change impacts on crop yields, heat stress and sowing dates in Egypt",20,kassem2019 (82% changed planting dates; heat) and gamal-type yield-climate links
+11,3,Semantic Scholar,Egypt farmers pests diseases climate change crop losses Nile Delta,5,kassem2019 (81.4% report more pests and diseases)
+12,3,Consensus,"late wheat sowing after summer crop harvest (cotton, rice, maize, sugarcane) in Egypt and yield loss: crop sequence timing",12,mohiy2021 and elbasyoni2018 (late wheat after sugarcane / sugar beet)
+13,3,Consensus,rice straw burning black cloud Egypt farmers crop residue management reasons,10,kassem2019 (45.4% compost to reduce the black cloud)
+14,3,Consensus,Egypt berseem clover forage livestock in crop rotation farmers decisions and agricultural land loss to urban encroachment Nile Delta,12,"ayyad2024 (berseem share), attaher2009 (shrinking land ownership), abdalla2023a (livestock drives wheat area)"
+note,,,"Loops 1-2 run 2026-11-14 about 13:20-15:10; loop 3 (Egypt only) about 16:00-17:00. Semantic Scholar rate-limited after one query. ScienceDirect and Egyptian Knowledge Bank PDFs showed a browser check, not bypassed.",,
