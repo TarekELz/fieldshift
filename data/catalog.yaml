@@ -156,3 +156,15 @@ srtm_delta:
   status: on disk in data/raw/srtm/ (36 MB zipped); covers the whole Delta
   citation: NASA JPL (2013). NASA Shuttle Radar Topography Mission Global 1 arc second. NASA EOSDIS LP DAAC
   used_by: [salt (low-lying proxy), water (slope, drainage)]
+
+modis_delta_rasters:
+  source: NASA MOD13Q1 v061 granules (tile h20v05), read from the Microsoft Planetary Computer mirror (collection modis-13Q1-061)
+  access: open, no account; script src/fieldshift/ingest/fetch_modis_delta.py
+  layers: [250m_16_days_NDVI, 250m_16_days_EVI, 250m_16_days_pixel_reliability]
+  resolution: 250 m (231.66 m sinusoidal grid), 16-day
+  coverage: 254 dates, 2014-12-19..2025-12-19, clipped to the Delta box 29.64-32.49E, 30.21-31.67N (same granules as the AppEEARS request)
+  format: GeoTIFF, MODIS sinusoidal projection (not reprojected), NDVI/EVI int16 scale 0.0001, nodata -3000
+  status: on disk in data/raw/modis_delta_tif/ (not in git)
+  check: for 2014-12-19 the NDVI mean inside the box is 0.4882 (AppEEARS statistics file 0.4879), median 0.5597 (0.5596)
+  citation: Didan, K. (2021). MODIS/Terra Vegetation Indices 16-Day L3 Global 250m SIN Grid V061. NASA EOSDIS LP DAAC
+  used_by: [calendar]
