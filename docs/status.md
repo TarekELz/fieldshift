@@ -1,5 +1,7 @@
 # Project status
 
+AUDIT 2026-11-14 ~19:00: team-downloaded NASA data added: IMERG daily rain (Delta area mean 2015-2025), MODIS NDVI area statistics for the Delta box (rasters still to come from Hussain), SRTM 30 m tiles for the whole Delta. First push to GitHub replaces Youssef Nada's initial commit on Tarek's instruction (backed up locally as branch backup/youssef-remote).
+
 **Current step: 4/10 (data plan), waiting for Tarek at gate G2 (region, points, accounts).** G1 decided (D1-D3 in docs/decisions.md).
 
 AUDIT 2026-11-14 evening: Mead MODIS NDVI now on disk (506 rows; someone re-ran fetch_retry.py with longer retries; that edit is uncommitted and not mine). Egypt MODIS via ORNL failed (503). Teammate's AppEEARS MODIS extract for 3 Damietta farm points (2000-2026) added to data/raw/appeears_damietta/. The Egypt pilot point 30.79N 31.00E appears to be in Tanta city (SoilGrids masked). Local server 192.168.4.110:8000 not reachable from this machine.
@@ -8,7 +10,7 @@ AUDIT 2026-11-14 about 15:20: Steps 2 and 3 outputs written (docs/brief.md, docs
 
 Rule changes found in Step 2 that affect later steps: demo is a 30-second video or 7 slides; AI may not be used to come up with the solution idea; AI-generated code must be acknowledged in the project; final project link must be public.
 
-Open for Tarek: G1 choice; four paywalled papers (see G1 message); AI-disclosure wording vs AGENTS.md; overwrite docs/agent_prompt.md; Youssefnada-Engineer repo access; teammate roles; which Local Event (sets the deadline clock).
+Open for Tarek: G1 choice; four paywalled papers (see G1 message); AI-disclosure wording vs AGENTS.md; Youssefnada-Engineer repo access; teammate roles; which Local Event (sets the deadline clock).
 
 ---
 Step 1 audit follows (2026-11-14 12:50).
@@ -31,7 +33,7 @@ Last audit: 2026-11-14 12:50 local (Step 1, full audit). Files were opened and c
 ## CORRECTIONS to earlier notes
 - **SoilGrids Egypt is EMPTY.** `data/raw/soilgrids/eg_nile_delta.json` has the right structure but every value (8 properties x 5 depths) is null. docs/coverage_report.md and the prompt table list it as done. We hold **no soil properties for the Egypt site**. Cause not yet determined (SoilGrids masks some pixels; a nearby point may work).
 - `data/raw/cdl/us_mead_ne_cdl_values.json` holds only HTTP 500 error bodies from the first attempt. The good file is `us_mead_ne_cdl_2008_2024.json`.
-- `docs/agent_prompt.md` is an older version of the operating prompt. The governing version is the one Tarek pasted in chat on 2026-11-14. Needs Tarek's OK to overwrite the file with it.
+- `docs/agent_prompt.md` (an old copy of the agent instructions) was deleted from the repo and its history on Tarek's request, 2026-11-14.
 
 ## IN PROGRESS
 - MODIS NDVI retry: `fetch_retry.py` (PID 27152) started 12:25, still running at 12:47, no output folder yet. Left alone; no duplicate started.
@@ -58,6 +60,5 @@ Last audit: 2026-11-14 12:50 local (Step 1, full audit). Files were opened and c
 
 ## Needs a human
 - Earthdata token in `.env` (never in chat).
-- Decide whether to overwrite `docs/agent_prompt.md` with the current prompt.
 - Confirm whether Youssefnada-Engineer should have repo access.
 - Teammate ownership areas.

@@ -115,7 +115,7 @@ nasadem:
   source: NASA LP DAAC NASADEM_HGT v001
   access: Earthdata token
   resolution: 30 m
-  status: not downloaded
+  status: not needed now; SRTMGL1 tiles for the Delta are on disk (see srtm_delta)
   used_by: [salt (low-lying proxy)]
 
 mcd12q1_landcover:
@@ -130,3 +130,29 @@ firms_active_fire:
   access: open
   status: optional, not in the three engines
   used_by: []
+
+imerg_delta_daily:
+  source: NASA GES DISC Giovanni, GPM_3IMERGDF v07 area-averaged time series
+  access: Earthdata login (downloaded by the team)
+  coverage: daily, 2015-01-01..2025-09-30, area mean over 29.85-32.35E, 30.05-31.55N (whole Delta box)
+  status: on disk in data/raw/imerg_delta/, copy in data/sample/imerg_delta_daily_2015_2025.csv; 3,926 days, no fill values
+  finding: area-mean rain 14-181 mm per year (2025 is Jan-Sep only), almost all in Oct-Apr, essentially none May-Sep
+  citation: Huffman, G.J. et al. GPM IMERG Final Precipitation L3 1 day 0.1 deg V07, NASA GES DISC
+  used_by: [water (summer crops depend fully on irrigation)]
+
+modis_ndvi_delta_area:
+  source: NASA AppEEARS area request nile_delta_ndvi, MOD13Q1 v061 (NDVI, EVI, pixel reliability)
+  access: Earthdata login (downloaded by the team)
+  coverage: 16-day, 2014-12-19..2025-12-19, box 29.64-32.49E, 30.21-31.67N
+  status: supporting files only, on disk in data/raw/appeears_delta_ndvi/ (area statistics per date, QA statistics, granule list); the GeoTIFF rasters are not in the zip (expected from Hussain); area statistics copied to data/sample/modis_ndvi_delta_area_stats_2015_2025.csv
+  caution: the box includes desert, sea, lakes and towns, so area statistics mix land types; per-field work needs the rasters
+  note: the request JSON contains a personal email and stays in data/raw
+  used_by: [calendar]
+
+srtm_delta:
+  source: NASA SRTMGL1 v003 (1 arc-second), 8 tiles N30-N31, E029-E032
+  access: Earthdata login (downloaded by the team)
+  resolution: 30 m
+  status: on disk in data/raw/srtm/ (36 MB zipped); covers the whole Delta
+  citation: NASA JPL (2013). NASA Shuttle Radar Topography Mission Global 1 arc second. NASA EOSDIS LP DAAC
+  used_by: [salt (low-lying proxy), water (slope, drainage)]
