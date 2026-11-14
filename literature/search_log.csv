@@ -1,0 +1,10 @@
+id,loop,tool,query,results_returned,where_the_terms_came_from
+1,1,Consensus,"What problems do farmers in the Nile Delta, Egypt report in choosing crops and rotations under changing climate and water conditions?",15,brief wording (choose crop rotations; changing conditions) + Egypt site region
+2,1,Consensus,What problems do farmers in Nebraska and the US Midwest report when choosing crop rotations under changing weather and water conditions?,12,brief wording (choose crop rotations; changing weather and water conditions) + US site region
+3,1,Web search,farmers barriers diversifying crop rotation Midwest survey interviews corn soybean why not diversify,10,brief wording (difficult to choose crop rotations) + US site region
+4,1,Consensus,Why are decision-support tools for farmers' crop and rotation choices not used? review of barriers and farmer needs,10,brief wording (decision-support tool; farmer priorities)
+5,2,Consensus,Nile Delta farmers soil salinity irrigation water shortage tail-end canals rice in crop rotation: problems reported,8,"terms raised by kassem2019 (salinity), ghazouani2014 (tail end, rice), attaher2009"
+6,2,Consensus,"crop rotation diversity and maize yield under drought and extreme weather, long-term experiments North America; irrigated continuous maize Nebraska rotation water",8,"terms raised by sutton2025, kluger2025, socolar2021 (drought and rotation), shekhar2022 (Nebraska)"
+7,2,GitHub search (read-only),field shift space apps | adapting farms nasa data | crop rotation nasa space apps 2026 | fieldshift nasa | field-shift | space apps 2026 crop rotation,4,critique step: other Field Shift repos
+8,2,Web search,existing crop rotation decision support tool farmers satellite data limitations,10,critique step: existing tools
+note,,,All searches run 2026-11-14 between about 13:20 and 15:10 local. Semantic Scholar connector failed to connect; alphaXiv not used (arXiv coverage is weak for agronomy). Metadata and citation counts from OpenAlex API.,,
