@@ -11,7 +11,24 @@
 |---|---|---|
 | `sample/imerg_delta_daily_2015_2025.csv` | Daily rain, Delta area mean, 2015-01-01 to 2025-09-30 | NASA IMERG |
 | `sample/modis_ndvi_delta_area_stats_2015_2025.csv` | 16-day NDVI/EVI statistics over the Delta box | NASA MODIS |
-| `/home/b1ackraven/Downloads/HWSD2.bil` | Global soil raster binary data (21600x43200, ~1.8 GB) | FAO HWSD v2.0 |
-| `/home/b1ackraven/Downloads/HWSD2.mdb` | Soil attribute database (~88 MB) | FAO HWSD v2.0 |
+| `/run/media/b1ackraven/New Volume/Nasa_space_apps/fieldshift/HWSD2/HWSD2.bil` | Global soil raster binary data (21600x43200, ~1.8 GB) | FAO HWSD v2.0 |
+| `/run/media/b1ackraven/New Volume/Nasa_space_apps/fieldshift/HWSD2/HWSD2.hdr` | Raster header file (21600 rows x 43200 cols) | FAO HWSD v2.0 |
+| `/run/media/b1ackraven/New Volume/Nasa_space_apps/fieldshift/HWSD2/HWSD2.prj` | Projection metadata (GCS_WGS_1984) | FAO HWSD v2.0 |
+| `/run/media/b1ackraven/New Volume/Nasa_space_apps/fieldshift/HWSD2/HWSD2.mdb` | Soil attribute database (~88 MB) | FAO HWSD v2.0 |
 
-**Local Setup Note:** The HWSD v2.0 binary and database files are stored locally on your machine at `/home/b1ackraven/Downloads/` and are excluded from git via `.gitignore`. Access them via Python (`rasterio`) when needed.
+**Local Setup Note:** The HWSD v2.0 files are stored locally on your machine at `/run/media/b1ackraven/New Volume/Nasa_space_apps/fieldshift/HWSD2`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
