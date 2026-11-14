@@ -1,0 +1,4 @@
+requests
+pyyaml
+rasterio
+pytest
