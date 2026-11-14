@@ -60,3 +60,43 @@ Typical Delta holding: about 1 ha or less (hautbout2025: most farms under 0.5 ha
 ## Recommendation for G2
 - **Region:** Egypt as the headline. Drop Mead from the demo; keep its data only as a test case if time allows.
 - **Points:** use the three Damietta farm points (north Delta, saline, data already pulled), plus one central-Delta farm point near Tanta, moved off the city. Cost: about 1 hour to re-pull POWER and check the points on a map.
+
+
+---
+
+## NASA public datasets for the whole Delta (search 2026-11-14 evening)
+All are global, so they cover every Delta governorate. "Granules" counts come from NASA's public catalog (CMR) at one Damietta farm point (31.30N 31.70E); other Delta points will be similar for gridded products. Access: "token" means a free NASA Earthdata login. None of these were downloaded yet.
+
+### Most useful, by engine
+| Product (short name) | What it gives | Resolution / period | Granules at point | Access | Engine |
+|---|---|---|---|---|---|
+| **MODIS Land Cover Dynamics (MCD12Q2 v061)** | Per pixel and year: green-up, peak, senescence and dormancy dates for up to **two crop cycles a year**, and the number of cycles. This is a direct satellite record of when Delta fields are sown and harvested, 2001 onwards | 500 m, yearly | 26 | token | **Calendar** |
+| VIIRS Land Surface Phenology (VNP22Q2 v002) | Same idea from VIIRS, 2013 onwards; a cross-check of MCD12Q2 | 500 m, yearly | 13 | token | Calendar |
+| MODIS NDVI (MOD13Q1 v061) | Greenness every 16 days, 2000 onwards (already have 3 Damietta points) | 250 m | 614 | token (AppEEARS) | Calendar |
+| HLS Landsat + Sentinel-2 (HLSL30, HLSS30 v2.0) | Greenness and water index close to plot level | 30 m, every few days, 2013/2015 onwards | 407 + 740 | token | Calendar, salt (patchy growth) |
+| **MODIS Evapotranspiration (MOD16A2GF v061)** | Actual water use of the land, gap-filled, 8-day | 500 m, 2000 onwards | 1,196 | token | **Water** |
+| ECOSTRESS ET and Evaporative Stress Index (ECO_L3T_JET, ECO_L4T_ESI, v002/v003) | Field-scale water use and water stress on overpass days | 70 m, 2018 onwards, irregular | ~200 (v002 gridded ET) | token | Water |
+| FLDAS Noah (FLDAS_NOAH01_C_GL_M) | Modelled evapotranspiration, soil moisture and runoff, monthly | 0.1 deg (~10 km), 1982 onwards | 537 | token | Water |
+| SMAP/Sentinel-1 soil moisture (SPL2SMAP_S v003) | Surface soil moisture, finer than SMAP alone | 3 km, 2015 onwards | 1,311 | token | Water |
+| SMAP L3 enhanced / L4 (SPL3SMP_E, SPL4SMGP) | Soil moisture, regional | 9 km | 4,167 / 33,961 | token | Water (weak for irrigated plots) |
+| GRACE/GRACE-FO mascons (JPL RL06.3) | Change in total water storage, including groundwater | ~300 km (coarse) | 1 file | token | Water (big-picture trend only) |
+| **NASA POWER** | Daily weather, 1981 onwards | ~50 km | (on disk) | open | Calendar, water |
+| **NEX-GDDP-CMIP6** | Daily future max/min temperature and rain to 2100, several climate models and scenarios | 0.25 deg | not in CMR; on AWS S3 `nex-gddp-cmip6` | open, no account | Calendar (future heat at grain filling) |
+| MODIS Land Surface Temperature (MOD11A2), VIIRS LST (VNP21A1D) | Ground surface heat, 8-day / daily | 1 km | 1,226 / 5,324 | token | Calendar (heat check) |
+| NASADEM (NASADEM_HGT) | Elevation; low-lying northern land is where waterlogging and saline groundwater are reported (hagage2024) | 30 m | 1 tile | token | Salt (proxy only) |
+| OPERA Dynamic Surface Water (OPERA_L3_DSWX-HLS_V1) | Open and partial surface water; could show flooded rice fields in May-June. I found no study validating it for rice, so this is untested | 30 m, 2016 onwards | 1,567 | token | Water, salt (where rice is grown) |
+| MODIS Land Cover (MCD12Q1 v061) | Cropland vs urban mask, to keep points off towns | 500 m, yearly | 25 | token | All (point checks) |
+| FIRMS active fires (MCD14ML) and MODIS Burned Area (MCD64A1) | Fire detections; could show rice straw burning in autumn | 1 km / 500 m | 7 / 311 | open (FIRMS) | Not in our three engines; optional |
+
+### Checked and of little use here
+- GPM IMERG rainfall: works, but the Delta gets very little rain and crops are irrigated.
+- GLDAS Noah 0.25 deg and MERRA-2: duplicates of POWER/FLDAS at coarser scale.
+- OpenET: western US only. GEDI: weak over cropland.
+- **No NASA product measures soil salinity.** NASA's SMAP salinity products are ocean surface salinity. Salinity stays with FAO soil maps plus what the farmer reports.
+
+### Suggested order to pull (after an Earthdata token is in `.env`)
+1. MCD12Q2 phenology for the whole Delta (one yearly file per tile, 2001-2024): the calendar engine's backbone.
+2. MOD16A2GF ET at the chosen points (AppEEARS point request, like the Damietta one).
+3. POWER at the chosen points (no token, minutes).
+4. NEX-GDDP-CMIP6 max/min temperature at the chosen points, 2030s and 2050s (no token).
+5. Optional: ECOSTRESS ESI on a few dates; HLS for one demo field; NASADEM for the north.
