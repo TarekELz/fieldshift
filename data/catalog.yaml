@@ -1,0 +1,76 @@
+# Data catalog. Status as of 2026-11-14 evening. Raw files live in data/raw/ (gitignored).
+# "used_by" names the engine from docs/data_plan.md.
+
+nasa_power_daily:
+  source: NASA POWER daily API (https://power.larc.nasa.gov/)
+  access: open, no account
+  variables: [T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, ALLSKY_SFC_SW_DWN, RH2M, WS2M, GWETTOP, GWETROOT, GWETPROF, EVPTRNS]
+  resolution: ~0.5 x 0.625 deg, daily
+  coverage: 1990-01-01..2025-12-31 at Mead and at 30.79N 31.00E (Tanta city point; to be moved)
+  license: NASA open data
+  citation: NASA Langley Research Center POWER Project
+  status: on disk, verified (13,149 days, no missing values)
+  used_by: [calendar, water]
+
+modis_mod13q1_damietta:
+  source: NASA AppEEARS point extract, MOD13Q1 v061 (NDVI, EVI, VI quality)
+  access: Earthdata login (teammate's account)
+  resolution: 250 m, 16-day
+  coverage: 2000-02-18..2026-10-16 at damietta1 (31.30N 31.70E), damietta2 (31.25N 31.65E), damietta3 (31.35N 31.75E)
+  license: NASA open data
+  citation: Didan, K. (2021). MODIS/Terra Vegetation Indices 16-Day L3 Global 250m SIN Grid V061. NASA EOSDIS LP DAAC.
+  status: on disk in data/raw/appeears_damietta/ (1,842 rows; 1,811 flagged good quality)
+  used_by: [calendar]
+  note: the request file inside contains a personal email; it stays in data/raw and must not be committed
+
+modis_mod13q1_mead:
+  source: ORNL DAAC MODIS web service, MOD13Q1
+  access: open
+  coverage: 2015-2025 at Mead (506 rows); Egypt pull failed (HTTP 503)
+  status: Mead on disk; Egypt missing
+  used_by: []
+
+soilgrids:
+  source: ISRIC SoilGrids REST API
+  access: open (beta)
+  resolution: 250 m
+  status: Mead on disk; Egypt city point empty (urban mask); values exist ~2.5 km away
+  used_by: [salt (texture only)]
+
+hwsd_v2:
+  source: FAO/IIASA Harmonized World Soil Database v2.0
+  access: open download
+  resolution: 1 km
+  license: CC BY-NC-SA 3.0
+  status: not downloaded
+  used_by: [salt]
+
+fao_salt_affected_soils_map:
+  source: FAO Global Map of Salt-Affected Soils (GSASmap v1.0, 2021)
+  license: CC BY-NC-SA 3.0 IGO
+  status: not downloaded; download location not confirmed
+  used_by: [salt]
+
+wapor_v3_aeti:
+  source: FAO WaPOR v3 actual evapotranspiration and interception
+  access: open API, no token (per FAO)
+  resolution: 300 m (L1), 100 m (L2), dekadal
+  license: CC BY-NC-SA 4.0
+  status: not downloaded; first API test returned no items, recheck
+  used_by: [water (check)]
+
+ecostress_et_lst:
+  source: NASA ECOSTRESS L3T JET / L2T LSTE
+  access: Earthdata token
+  resolution: 70 m, irregular
+  status: blocked (no token); 377 ET scenes over the Delta point per CMR
+  used_by: [water (check)]
+
+nex_gddp_cmip6:
+  source: NASA NEX-GDDP-CMIP6
+  access: open (AWS)
+  status: not downloaded; optional
+  used_by: [calendar (future)]
+
+usda_cdl, prism, ssurgo, nwis:
+  status: on disk for Mead only; not used by the Egypt engines
