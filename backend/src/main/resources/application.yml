@@ -1,0 +1,7 @@
+server:
+  port: 8080
+fieldshift:
+  model:
+    results-path: ./data/results.json   # the file the modelling team uploads (see MODEL_CONTRACT.md)
+  cors:
+    origins: http://localhost:5173      # React dev server
