@@ -1,6 +1,6 @@
 # Project status
 
-AUDIT 2026-11-14 ~19:00: team-downloaded NASA data added: IMERG daily rain (Delta area mean 2015-2025), MODIS NDVI area statistics for the Delta box (rasters still to come from Hussain), SRTM 30 m tiles for the whole Delta. First push to GitHub replaces Youssef Nada's initial commit on Tarek's instruction (backed up locally as branch backup/youssef-remote).
+AUDIT 2026-11-14 ~19:00: team-downloaded NASA data added: IMERG daily rain (Delta area mean 2015-2025), MODIS NDVI area statistics for the Delta box (rasters still to come from Hussain), SRTM 30 m tiles for the whole Delta. First push to GitHub on Tarek's instruction: merged so main shows only our files; Youssef Nada's and Hussain's earlier commits stay in the history (also backed up locally as branch backup/youssef-remote).
 
 **Current step: 4/10 (data plan), waiting for Tarek at gate G2 (region, points, accounts).** G1 decided (D1-D3 in docs/decisions.md).
 
