@@ -56,10 +56,12 @@ Raw data (`data/raw/`), paper PDFs (`literature/pdfs/`) and `.env` are not in th
 
 ## Team
 NASA Space Apps 2026 team, Egypt.
-- **Tarek** (lead)
-- Al-Ashmawy
-- EyadM0hamed
-- hussainkzaid
-- Youssefnada-Engineer
+| Member | Area |
+|---|---|
+| **Tarek** | Lead and story: gates, the farmer conversation in Egyptian Arabic, demo, submission |
+| **Hussain** (hussainkzaid) | Data lead and water engine |
+| **Al-Ashmawy** | Wheat calendar engine and tests (built first) |
+| **Youssef** (Youssefnada-Engineer) | Voice assistant and app |
+| **Eyad** (EyadM0hamed) | Salt engine and integration |
 
-Roles are still to be assigned.
+Backups, priorities and cut order: [`docs/tasks.md`](docs/tasks.md). Detailed tasks follow once the methods are chosen.
