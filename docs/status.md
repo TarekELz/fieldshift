@@ -1,6 +1,8 @@
 # Project status
 
-**Current step: 3/10, waiting for Tarek at gate G1 (which problem).**
+**Current step: 4/10 (data plan), waiting for Tarek at gate G2 (region, points, accounts).** G1 decided (D1-D3 in docs/decisions.md).
+
+AUDIT 2026-11-14 evening: Mead MODIS NDVI now on disk (506 rows; someone re-ran fetch_retry.py with longer retries; that edit is uncommitted and not mine). Egypt MODIS via ORNL failed (503). Teammate's AppEEARS MODIS extract for 3 Damietta farm points (2000-2026) added to data/raw/appeears_damietta/. The Egypt pilot point 30.79N 31.00E appears to be in Tanta city (SoilGrids masked). Local server 192.168.4.110:8000 not reachable from this machine.
 
 AUDIT 2026-11-14 about 15:20: Steps 2 and 3 outputs written (docs/brief.md, docs/submission-rules.md, literature/search_log.csv, literature/papers.csv, docs/problem_statement_options.md). No new data on disk. MODIS retry (PID 27152) still running after about 3 hours with no output folder; probably hung, left alone pending Tarek's word. Still no `.env`. Three other public Field Shift repos found on GitHub (huiliijiang/spaceapp26, Zul-Qarnain/field-shift, chhra/field-shift).
 
