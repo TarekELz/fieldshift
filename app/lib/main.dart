@@ -33,7 +33,7 @@ class FieldShiftApp extends StatelessWidget {
       builder: (context, _) {
         final l = lang.value;
         return MaterialApp(
-        title: 'Field Shift',
+        title: 'Eyad AI',
         debugShowCheckedModeBanner: false,
         theme: Fs.theme(arabicLang: l == 'ar'),
         builder: (context, child) => _PhoneFrame(child: Directionality(textDirection: l == 'ar' ? TextDirection.rtl : TextDirection.ltr, child: child!)),

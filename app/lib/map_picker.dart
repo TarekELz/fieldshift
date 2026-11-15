@@ -108,8 +108,16 @@ class _MapPickerState extends State<MapPicker> with SingleTickerProviderStateMix
         const SizedBox(height: 8),
         Row(children: [
           Expanded(child: Text(tr('اضغط على محافظتك (الخضرا) عشان تكبّرها، وبعدين اضغط عليها تاني.', 'Tap your governorate (green) to zoom in, then tap it again.'), style: TextStyle(fontSize: 12, color: Fs.dim.withValues(alpha: 0.95), height: 1.35))),
-          TextButton.icon(onPressed: () => _zoomDelta(w, h), icon: const Icon(Icons.zoom_in_map_rounded, size: 18), label: Text(tr('الدلتا', 'Delta'))),
-          TextButton.icon(onPressed: () => _animateTo(Matrix4.identity()), icon: const Icon(Icons.public_rounded, size: 18), label: Text(tr('مصر', 'Egypt'))),
+          // one toggle: zoomed out it offers the Delta, zoomed in it offers all of Egypt
+          AnimatedBuilder(
+            animation: _ctrl,
+            builder: (context, _) {
+              final zoomedIn = _ctrl.value.getMaxScaleOnAxis() > 1.05;
+              return zoomedIn
+                  ? TextButton.icon(onPressed: () => _animateTo(Matrix4.identity()), icon: const Icon(Icons.zoom_out_map_rounded, size: 18), label: Text(tr('مصر', 'Egypt')))
+                  : TextButton.icon(onPressed: () => _zoomDelta(w, h), icon: const Icon(Icons.zoom_in_map_rounded, size: 18), label: Text(tr('الدلتا', 'Delta')));
+            },
+          ),
         ]),
         Text(tr('حدود المحافظات: بيانات CAPMAS الرسمية عبر HDX (CC BY-IGO)، مبسّطة. والأنهار تقريبية.', 'Borders: official CAPMAS data via HDX (CC BY-IGO), simplified. Rivers are approximate.'), style: TextStyle(fontSize: 10, color: Fs.dim)),
       ]);
