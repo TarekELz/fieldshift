@@ -113,6 +113,28 @@ void main() {
       expect(typed.site, 'gharbia');
     });
 
+    test('Menoufia and Sharqia share a cell, yet each governorate gets its own data point', () {
+      expect(powerCell(30.54, 30.95), powerCell(30.49, 31.43));
+      final z = Dialogue(data);
+      z.handleLocation(30.59, 31.50); // Zagazig, Sharqia
+      expect(z.site, 'sharqia');
+      final s = Dialogue(data);
+      s.handleLocation(30.49, 31.43); // the Sharqia data point itself
+      expect(s.site, 'sharqia');
+      final m = Dialogue(data);
+      m.handleLocation(30.55, 30.99); // Shebin El-Kom, Menoufia
+      expect(m.site, 'menoufia');
+    });
+
+    test('English answers that used to be misread', () {
+      expect(parseDays(normalizeAr('2 weeks')), 14);
+      expect(parseDays(normalizeAr('every 3 weeks')), 21);
+      expect(parseWhen(normalizeAr('1st december'), ['11-15', '12-01', '12-15']), '12-01');
+      expect(parseSalt(normalizeAr('no white crust'))?.signs, 'none');
+      expect(parseSalt(normalizeAr('white crust'))?.signs, 'crust');
+      expect(parseWhen(normalizeAr('maybe december'), ['11-15', '12-01', '12-15']), isNotNull); // 'maybe' is not May
+    });
+
     test('east Dakahlia has its own data point in a different cell', () {
       expect(powerCell(31.05, 31.70), isNot(powerCell(30.86, 31.05)));
       final d = Dialogue(data);

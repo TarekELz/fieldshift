@@ -226,8 +226,12 @@ Map<String, dynamic>? governorateAt(EngineData d, double lat, double lon) {
 (int, int) powerCell(double lat, double lon) => (((lat + 90) / 0.5).round(), ((lon + 180) / 0.625).round());
 
 /// A data point that lies in the same POWER cell as the place, or null.
-String? siteInSameCell(EngineData d, double lat, double lon) {
+String? siteInSameCell(EngineData d, double lat, double lon, {String? prefer}) {
   final c = powerCell(lat, lon);
+  if (prefer != null) {
+    final p = d.siteLatLon(prefer);
+    if (powerCell(p.lat, p.lon) == c) return prefer; // two points can share a cell (Menoufia, Sharqia): the governorate's own wins
+  }
   for (final k in d.siteKeys) {
     final p = d.siteLatLon(k);
     if (powerCell(p.lat, p.lon) == c) return k;

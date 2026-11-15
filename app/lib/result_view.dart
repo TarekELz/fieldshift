@@ -129,10 +129,16 @@ class _ResultViewState extends State<ResultView> {
                 _BubbleSpec(Icons.water_drop_rounded, Fs.water, '${nn(r.ratio, dec: 2)}×', const Offset(0.85, 0.27)),
                 _BubbleSpec(Icons.grain_rounded, s == null ? Fs.dim : Fs.status(s.status), s == null ? '—' : saltN(s.status), const Offset(0.5, 0.76)),
               ];
+              // a bubble that would sit on top of the pin (Menoufia's pin is under the salt bubble) moves sideways
+              final placed = [
+                for (final b in bubbles)
+                  ((pin - Offset(b.at.dx * w, b.at.dy * h)).distance < 70) ? _BubbleSpec(b.icon, b.color, b.text, Offset(b.at.dx + (pin.dx < w / 2 ? 0.3 : -0.3), b.at.dy)) : b
+              ];
               return Stack(children: [
                 Positioned.fill(child: Image.asset('assets/img/delta_winter.jpg', fit: BoxFit.cover)),
-                Positioned.fill(child: CustomPaint(painter: _LeaderPainter(pin, [for (final b in bubbles) Offset(b.at.dx * w, b.at.dy * h)]))),
-                for (final b in bubbles) Positioned(left: b.at.dx * w - 54, top: b.at.dy * h - 27, width: 108, child: _bubble(b)),
+                PositionedDirectional(top: 10, start: 14, child: Text(tr('خضرة الدلتا من أقمار ناسا (MODIS)', 'Delta greenness, NASA MODIS'), style: const TextStyle(fontSize: 10, color: Colors.white70, shadows: [Shadow(blurRadius: 4, color: Colors.black)]))),
+                Positioned.fill(child: CustomPaint(painter: _LeaderPainter(pin, [for (final b in placed) Offset(b.at.dx * w, b.at.dy * h)]))),
+                for (final b in placed) Positioned(left: b.at.dx * w - 54, top: b.at.dy * h - 27, width: 108, child: _bubble(b)),
               ]);
             }),
           ),
@@ -197,7 +203,7 @@ class _ResultViewState extends State<ResultView> {
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(tr('احتياج المية', 'Water need'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-              Text(tr('مقارنة بدورتك الحالية', 'compared with your current rotation'), style: TextStyle(fontSize: 13, color: Fs.dim)),
+              Text(tr('مية المحصول الصيفي بس، قصاد دورتك الحالية', 'summer crop only, compared with your current rotation'), style: TextStyle(fontSize: 13, color: Fs.dim)),
             ]),
           ),
         ]),

@@ -36,7 +36,7 @@ sites:
     why: small old-land holdings
     caveat_kind: shared_cell
     shares_cell_with: sharqia
-    weather_caveat: same NASA POWER cell as Sharqia, so weather and results are identical; show as one area in the demo.
+    weather_caveat: same NASA POWER temperature cell as Sharqia, so the temperature-based heat results are identical (solar radiation, and so water use, differs slightly); show as one area in the demo.
     evidence: []
   sharqia:
     name_en: Sharqia (east Delta, Zankalon area)
@@ -45,7 +45,7 @@ sites:
     why: remote-sensing water productivity study area
     caveat_kind: shared_cell
     shares_cell_with: menoufia
-    weather_caveat: same NASA POWER cell as Menoufia, so weather and results are identical; show as one area in the demo.
+    weather_caveat: same NASA POWER temperature cell as Menoufia, so the temperature-based heat results are identical (solar radiation, and so water use, differs slightly); show as one area in the demo.
     evidence: [ayyad2024]
   dakahlia:
     name_en: Dakahlia (east Delta, Dikirnis area)

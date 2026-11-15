@@ -111,7 +111,7 @@ class _MapPickerState extends State<MapPicker> with SingleTickerProviderStateMix
           TextButton.icon(onPressed: () => _zoomDelta(w, h), icon: const Icon(Icons.zoom_in_map_rounded, size: 18), label: Text(tr('الدلتا', 'Delta'))),
           TextButton.icon(onPressed: () => _animateTo(Matrix4.identity()), icon: const Icon(Icons.public_rounded, size: 18), label: Text(tr('مصر', 'Egypt'))),
         ]),
-        Text(tr('حدود المحافظات من بيانات CAPMAS الرسمية عبر HDX (مبسّطة)، والأنهار تقريبية.', 'Borders: official CAPMAS data via HDX, simplified. Rivers are approximate.'), style: TextStyle(fontSize: 10, color: Fs.dim)),
+        Text(tr('حدود المحافظات: بيانات CAPMAS الرسمية عبر HDX (CC BY-IGO)، مبسّطة. والأنهار تقريبية.', 'Borders: official CAPMAS data via HDX (CC BY-IGO), simplified. Rivers are approximate.'), style: TextStyle(fontSize: 10, color: Fs.dim)),
       ]);
     });
   }

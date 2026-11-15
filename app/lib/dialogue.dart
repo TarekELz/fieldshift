@@ -70,7 +70,7 @@ String? parseWhen(String n, List<String> allowed) {
   }
   const enM = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
   for (var i = 0; i < 12; i++) {
-    if (RegExp(r'\b' + enM[i]).hasMatch(n)) month = i + 1;
+    if (RegExp(enM[i] == 'may' ? r'\bmay\b' : r'\b' + enM[i]).hasMatch(n)) month = i + 1;
   }
   int? enDay;
   if (RegExp(r'\b(early|start|begin|first)').hasMatch(n)) {
@@ -80,7 +80,7 @@ String? parseWhen(String n, List<String> allowed) {
   } else if (RegExp(r'\b(late|end)').hasMatch(n)) {
     enDay = 25;
   }
-  final num = RegExp(r'\b(\d{1,2})\b').allMatches(n).map((m) => int.parse(m.group(1)!)).toList();
+  final num = RegExp(r'\b(\d{1,2})(?:st|nd|rd|th)?\b').allMatches(n).map((m) => int.parse(m.group(1)!)).toList();
   int? day = enDay;
   if (n.contains('اول') || n.contains('بدري') || n.contains('بدايه') || n.contains('بداية')) {
     day = 1;
@@ -106,6 +106,8 @@ String? parseWhen(String n, List<String> allowed) {
 int? parseDays(String n) {
   if (n.contains('two weeks') || n.contains('fortnight')) return 14;
   if (n.contains('three weeks')) return 21;
+  final wk = RegExp(r'\b(\d{1,2})\s*weeks?\b').firstMatch(n);
+  if (wk != null) return int.parse(wk.group(1)!) * 7;
   if (n.contains('اسبوعين')) return 14;
   if (n.contains('ثلاث اسابيع') || n.contains('تلات اسابيع')) return 21;
   final m = RegExp(r'\b(\d{1,2})\b').firstMatch(n);
@@ -130,7 +132,7 @@ class Salt {
 
 Salt? parseSalt(String n) {
   if (_unknown(n)) return Salt(skipped: true);
-  if (RegExp(r'\b(no signs?|no salt|clean|nothing)\b').hasMatch(n)) return Salt(signs: 'none');
+  if (RegExp(r'\b(no signs?|no salt|clean|nothing)\b').hasMatch(n) || RegExp(r'\bno\b.*\b(crust|white|patch\w*)').hasMatch(n)) return Salt(signs: 'none');
   if (n.contains('white')) return Salt(signs: 'crust');
   final m = RegExp(r'\b(\d{1,2}(?:[.,]\d)?)\b').firstMatch(n);
   if (m != null) {
@@ -288,7 +290,7 @@ class Dialogue {
     final ar = g['ar'] as String;
     if (g['delta'] != true) return _outside(ar);
     final own = g['site'] as String?;
-    final cellSite = siteInSameCell(data, lat, lon); // same NASA cell: identical weather, whatever the distance
+    final cellSite = siteInSameCell(data, lat, lon, prefer: own); // same NASA cell: identical weather, whatever the distance
     final key = cellSite ?? own ?? nearestSite(data, lat, lon).key;
     final p = data.siteLatLon(key);
     final km = haversineKm(lat, lon, p.lat, p.lon);
@@ -379,7 +381,7 @@ String? caveatAr(Comparison c) {
   if (c.caveat == null) return null;
   if (c.caveatKind == 'sea') return 'تنبيه: بيانات الطقس للمنطقة دي مش دقيقة لأنها قريبة من البحر. ما تعتمدش على أرقام الحر هنا.';
   final other = arSite[c.sharesCellWith] ?? '';
-  return 'ملحوظة: بيانات ناسا للمنطقة دي هي نفسها بيانات $other، فالنتايج هتطلع زي بعض.';
+  return 'ملحوظة: درجات الحرارة من ناسا للمنطقة دي هي نفسها بتاعة $other، فنتايج الحر هتطلع زي بعض.';
 }
 
 String spokenSummary(Comparison c) {

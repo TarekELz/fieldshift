@@ -11,6 +11,7 @@ class Voice {
   final FlutterTts _tts = FlutterTts();
   bool sttReady = false, ttsReady = false, listening = false;
   final ValueNotifier<bool> speaking = ValueNotifier<bool>(false); // true while a reply is being read aloud
+  final ValueNotifier<bool> listeningNow = ValueNotifier<bool>(false); // false again on a result, a timeout or an error
   bool muted = false; // set by the setup choice "I'll type": replies are written, not spoken
   String? sttLocale, ttsLang, lastError;
   List<LocaleName> _sttLocales = [];
@@ -22,9 +23,13 @@ class Voice {
         onError: (e) {
           lastError = e.errorMsg;
           listening = false;
+          listeningNow.value = false;
         },
         onStatus: (s) {
-          if (s == 'done' || s == 'notListening') listening = false;
+          if (s == 'done' || s == 'notListening') {
+            listening = false;
+            listeningNow.value = false;
+          }
         },
       );
       if (sttReady) {
@@ -89,6 +94,7 @@ class Voice {
   Future<void> listen(void Function(String text, bool isFinal) onResult) async {
     if (!canListen) return;
     listening = true;
+    listeningNow.value = true;
     await _stt.listen(
       onResult: (r) {
         onResult(r.recognizedWords, r.finalResult);
@@ -106,6 +112,7 @@ class Voice {
 
   Future<void> stopListening() async {
     listening = false;
+    listeningNow.value = false;
     await _stt.stop();
   }
 

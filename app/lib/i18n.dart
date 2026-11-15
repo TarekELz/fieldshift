@@ -91,7 +91,7 @@ String? caveatN(Comparison c) {
   if (isAr) return caveatAr(c);
   if (c.caveat == null) return null;
   if (c.caveatKind == 'sea') return 'Warning: weather data here is unreliable because the area is mostly sea. Do not rely on the heat numbers.';
-  return 'Note: the NASA data for this area is the same as for ${enSite[c.sharesCellWith] ?? ''}, so the results will be identical.';
+  return 'Note: the NASA temperatures for this area are the same as for ${enSite[c.sharesCellWith] ?? ''}, so the heat results will be the same.';
 }
 
 String warningN(RotationRow r) {

@@ -22,7 +22,8 @@ SHOW_PH = re.compile(r"\{[^}]*\}")
 
 
 def to_raw(original_raw, original_text, new_text, quote):
-    """Turn the reviewer's text back into Dart source text, restoring each placeholder's original code."""
+    """Turn the reviewer's text back into Dart source text. Placeholders get their original code back untouched; only the plain
+    text between them is escaped (backslash, $, the quote of the literal, newline)."""
     raw_tokens = RAW_PH.findall(original_raw)
     show_tokens = SHOW_PH.findall(original_text)
     if len(raw_tokens) != len(show_tokens):
@@ -34,17 +35,16 @@ def to_raw(original_raw, original_text, new_text, quote):
     for s, r in zip(show_tokens, raw_tokens):
         pool.setdefault(s, []).append(r)
     counters = {}
-
-    def sub_ph(m):
-        s = m.group(0)
-        k = counters.get(s, 0)
-        counters[s] = k + 1
-        lst = pool[s]
-        return "\u0000" + str(lst[min(k, len(lst) - 1)].replace("\\", "\\\\")) + "\u0001"
-
-    marked = SHOW_PH.sub(sub_ph, new_text)
-    out = marked.replace("\\", "\\\\").replace("$", "\\$").replace(quote, "\\" + quote).replace("\n", "\\n")
-    return out.replace("\u0000", "").replace("\u0001", "").replace("\\\\\\\\", "\\\\")
+    out = []
+    for part in re.split(r"(\{[^}]*\})", new_text):
+        if SHOW_PH.fullmatch(part):
+            k = counters.get(part, 0)
+            counters[part] = k + 1
+            lst = pool[part]
+            out.append(lst[min(k, len(lst) - 1)])
+        else:
+            out.append(part.replace("\\", "\\\\").replace("$", "\\$").replace(quote, "\\" + quote).replace("\n", "\\n"))
+    return "".join(out)
 
 
 def main():

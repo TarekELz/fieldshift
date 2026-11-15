@@ -37,12 +37,16 @@ class _FlowScreenState extends State<FlowScreen> {
     super.initState();
     voice.muted = !widget.speakReplies;
     lang.addListener(_onLang);
+    voice.listeningNow.addListener(_onListenEnd);
     _start();
   }
 
   @override
   void dispose() {
     lang.removeListener(_onLang);
+    voice.listeningNow.removeListener(_onListenEnd);
+    voice.stopSpeaking(); // pressing Back must not leave Eyad talking
+    voice.stopListening();
     input.dispose();
     focus.dispose();
     super.dispose();
@@ -56,6 +60,10 @@ class _FlowScreenState extends State<FlowScreen> {
       precacheEyad(context);
       precacheImage(const AssetImage('assets/img/delta_winter.jpg'), context);
     }
+  }
+
+  void _onListenEnd() {
+    if (!voice.listeningNow.value && listening && mounted) setState(() => listening = false); // a timeout or an error ends the listening screen too
   }
 
   void _onLang() {
