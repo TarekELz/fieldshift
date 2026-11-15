@@ -1,0 +1,26 @@
+# Water engine parameters. DRAFT. Stage lengths and crop coefficients are from FAO Irrigation and
+# Drainage Paper 56, Tables 11 and 12 (https://www.fao.org/4/x0490e/x0490e0b.htm), read from the FAO
+# web tables on 2026-11-15, NOT from the PDF: re-check the digits before quoting them.
+# The sowing dates are assumptions (the farmer states his own); the Egyptian sowing windows in the
+# literature search were seen only in a search summary: UNVERIFIED.
+# stage_days = [initial, development, mid-season, late-season]
+# kc.end is the midpoint of the range printed in FAO-56 where a range is given.
+crops:
+  rice:
+    stage_days: [30, 30, 60, 30]       # Table 11, row "Rice 30/30/60/30, 150 days, May (Mediterranean)"
+    kc: {ini: 1.05, mid: 1.20, end: 0.75}   # Table 12: 1.05 / 1.20 / 0.90-0.60 (end = midpoint)
+    sowing: {month: 5, day: 15, note: "assumed; Delta rice is sown about May to mid-June (unverified)"}
+    excludes: [ponding and puddling water, percolation and seepage, irrigation losses]
+    evidence_note: "FAO-56 Tables 11-12. Table 12 Kc covers crop evapotranspiration only; rice in practice needs more water (ghazouani2014 describes rice as the main water user)"
+  maize:
+    stage_days: [30, 40, 50, 30]       # Table 11, row "Maize (grain) 30/40/50/30, 150 days, April (Spain; California)"
+    kc: {ini: 0.30, mid: 1.20, end: 0.475}  # ini = cereal group value from the page; Table 12 mid 1.20; end 0.60-0.35 (midpoint)
+    sowing: {month: 5, day: 1, note: "assumed; Delta spring maize is sown about mid-April to mid-May (unverified)"}
+    excludes: [irrigation losses]
+    evidence_note: "FAO-56 Tables 11-12; Kc ini is the group value for cereals as printed on the page"
+  cotton:
+    stage_days: [30, 50, 60, 55]       # Table 11, row "Cotton 30/50/60/55, 195 days, Mar-May (Egypt; Pakistan; California)"
+    kc: {ini: 0.35, mid: 1.175, end: 0.60}  # ini = fibre-crop group value; mid 1.15-1.20 (midpoint); end 0.70-0.50 (midpoint)
+    sowing: {month: 4, day: 1, note: "assumed within the Mar-May window listed for Egypt"}
+    excludes: [irrigation losses]
+    evidence_note: "FAO-56 Tables 11-12; Table 11 lists Egypt for this row"
