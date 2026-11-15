@@ -10,7 +10,7 @@ import 'engine.dart';
 import 'i18n.dart';
 import 'ui_kit.dart';
 
-const _lonMin = 24.5, _lonMax = 36.95, _latMin = 21.8, _latMax = 31.9;
+const _lonMin = 24.5, _lonMax = 36.95, _latMin = 21.35, _latMax = 31.9;
 final _cosLat = math.cos(26.5 * math.pi / 180);
 
 class MapPicker extends StatefulWidget {
@@ -140,6 +140,18 @@ class _EgyptPainter extends CustomPainter {
     tp.paint(c, at - Offset(tp.width / 2, tp.height / 2));
   }
 
+  /// A dashed outline of a path.
+  void _dashedPath(Canvas c, Path path, Paint paint) {
+    final dash = 3.0 / zoom, gap = 2.5 / zoom;
+    for (final m in path.computeMetrics()) {
+      var dist = 0.0;
+      while (dist < m.length) {
+        c.drawPath(m.extractPath(dist, math.min(dist + dash, m.length)), paint);
+        dist += dash + gap;
+      }
+    }
+  }
+
   @override
   void paint(Canvas c, Size size) {
     final govs = d.governorates;
@@ -163,14 +175,20 @@ class _EgyptPainter extends CustomPainter {
         c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.8 / zoom..color = Fs.warning);
       }
     }
-    // Halayeb and Shalateen: their own highlighted areas inside the Red Sea governorate
+    // Named areas at the southern edge: the Halayeb Triangle (Egypt-administered, amber) and Bir Tawil (claimed by neither
+    // country: dashed, neutral, not painted as a governorate)
     for (final a in d.areas) {
       final path = Path();
       for (final r in a['rings'] as List) {
         path.addPath(_ring(r as List), Offset.zero);
       }
-      c.drawPath(path, Paint()..color = Fs.warning.withValues(alpha: 0.20));
-      c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.0 / zoom..color = Fs.warning.withValues(alpha: 0.85));
+      if (a['kind'] == 'unclaimed') {
+        c.drawPath(path, Paint()..color = Fs.dim.withValues(alpha: 0.18));
+        _dashedPath(c, path, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.0 / zoom..color = Fs.dim);
+      } else {
+        c.drawPath(path, Paint()..color = Fs.warning.withValues(alpha: 0.20));
+        c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.0 / zoom..color = Fs.warning.withValues(alpha: 0.85));
+      }
     }
     // lakes
     for (final l in d.egyptMap['lakes'] as List) {
@@ -196,7 +214,8 @@ class _EgyptPainter extends CustomPainter {
     }
     for (final a in d.areas) {
       final lbl = a['label'] as List;
-      _label(c, (isAr ? a['ar'] : a['id']) as String, p(lbl[0] as num, lbl[1] as num), size: 9, color: Fs.warning);
+      final unclaimed = a['kind'] == 'unclaimed';
+      _label(c, (isAr ? a['ar'] : a['id']) as String, p(lbl[0] as num, (lbl[1] as num) + (unclaimed ? -0.22 : 0)), size: 8, color: unclaimed ? Fs.dim : Fs.warning);
     }
     if (zoom < 2.0) {
       final b = d.deltaBox;

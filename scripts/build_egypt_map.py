@@ -36,28 +36,36 @@ OWN_SITE = {"Behera": "beheira", "Kafr El-Shikh": "kafr_el_sheikh", "Gharbia": "
 NE_DISPUTED = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_disputed_areas.geojson"
 
 
-def halayeb_triangle():
-    """The Halayeb Triangle (Natural Earth 'Halayib Triangle', public domain), the area people call Halayeb and Shalateen.
-    It lies inside Egypt's official outline (north of the 22nd parallel, which is Egypt's border); the HDX governorate
-    polygons already contain it, so it is only drawn and named here as its own area. Bir Tawil (south of 22N) is NOT part of
-    this outline."""
+def _ne_disputed(name):
     f = ROOT / "data" / "raw" / "natural_earth" / "disputed.geojson"
     if not f.exists():
         f.parent.mkdir(parents=True, exist_ok=True)
         r = requests.get(NE_DISPUTED, timeout=300)
         r.raise_for_status()
         f.write_bytes(r.content)
-    feat = [x for x in json.loads(f.read_text(encoding="utf8"))["features"] if x["properties"].get("NAME") == "Halayib Triangle"][0]
+    feat = [x for x in json.loads(f.read_text(encoding="utf8"))["features"] if x["properties"].get("NAME") == name][0]
     g = feat["geometry"]
     polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
     rings = [simplify_ring([tuple(q) for q in poly[0]], 0.004) for poly in polys]
     big = max(rings, key=lambda r: abs(area_centroid(r)[0]))
     _, cx, cy = area_centroid(big)
-    return [{
-        "id": "Halayeb and Shalateen", "ar": "حلايب وشلاتين", "parent": "Red Sea",
-        "aliases": ["حلايب", "شلاتين", "ابو رماد", "halayeb", "halaib", "halayib", "shalateen", "shalatin", "abu ramad"],
-        "label": [round(cx, 3), round(cy, 3)], "rings": [rnd(r) for r in rings],
-    }]
+    return [rnd(r) for r in rings], [round(cx, 3), round(cy, 3)]
+
+
+def named_areas():
+    """Two areas at Egypt's southern edge, from Natural Earth's disputed-areas layer (public domain).
+    Halayeb Triangle: inside Egypt's official outline (north of the 22nd parallel, which is Egypt's border); the HDX
+    governorate polygons already contain it, so it is only drawn and named as its own area.
+    Bir Tawil: south of 22N, claimed by neither Egypt nor Sudan; NOT inside Egypt's outline. Drawn as a separate, dashed,
+    neutral area (kind 'unclaimed') so the border is shown honestly and the area is not painted as a governorate."""
+    h_rings, h_label = _ne_disputed("Halayib Triangle")
+    b_rings, b_label = _ne_disputed("Bir Tawil")
+    return [
+        {"id": "Halayeb and Shalateen", "ar": "حلايب وشلاتين", "parent": "Red Sea", "kind": "egypt_administered",
+         "aliases": ["حلايب", "شلاتين", "ابو رماد", "halayeb", "halaib", "halayib", "shalateen", "shalatin", "abu ramad"], "label": h_label, "rings": h_rings},
+        {"id": "Bir Tawil", "ar": "بئر طويل", "parent": None, "kind": "unclaimed",
+         "aliases": ["بير طويل", "بئر طويل", "bir tawil", "bir tawil", "birtawil"], "label": b_label, "rings": b_rings},
+    ]
 
 
 def hdx_admin1():
@@ -169,7 +177,7 @@ def main():
 
     out = {
         "source": "Governorates: HDX COD-AB Egypt (CAPMAS via OCHA, CC BY-IGO), simplified to about 0.6 km. Rivers and lakes: Natural Earth (public domain), generalized.",
-        "bbox": [24.5, 21.8, 36.95, 31.9], "governorates": governorates, "areas": halayeb_triangle(), "water": water, "lakes": lake_polys,
+        "bbox": [24.5, 21.8, 36.95, 31.9], "governorates": governorates, "areas": named_areas(), "water": water, "lakes": lake_polys,
     }
     dest = ROOT / "app" / "assets" / "data" / "egypt_map.json"
     dest.write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False), encoding="utf8")
