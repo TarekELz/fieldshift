@@ -14,6 +14,7 @@ import 'proxy.dart';
 
 import 'sentences.dart';
 import 'spoken_ar.dart';
+import 'stt_locale.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -153,6 +154,15 @@ class Voice {
   List<LocaleName> _sttLocales = [];
   bool arabic = true;
 
+  /// Speech recognition diagnostics (team test builds, VOICE_DIAG; also in the long-press note): the locales the phone lists, the one we ask for,
+  /// the phone's own locale, the last recogniser error and the first partial result. Temporary, to confirm the "Arabic heard as English" cause on a phone.
+  String sttDiag = 'speech recognition not started';
+  String? _sysLocale, _firstPartial;
+  void _updateDiag() {
+    sttDiag = 'STT asks ${sttLocale ?? '-'} | phone ${_sysLocale ?? '-'} | listed ${_sttLocales.length}: '
+        '${_sttLocales.map((l) => l.localeId).take(12).join(',')}${_sttLocales.length > 12 ? ',...' : ''} | err ${lastError ?? '-'} | first ${_firstPartial ?? '-'}';
+  }
+
   /// The last recognition problem (for example a denied permission or no speech service), shown to the farmer once; null when none.
   final ValueNotifier<String?> micProblem = ValueNotifier<String?>(null);
 
@@ -161,6 +171,7 @@ class Voice {
       sttReady = await _stt.initialize(
         onError: (e) {
           lastError = e.errorMsg;
+          _updateDiag();
           listening = false;
           listeningNow.value = false;
           // 'error_no_match' and 'error_speech_timeout' only mean he said nothing we could hear; anything else is a real problem
@@ -176,12 +187,12 @@ class Voice {
       if (sttReady) {
         final locales = await _stt.locales();
         _sttLocales = locales;
-        String norm(String s) => s.toLowerCase().replaceAll('-', '_');
-        final eg = locales.where((l) => norm(l.localeId) == 'ar_eg');
-        final ar = locales.where((l) => norm(l.localeId).startsWith('ar'));
-        // no Arabic entry in the list: still listen with the phone's own language rather than refuse (many phones list locales late or not at all)
-        sttLocale = eg.isNotEmpty ? eg.first.localeId : (ar.isNotEmpty ? ar.first.localeId : null);
-        if (sttLocale == null) lastError = 'no Arabic speech recognition locale listed on this phone; using the default';
+        try {
+          _sysLocale = (await _stt.systemLocale())?.localeId;
+        } catch (_) {}
+        // never null: with no Arabic entry listed we still ask for ar-EG, because no locale means the phone's own language (English words for Arabic speech)
+        sttLocale = pickSttLocale([for (final l in locales) l.localeId], arabic: arabic);
+        _updateDiag();
       }
     } catch (e) {
       sttReady = false;
@@ -210,10 +221,8 @@ class Voice {
   /// Switch recognition and speech to Arabic (ar-EG first) or English (en-US first), when the phone has them.
   Future<void> setLanguage(bool toArabic) async {
     arabic = toArabic;
-    String norm(String s) => s.toLowerCase().replaceAll('-', '_');
-    final exact = _sttLocales.where((l) => norm(l.localeId) == (toArabic ? 'ar_eg' : 'en_us'));
-    final any = _sttLocales.where((l) => norm(l.localeId).startsWith(toArabic ? 'ar' : 'en'));
-    sttLocale = exact.isNotEmpty ? exact.first.localeId : (any.isNotEmpty ? any.first.localeId : null);
+    sttLocale = pickSttLocale([for (final l in _sttLocales) l.localeId], arabic: toArabic);
+    _updateDiag();
     try {
       for (final l in (toArabic ? ['ar-EG', 'ar-SA', 'ar'] : ['en-US', 'en-GB', 'en'])) {
         final ok = await _tts.isLanguageAvailable(l);
@@ -245,8 +254,13 @@ class Voice {
     if (!canListen) return;
     listening = true;
     listeningNow.value = true;
+    _firstPartial = null;
     await _stt.listen(
       onResult: (r) {
+        if (_firstPartial == null && r.recognizedWords.isNotEmpty) {
+          _firstPartial = r.recognizedWords;
+          _updateDiag();
+        }
         onResult(r.recognizedWords, r.finalResult);
         if (r.finalResult) listening = false;
       },
