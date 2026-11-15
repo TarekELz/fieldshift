@@ -170,13 +170,10 @@ class _EgyptPainter extends CustomPainter {
       for (final r in a['rings'] as List) {
         path.addPath(_ring(r as List), Offset.zero);
       }
-      if (a['kind'] == 'plain') {
-        // drawn exactly like the governorates around it
+      {
+        // drawn exactly like the governorates around it (the app's amber is the warning colour, for state only)
         c.drawPath(path, Paint()..color = Fs.card2);
         c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 0.9 / zoom..color = Fs.line..strokeJoin = StrokeJoin.round);
-      } else {
-        c.drawPath(path, Paint()..color = Fs.warning.withValues(alpha: 0.20));
-        c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.0 / zoom..color = Fs.warning.withValues(alpha: 0.85));
       }
     }
     // lakes
@@ -204,7 +201,7 @@ class _EgyptPainter extends CustomPainter {
     for (final a in d.areas) {
       if (a['kind'] == 'plain') continue; // no label
       final lbl = a['label'] as List;
-      _label(c, (isAr ? a['ar'] : a['id']) as String, p(lbl[0] as num, lbl[1] as num), size: 8, color: Fs.warning);
+      _label(c, (isAr ? a['ar'] : a['id']) as String, p(lbl[0] as num, lbl[1] as num), size: 8, color: Fs.dim);
     }
     if (zoom < 2.0) {
       final b = d.deltaBox;

@@ -2,6 +2,9 @@
 // The farmer answers six short questions (by voice, typing or tapping, or on the map) and gets a comparison of his
 // rotation against two alternatives, using NASA POWER weather and FAO tables through the engines in engine.dart.
 // It supports, and does not replace, local expertise. Arabic (default) and English, one at a time (i18n.dart).
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import 'flow.dart';
@@ -33,7 +36,7 @@ class FieldShiftApp extends StatelessWidget {
         title: 'Field Shift',
         debugShowCheckedModeBanner: false,
         theme: Fs.theme(arabicLang: l == 'ar'),
-        builder: (context, child) => Directionality(textDirection: l == 'ar' ? TextDirection.rtl : TextDirection.ltr, child: child!),
+        builder: (context, child) => _PhoneFrame(child: Directionality(textDirection: l == 'ar' ? TextDirection.rtl : TextDirection.ltr, child: child!)),
         home: _Root(skipSetup: skipSetup, demo: demo),
         );
       },
@@ -65,4 +68,35 @@ class _RootState extends State<_Root> {
               )
             : FlowScreen(key: const ValueKey('flow'), speakReplies: widget.demo ? false : speak, demo: widget.demo, onHome: () => setState(() => setup = true)),
       );
+}
+
+/// Web preview only: when the browser window is wide (a desktop), show the app inside a phone-sized frame, so the preview
+/// looks like what a phone shows. On a phone, and in a narrow window, the app fills the screen as usual.
+class _PhoneFrame extends StatelessWidget {
+  const _PhoneFrame({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!kIsWeb) return child;
+    return LayoutBuilder(builder: (context, c) {
+      if (c.maxWidth <= 600) return child;
+      const w = 400.0;
+      final h = math.min(c.maxHeight - 32, 860.0);
+      return ColoredBox(
+        color: Fs.dark ? const Color(0xFF050607) : const Color(0xFFE2E0DA),
+        child: Center(
+          child: Container(
+            width: w,
+            height: h,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(40), border: Border.all(color: Fs.dark ? const Color(0xFF2A2E33) : const Color(0xFFB9B6AE), width: 6)),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(34),
+              child: MediaQuery(data: MediaQuery.of(context).copyWith(size: Size(w - 12, h - 12)), child: child),
+            ),
+          ),
+        ),
+      );
+    });
+  }
 }
