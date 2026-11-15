@@ -17,7 +17,7 @@
 > **Status (15 Nov):** a working Flutter Android app (Arabic and English) with a goal question, tested engines on NASA POWER weather and FAO tables, short advice written from team blueprints, Eyad's Egyptian-Arabic voice, and a Professional view for people who read data. Test builds are with the team; phone testing is under way. Live status: [`docs/status.md`](docs/status.md).
 
 <p align="center">
-  <img src="assets/readme/proof.svg" width="100%" alt="Inside the project: 19 NASA POWER data points, 36 seasons of weather, 14 crops with income, 103 recorded voice lines.">
+  <img src="assets/readme/proof.svg" width="100%" alt="Inside the project: 19 NASA POWER data points, 36 years of weather, 14 crops with income, 103 recorded voice lines.">
 </p>
 
 ## See it working

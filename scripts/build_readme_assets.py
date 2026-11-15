@@ -98,7 +98,7 @@ def hero():
     <rect x="{cx}" y="36" width="{cw}" height="368" rx="22" fill="{CARD}" stroke="{LINE}"/>
     <text x="{cx + 24}" y="76" font-size="22" font-weight="700" fill="{TEXT}">Wheat sown later meets more heat</text>
     <text x="{cx + 24}" y="104" font-size="18" fill="{DIM}" font-family="{MONO}">hot days (&gt;32 °C) in grain filling</text>
-    <text x="{cx + 24}" y="130" font-size="18" fill="{DIM}" font-family="{MONO}">Gharbia · NASA POWER · median of 36 seasons</text>
+    <text x="{cx + 24}" y="130" font-size="18" fill="{DIM}" font-family="{MONO}">Gharbia · NASA POWER · median of 35 seasons</text>
     <line x1="{inner_x}" y1="{top + h}" x2="{inner_x + inner_w}" y2="{top + h}" stroke="{LINE}" stroke-width="2"/>
     {''.join(bars)}
     {''.join(labels)}
@@ -159,7 +159,7 @@ def proof():
             out.append(f'<line x1="{x - 24}" y1="48" x2="{x - 24}" y2="172" stroke="{LINE}" stroke-width="2"/>')
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="212" viewBox="0 0 1200 212" role="img" aria-labelledby="t d">
   <title id="t">What is inside the project</title>
-  <desc id="d">{len(heat)} NASA POWER data points, 36 seasons of weather, {len(crops)} crops, {len(clips)} recorded voice lines.</desc>
+  <desc id="d">{len(heat)} NASA POWER data points, 36 years of weather, {len(crops)} crops, {len(clips)} recorded voice lines.</desc>
   <rect width="1200" height="212" rx="26" fill="{BG}"/>
   <g font-family="{SANS}">{''.join(out)}</g>
 </svg>
