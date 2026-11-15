@@ -10,6 +10,7 @@
 <img alt="Licence" src="https://img.shields.io/badge/licence-MIT-green">
 <a href="https://github.com/TarekELz/fieldshift/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/TarekELz/fieldshift/actions/workflows/ci.yml/badge.svg"></a>
 </p>
+<p align="center"><b>Demo video:</b> (video link: to be added) · <b>Android app:</b> <a href="https://github.com/TarekELz/fieldshift/releases/tag/v1.0-spaceapps">download the APK</a> · <b>Live site:</b> <a href="https://tarekelz.github.io/fieldshift/">project page</a> and <a href="https://tarekelz.github.io/fieldshift/explorer/">explorer</a></p>
 <p align="center"><a href="docs/index.html">Project page</a> · <a href="docs/status.md">Status</a> · <a href="docs/decisions.md">Decisions</a> · <a href="docs/methodology.md">Method and limits</a> · <a href="docs/references.md">References</a> · <a href="docs/ai-disclosure.md">AI use</a></p>
 
 **Field Shift helps a Nile Delta farmer decide what to grow and when, by voice, in Egyptian Arabic, using NASA data, and it shows its numbers.** Eyad, the voice assistant, asks where the field is and what the farmer wants: **earn more**, **grow a certain crop at a certain time**, or **improve what he grows now**. He answers with a verdict for each crop (*tamam*, a small problem, a big problem), then water, heat and salt, one page at a time.
@@ -114,7 +115,7 @@ It **supports, and does not replace,** the farmer's judgement and local agricult
 | Wheat calendar against NASA MCD12Q2 satellite phenology | winter green-up in November and dormancy in May, summer green-up in June: consistent with our assumptions |
 | Season screen on known cases | rice sown in November, maize in December and wheat in March are flagged wrong; tomato, berseem, sugar beet, faba bean and tree crops are "cannot judge" |
 | Python and Dart give the same answers | 18 golden cases and 18 advice cases match |
-| Automated tests | Python: 309 pass with the raw data on disk; on a clean clone the tests that need `data/raw/` are skipped (272 pass, 154 skip). Flutter: 62 pass. CI runs both on every push |
+| Automated tests | Python: 315 pass with the raw data on disk; on a clean clone the tests that need `data/raw/` are skipped (272 pass, 154 skip). Flutter: 74 pass. Proxy: 16 pass. CI runs all three on every push |
 | Understanding what a farmer says | whole-word matching, tested on the mistakes a teammate's review found ("ربنا يرزق" is not rice; "مش فيه بقع" means no salt) |
 | Independent AI reviews of code and workflow | issues found (for example faba bean mislabelled, a number-only guard that let a wrong rotation through) and fixed |
 
