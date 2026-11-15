@@ -37,3 +37,6 @@ docs/text_review/fonts/
 
 # friends' answers and the decision page (names and opinions)
 docs/text_review_answers/
+
+# wording votes (names and opinions)
+docs/text_vote_answers/
