@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 import 'arabic.dart';
 import 'dialogue.dart';
 import 'engine.dart';
+import 'ui_kit.dart';
 import 'voice.dart';
+import 'welcome.dart';
 
 void main() => runApp(const FieldShiftApp());
 
@@ -19,11 +21,26 @@ class FieldShiftApp extends StatelessWidget {
     return MaterialApp(
       title: 'Field Shift',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorSchemeSeed: const Color(0xFF2E7D32), useMaterial3: true),
+      theme: Fs.theme(),
       builder: (context, child) => Directionality(textDirection: TextDirection.rtl, child: child!),
-      home: const ChatScreen(),
+      home: const _Root(),
     );
   }
+}
+
+class _Root extends StatefulWidget {
+  const _Root();
+  @override
+  State<_Root> createState() => _RootState();
+}
+
+class _RootState extends State<_Root> {
+  bool welcome = true;
+  @override
+  Widget build(BuildContext context) => AnimatedSwitcher(
+        duration: const Duration(milliseconds: 350),
+        child: welcome ? WelcomeScreen(key: const ValueKey('w'), onStart: () => setState(() => welcome = false)) : ChatScreen(key: const ValueKey('c'), onHome: () => setState(() => welcome = true)),
+      );
 }
 
 class ChatItem {
@@ -35,7 +52,8 @@ class ChatItem {
 }
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  const ChatScreen({super.key, required this.onHome});
+  final VoidCallback onHome;
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
@@ -92,6 +110,17 @@ class _ChatScreenState extends State<ChatScreen> {
     voice.speak(withSpoken.isNotEmpty ? withSpoken.first.spoken! : replies.map((r) => r.ar).join(' '));
   }
 
+  void _restart() {
+    final d = dialogue;
+    if (d == null) return;
+    voice.stopSpeaking();
+    d.reset();
+    setState(() => items.clear());
+    final first = d.opening();
+    setState(() => items.add(ChatItem.bot(first)));
+    voice.speak(first.ar);
+  }
+
   Future<void> toggleMic() async {
     if (listening) {
       await voice.stopListening();
@@ -117,110 +146,154 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: scheme.primaryContainer,
-        title: const Text('فيلد شيفت  Field Shift'),
-        actions: [
-          IconButton(
-            tooltip: 'ابدأ من جديد',
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              final d = dialogue;
-              if (d == null) return;
-              d.reset();
-              setState(() => items.clear());
-              final first = d.opening();
-              setState(() => items.add(ChatItem.bot(first)));
-              voice.speak(first.ar);
-            },
-          ),
-        ],
-      ),
       body: SafeArea(
         child: loadError != null
             ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('تعذر تحميل البيانات:\n$loadError')))
             : Column(children: [
+                _topBar(),
+                _header(),
                 Expanded(
                   child: ListView.builder(
                     controller: scroll,
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.fromLTRB(14, 6, 14, 12),
                     itemCount: items.length,
                     itemBuilder: (_, i) => _bubble(items[i], isLast: i == items.length - 1),
                   ),
                 ),
                 if (listening || partial.isNotEmpty)
-                  Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), child: Text(partial.isEmpty ? 'بسمعك... اتكلم دلوقتي' : partial, style: TextStyle(color: scheme.primary))),
-                _inputBar(scheme),
+                  Padding(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4), child: Align(alignment: AlignmentDirectional.centerStart, child: Text(partial.isEmpty ? 'بسمعك... اتكلم دلوقتي' : partial, style: const TextStyle(color: Fs.teal, fontSize: 16)))),
+                _inputBar(),
               ]),
       ),
     );
   }
 
+  Widget _topBar() => Padding(
+        padding: const EdgeInsets.fromLTRB(14, 8, 14, 4),
+        child: Row(children: [
+          RoundButton(icon: Icons.arrow_forward_rounded, onTap: widget.onHome, tooltip: 'رجوع'),
+          const Expanded(child: Center(child: Text('فيلد شيفت', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)))),
+          RoundButton(icon: Icons.refresh_rounded, onTap: _restart, tooltip: 'ابدأ من جديد'),
+        ]),
+      );
+
+  /// Ring with progress through the six questions, and a one-line summary of the answers so far.
+  Widget _header() {
+    final d = dialogue;
+    if (d == null) return const SizedBox(height: 8);
+    final answered = [d.site, d.crop, d.summerSowing, d.wheatSowing, d.interval, d.salt].where((e) => e != null).length;
+    final parts = <String>[
+      if (d.crop != null) '${arCrop[d.crop]}${d.summerSowing != null ? ' ${arDate(d.summerSowing!)}' : ''}',
+      if (d.wheatSowing != null) 'قمح ${arDate(d.wheatSowing!)}',
+      if (d.interval != null) 'ري كل ${arDigits(d.interval!)} يوم',
+    ];
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(22), border: Border.all(color: Fs.line)),
+      child: Row(children: [
+        RingGauge(progress: answered / 6, size: 70, stroke: 6, child: Text('${arDigits(answered)}/٦', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800))),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(d.site != null ? arSite[d.site]! : 'مساعد دورتك الزراعية', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 2),
+            Text(parts.isEmpty ? 'جاوب على الأسئلة وأنا هقارن لك' : parts.join(' · '), style: const TextStyle(fontSize: 13, color: Fs.dim, height: 1.3)),
+          ]),
+        ),
+      ]),
+    );
+  }
+
   Widget _bubble(ChatItem it, {required bool isLast}) {
-    final scheme = Theme.of(context).colorScheme;
     if (it.fromUser) {
       return Align(
         alignment: AlignmentDirectional.centerEnd,
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(color: scheme.primaryContainer, borderRadius: BorderRadius.circular(16)),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(color: Fs.teal.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(20), border: Border.all(color: Fs.teal.withValues(alpha: 0.5))),
           child: Text(it.text, style: const TextStyle(fontSize: 17)),
         ),
       );
     }
     final m = it.msg!;
+    final children = <Widget>[
+      Text(m.ar, style: const TextStyle(fontSize: 18, height: 1.45)),
+      if (m.en != null) Padding(padding: const EdgeInsets.only(top: 3), child: Directionality(textDirection: TextDirection.ltr, child: Text(m.en!, style: const TextStyle(fontSize: 12, color: Fs.dim)))),
+    ];
+    final chips = (isLast && m.choices.isNotEmpty)
+        ? Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Wrap(spacing: 8, runSpacing: 8, children: [
+              for (final c in m.choices)
+                ActionChip(
+                  label: Text(c.label, style: const TextStyle(fontSize: 15)),
+                  backgroundColor: Fs.card2,
+                  side: BorderSide(color: Fs.teal.withValues(alpha: 0.55)),
+                  shape: const StadiumBorder(),
+                  onPressed: () => send(c.value, shown: c.label),
+                ),
+            ]),
+          )
+        : null;
+    if (m.result != null) {
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children)),
+        ResultCard(m.result!, dialogue!.data),
+        if (chips != null) chips,
+      ]);
+    }
     return Align(
       alignment: AlignmentDirectional.centerStart,
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.94),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.92),
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(16)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(m.ar, style: const TextStyle(fontSize: 18, height: 1.4)),
-            if (m.en != null) Padding(padding: const EdgeInsets.only(top: 2), child: Directionality(textDirection: TextDirection.ltr, child: Text(m.en!, style: TextStyle(fontSize: 12, color: scheme.outline)))),
-            if (m.result != null) ResultCard(m.result!),
-            if (isLast && m.choices.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Wrap(spacing: 8, runSpacing: 4, children: [
-                  for (final c in m.choices) ActionChip(label: Text(c.label), onPressed: () => send(c.value, shown: c.label)),
-                ]),
-              ),
-          ]),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(20), border: Border.all(color: Fs.line)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [...children, if (chips != null) chips]),
         ),
       ),
     );
   }
 
-  Widget _inputBar(ColorScheme scheme) {
+  Widget _inputBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
       child: Row(children: [
         Expanded(
-          child: TextField(
-            controller: input,
-            textInputAction: TextInputAction.send,
-            onSubmitted: send,
-            decoration: InputDecoration(hintText: 'اكتب ردك هنا', border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)), contentPadding: const EdgeInsets.symmetric(horizontal: 16)),
+          child: Container(
+            decoration: BoxDecoration(color: Fs.card2, borderRadius: BorderRadius.circular(30), border: Border.all(color: Fs.line)),
+            padding: const EdgeInsetsDirectional.only(start: 18, end: 4),
+            child: Row(children: [
+              Expanded(
+                child: TextField(
+                  controller: input,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: send,
+                  decoration: const InputDecoration(hintText: 'اكتب ردك هنا', border: InputBorder.none),
+                ),
+              ),
+              IconButton(onPressed: () => send(input.text), icon: const Icon(Icons.send_rounded, color: Fs.teal), tooltip: 'ابعت'),
+            ]),
           ),
         ),
-        const SizedBox(width: 6),
-        IconButton.filled(onPressed: () => send(input.text), icon: const Icon(Icons.send), tooltip: 'ابعت'),
-        const SizedBox(width: 6),
-        SizedBox(
-          width: 64,
-          height: 64,
-          child: FloatingActionButton(
-            heroTag: 'mic',
-            backgroundColor: listening ? Colors.red : scheme.primary,
-            foregroundColor: Colors.white,
-            onPressed: toggleMic,
-            child: Icon(listening ? Icons.stop : Icons.mic, size: 32),
+        const SizedBox(width: 10),
+        GestureDetector(
+          onTap: toggleMic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 68,
+            height: 68,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Fs.card2,
+              border: Border.all(color: listening ? Fs.orange : Fs.teal, width: 2.4),
+              boxShadow: [BoxShadow(color: (listening ? Fs.orange : Fs.teal).withValues(alpha: listening ? 0.7 : 0.4), blurRadius: listening ? 26 : 14)],
+            ),
+            child: Icon(listening ? Icons.stop_rounded : Icons.mic_rounded, size: 34, color: listening ? Fs.orange : Fs.teal),
           ),
         ),
       ]),
@@ -229,73 +302,185 @@ class _ChatScreenState extends State<ChatScreen> {
 }
 
 class ResultCard extends StatelessWidget {
-  const ResultCard(this.c, {super.key});
+  const ResultCard(this.c, this.data, {super.key});
   final Comparison c;
+  final EngineData data;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final maxRatio = c.rows.map((r) => r.ratio).reduce((a, b) => a > b ? a : b);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       if (c.caveat != null)
         Container(
-          margin: const EdgeInsets.only(top: 8),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(8)),
-          child: const Text('تنبيه: بيانات الطقس للمنطقة دي مش دقيقة (قريبة من البحر). ما تعتمدش على أرقام الحر هنا.', style: TextStyle(fontSize: 13)),
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(color: Fs.orange.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(16), border: Border.all(color: Fs.orange.withValues(alpha: 0.6))),
+          child: const Text('⚠️ بيانات الطقس للمنطقة دي مش دقيقة لأنها قريبة من البحر. ما تعتمدش على أرقام الحر هنا.', style: TextStyle(fontSize: 14, height: 1.4)),
         ),
-      for (final r in c.rows) _rowCard(r, scheme),
+      _climateCard(),
+      for (final r in c.rows) _rotationCard(r, maxRatio),
       if (c.intervalDays != null && c.rows.first.turnMm != null)
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Text('مع ري كل ${arDigits(c.intervalDays!)} يوم: كل مرة لازم توصل ${arDigits(c.rows.first.turnMm!)} مم على الأقل في أيام الذروة (استهلاك المحصول بس).', style: const TextStyle(fontSize: 14)),
+        Container(
+          margin: const EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(18), border: Border.all(color: Fs.line)),
+          child: Row(children: [
+            const Icon(Icons.water_drop_rounded, color: Fs.teal),
+            const SizedBox(width: 10),
+            Expanded(child: Text('مع ري كل ${arDigits(c.intervalDays!)} يوم: كل مرة لازم توصل ${arDigits(c.rows.first.turnMm!)} مم على الأقل في أيام الذروة (استهلاك المحصول بس، من غير فاقد).', style: const TextStyle(fontSize: 14, height: 1.4))),
+          ]),
         ),
+      const SizedBox(height: 12),
+      Text(arSources, style: const TextStyle(fontSize: 12, color: Fs.dim, height: 1.4)),
+      const SizedBox(height: 2),
+      Text(arNotModelled, style: const TextStyle(fontSize: 12, color: Fs.dim, height: 1.4)),
       const SizedBox(height: 8),
-      Text(arSources, style: TextStyle(fontSize: 12, color: scheme.outline)),
-      Text(arNotModelled, style: TextStyle(fontSize: 12, color: scheme.outline)),
-      const SizedBox(height: 4),
-      Text(arNotice, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-      Directionality(
+      Text(arNotice, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, height: 1.4)),
+      const Directionality(
         textDirection: TextDirection.ltr,
-        child: Text('Supports, does not replace, local expertise. Weather: NASA POWER 1990-2025 (about 50 km cell). Salt: farmer input + FAO paper 29.', style: TextStyle(fontSize: 11, color: scheme.outline)),
+        child: Padding(padding: EdgeInsets.only(top: 4), child: Text('Supports, does not replace, local expertise. Weather: NASA POWER 1990-2025 (about 50 km cell). Salt: farmer input + FAO paper 29.', style: TextStyle(fontSize: 11, color: Fs.dim))),
       ),
     ]);
   }
 
   Widget _tag(String t, Color color) => Container(
-        margin: const EdgeInsetsDirectional.only(end: 4, top: 2),
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-        decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8), border: Border.all(color: color.withValues(alpha: 0.5))),
-        child: Text(t, style: TextStyle(fontSize: 10, color: color)),
+        margin: const EdgeInsetsDirectional.only(end: 6, top: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(color: color.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(10), border: Border.all(color: color.withValues(alpha: 0.5))),
+        child: Text(t, style: TextStyle(fontSize: 11, color: color)),
       );
 
-  Widget _rowCard(RotationRow r, ColorScheme scheme) {
-    final heatExtra = r.extra['32']!;
-    return Card(
-      margin: const EdgeInsets.only(top: 10),
-      color: r.isExisting ? scheme.secondaryContainer : scheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('${r.isExisting ? 'دورتك الحالية' : 'بديل'}: ${arCrop[r.input.crop]} ثم قمح', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-          Text('${arCrop[r.input.crop]} بتتزرع ${arDate(r.input.summerSowing)} وتتحصد تقريباً ${r.harvest}. القمح ${arDate(r.input.wheatSowing)}${r.isExisting ? '' : ' (افتراض)'}.', style: const TextStyle(fontSize: 13)),
-          const Divider(),
-          Row(children: [const Text('💧 '), Expanded(child: Text('مية ${arCrop[r.input.crop]}: ${arRatio(r.ratio)}', style: const TextStyle(fontSize: 15)))]),
-          Wrap(children: [_tag('NASA POWER + FAO-56', Colors.blue), _tag('~${arDigits(r.etc)} مم (غير مؤكد)', Colors.grey), if (r.riceFloor) _tag('الرز: الرقم أقل من الحقيقي', Colors.orange)]),
-          const SizedBox(height: 6),
-          Row(children: [const Text('🌡️ '), Expanded(child: Text('حر وقت امتلاء حبوب القمح: ${arDigits(r.heatMedian.round())} يوم فوق ٣٢° (من ${arDigits(r.heatP10.round())} لـ ${arDigits(r.heatP90.round())})', style: const TextStyle(fontSize: 15)))]),
-          Wrap(children: [
-            _tag('NASA POWER', Colors.blue),
-            _tag(r.input.wheatSowing == '11-15' ? 'الميعاد المعتاد' : (heatExtra >= 0 ? '+${arDigits(heatExtra)} يوم عن ١٥ نوفمبر' : '-${arDigits(-heatExtra)} يوم عن ١٥ نوفمبر'), Colors.grey),
-            _tag('افتراضات النموذج', Colors.orange),
+  /// "Your area's weather" card: monthly maximum temperature from NASA POWER with the wheat sowing month marked.
+  Widget _climateCard() {
+    final month = int.parse(c.rows.first.input.wheatSowing.split('-')[0]);
+    final tmax = data.climateVar(c.site, 'T2M_MAX'), tmin = data.climateVar(c.site, 'T2M_MIN');
+    final rh = data.climateVar(c.site, 'RH2M'), wind = data.climateVar(c.site, 'WS2M'), rain = data.climateVar(c.site, 'RAIN_MM_MONTH'), sun = data.climateVar(c.site, 'ALLSKY_SFC_SW_DWN');
+    Widget mini(IconData i, String v, String l) => Expanded(
+          child: Column(children: [
+            Icon(i, size: 20, color: Fs.green),
+            const SizedBox(height: 4),
+            Text(v, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+            Text(l, style: const TextStyle(fontSize: 11, color: Fs.dim)),
           ]),
-          if (r.saltSummer != null) ...[
-            const SizedBox(height: 6),
-            Row(children: [const Text('🧂 '), Expanded(child: Text('الملوحة: ${arCrop[r.input.crop]} ${arSalt[r.saltSummer!.status]}، القمح ${arSalt[r.saltWheat!.status]}', style: const TextStyle(fontSize: 15)))]),
-            Wrap(children: [_tag('جداول FAO 29', Colors.green), _tag('من كلام المزارع', Colors.purple)]),
-          ],
-          for (final w in r.warnings) Padding(padding: const EdgeInsets.only(top: 6), child: Text('⚠️ ${warningAr(r, w)}', style: const TextStyle(fontSize: 13, color: Colors.red))),
-        ]),
+        );
+    return Container(
+      margin: const EdgeInsets.only(top: 4, bottom: 4),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(begin: Alignment.topRight, end: Alignment.bottomLeft, colors: [const Color(0xFF0E2A22), Fs.card]),
+        border: Border.all(color: Fs.green.withValues(alpha: 0.35)),
       ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(child: Text('طقس ${arSite[c.site]} في ${arMonth[month - 1]}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
+          _tag('NASA POWER', Fs.teal),
+        ]),
+        const SizedBox(height: 6),
+        Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+          Text('${arNum(tmax[month - 1])}°', style: const TextStyle(fontSize: 44, fontWeight: FontWeight.w800, height: 1)),
+          const SizedBox(width: 10),
+          Padding(padding: const EdgeInsets.only(bottom: 6), child: Text('عظمى · صغرى ${arNum(tmin[month - 1])}°', style: const TextStyle(fontSize: 13, color: Fs.dim))),
+        ]),
+        const SizedBox(height: 8),
+        MonthChart(values: tmax, markMonth: month),
+        const Padding(padding: EdgeInsets.only(top: 2), child: Text('متوسط الحرارة العظمى كل شهر، من ١٩٩٠ لـ ٢٠٢٥ (الدايرة = شهر زراعة القمح)', style: TextStyle(fontSize: 11, color: Fs.dim))),
+        const SizedBox(height: 10),
+        Row(children: [
+          mini(Icons.water_drop_outlined, '${arNum(rh[month - 1])}٪', 'رطوبة'),
+          mini(Icons.grain_rounded, '${arNum(rain[month - 1], dec: 1)} مم', 'مطر'),
+          mini(Icons.air_rounded, '${arNum(wind[month - 1], dec: 1)} م/ث', 'رياح'),
+          mini(Icons.wb_sunny_outlined, '${arNum(sun[month - 1], dec: 1)}', 'شمس'),
+        ]),
+      ]),
     );
   }
+
+  Widget _rotationCard(RotationRow r, double maxRatio) {
+    final heatExtra = r.extra['32']!;
+    final crop = arCrop[r.input.crop]!;
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Fs.card,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: r.isExisting ? Fs.teal.withValues(alpha: 0.7) : Fs.line, width: r.isExisting ? 1.4 : 1),
+        boxShadow: r.isExisting ? [BoxShadow(color: Fs.teal.withValues(alpha: 0.12), blurRadius: 20)] : null,
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(color: r.isExisting ? Fs.teal : Colors.white12, borderRadius: BorderRadius.circular(12)),
+            child: Text(r.isExisting ? 'دورتك الحالية' : 'بديل', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: r.isExisting ? Colors.black : Colors.white70)),
+          ),
+          const SizedBox(width: 10),
+          Expanded(child: Text('$crop ثم قمح', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800))),
+        ]),
+        const SizedBox(height: 4),
+        Text('$crop: زراعة ${arDate(r.input.summerSowing)}، حصاد تقريباً ${r.harvest}.  القمح: ${arDate(r.input.wheatSowing)}${r.isExisting ? '' : ' (افتراض)'}', style: const TextStyle(fontSize: 13, color: Fs.dim, height: 1.4)),
+        const SizedBox(height: 12),
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+            child: StatTile(
+              icon: Icons.water_drop_rounded,
+              label: 'مية $crop مقارنة بدورتك',
+              value: '${arNum(r.ratio, dec: 2)}×',
+              note: '~${arDigits(r.etc)} مم (غير مؤكد)',
+              accent: Fs.teal,
+              barFraction: r.ratio / maxRatio,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: StatTile(
+              icon: Icons.thermostat_rounded,
+              label: 'أيام حر وقت امتلاء حبوب القمح',
+              value: '${arDigits(r.heatMedian.round())} يوم',
+              note: 'من ${arDigits(r.heatP10.round())} لـ ${arDigits(r.heatP90.round())} · ٣٢°+',
+              accent: Fs.orange,
+              spark: r.series.isEmpty ? null : r.series,
+            ),
+          ),
+        ]),
+        Wrap(children: [
+          _tag('NASA POWER + FAO-56', Fs.teal),
+          _tag(r.input.wheatSowing == '11-15' ? 'ميعاد القمح المعتاد' : (heatExtra >= 0 ? '+${arDigits(heatExtra)} يوم حر عن ١٥ نوفمبر' : '-${arDigits(-heatExtra)} يوم حر عن ١٥ نوفمبر'), Fs.dim),
+          _tag('افتراضات النموذج', Fs.orange),
+          if (r.riceFloor) _tag('الرز: الرقم أقل من الحقيقي', Fs.orange),
+        ]),
+        if (r.saltSummer != null) ...[
+          const SizedBox(height: 12),
+          Row(children: [
+            RingGauge(
+              progress: (r.saltSummer!.yieldPct ?? 0) / 100,
+              size: 64,
+              stroke: 6,
+              color: Fs.status(r.saltSummer!.status),
+              child: Text(r.saltSummer!.yieldPct == null ? '<٥٠' : '${arDigits(r.saltSummer!.yieldPct!)}٪', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('🧂 الملوحة (إنتاج متوقع للمحصول الصيفي)', style: TextStyle(fontSize: 13, color: Fs.dim)),
+                const SizedBox(height: 4),
+                Row(children: [
+                  _dot(Fs.status(r.saltSummer!.status)),
+                  Text(' $crop: ${arSalt[r.saltSummer!.status]}   ', style: const TextStyle(fontSize: 15)),
+                  _dot(Fs.status(r.saltWheat!.status)),
+                  Text(' القمح: ${arSalt[r.saltWheat!.status]}', style: const TextStyle(fontSize: 15)),
+                ]),
+                Wrap(children: [_tag('جداول FAO 29', Fs.green), _tag('من كلام المزارع', const Color(0xFFB388FF))]),
+              ]),
+            ),
+          ]),
+        ],
+        for (final w in r.warnings)
+          Padding(padding: const EdgeInsets.only(top: 10), child: Text('⚠️ ${warningAr(r, w)}', style: const TextStyle(fontSize: 13, color: Fs.red, height: 1.4))),
+      ]),
+    );
+  }
+
+  Widget _dot(Color c) => Container(width: 10, height: 10, decoration: BoxDecoration(color: c, shape: BoxShape.circle, boxShadow: [BoxShadow(color: c.withValues(alpha: 0.6), blurRadius: 6)]));
 }

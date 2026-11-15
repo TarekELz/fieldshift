@@ -65,10 +65,13 @@ class Voice {
         onResult(r.recognizedWords, r.finalResult);
         if (r.finalResult) listening = false;
       },
-      localeId: sttLocale,
-      listenFor: const Duration(seconds: 20),
-      pauseFor: const Duration(seconds: 3),
-      listenOptions: SpeechListenOptions(partialResults: true, cancelOnError: true),
+      listenOptions: SpeechListenOptions(
+        partialResults: true,
+        cancelOnError: true,
+        localeId: sttLocale,
+        listenFor: const Duration(seconds: 20),
+        pauseFor: const Duration(seconds: 3),
+      ),
     );
   }
 

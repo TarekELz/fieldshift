@@ -33,7 +33,6 @@ class BotMessage {
 
 enum Step { site, crop, summerWhen, wheatWhen, interval, salt, done }
 
-const _grid = [1, 10, 15, 20, 25];
 const _monthKeys = ['يناير', 'فبراير', 'مارس', 'ابريل', 'مايو', 'يونيو', 'يوليو', 'اغسطس', 'سبتمبر', 'اكتوبر', 'نوفمبر', 'ديسمبر'];
 const _defaultSummer = {'rice': '05-15', 'maize': '05-01', 'cotton': '04-01'};
 const _altWheat = '11-15'; // recommended date; used for the alternatives and labelled as an assumption

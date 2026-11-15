@@ -41,3 +41,6 @@ String arRatio(double ratio) {
   if (pct == 0) return 'تقريباً نفس احتياج دورتك الحالية';
   return ratio < 1 ? 'أقل ${arDigits(pct)}٪ من دورتك الحالية' : 'أكتر ${arDigits(pct)}٪ من دورتك الحالية';
 }
+
+/// Number in Arabic digits with an Arabic decimal mark: 1.12 -> "١٫١٢".
+String arNum(num v, {int dec = 0}) => arDigits(v.toStringAsFixed(dec)).replaceAll('.', '٫');

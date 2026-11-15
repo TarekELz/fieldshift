@@ -18,13 +18,13 @@ int roundHalfEven(double x) {
 }
 
 class EngineData {
-  EngineData(this.heat, this.water, this.salt, this.meta);
-  final Map<String, dynamic> heat, water, salt, meta;
+  EngineData(this.heat, this.water, this.salt, this.meta, this.climate);
+  final Map<String, dynamic> heat, water, salt, meta, climate;
 
   static Future<EngineData> load([AssetBundleLike? bundle]) async {
     Future<Map<String, dynamic>> read(String n) async =>
         jsonDecode(await (bundle?.loadString('assets/data/$n.json') ?? rootBundle.loadString('assets/data/$n.json'))) as Map<String, dynamic>;
-    return EngineData(await read('heat'), await read('water'), await read('salt'), await read('meta'));
+    return EngineData(await read('heat'), await read('water'), await read('salt'), await read('meta'), await read('climate'));
   }
 
   List<String> get siteKeys => (meta['sites'] as Map<String, dynamic>).keys.toList();
@@ -33,6 +33,8 @@ class EngineData {
   List<String> get notModelled => (meta['not_modelled'] as List).cast<String>();
   List<String> wheatDates(String site) => (heat[site] as Map<String, dynamic>).keys.toList();
   List<String> summerDates(String site, String crop) => (water[site][crop] as Map<String, dynamic>).keys.toList();
+  /// Monthly mean of a NASA POWER variable (T2M_MAX, T2M_MIN, RH2M, WS2M, RAIN_MM_MONTH, ALLSKY_SFC_SW_DWN), 12 values.
+  List<double> climateVar(String site, String v) => (climate[site][v] as List).map<double>((e) => (e as num).toDouble()).toList();
   List<String> get crops => (meta['crops'] as Map<String, dynamic>).keys.toList();
 }
 
@@ -55,7 +57,7 @@ class RotationRow {
   RotationRow({
     required this.input, required this.isExisting, required this.etc, required this.etcP10, required this.etcP90, required this.ratio,
     required this.peakDaily, required this.harvest, required this.gapDays, required this.heatMedian, required this.heatP10, required this.heatP90,
-    required this.extra, required this.turnMm, required this.saltSummer, required this.saltWheat, required this.warnings, required this.riceFloor,
+    required this.extra, required this.series, required this.turnMm, required this.saltSummer, required this.saltWheat, required this.warnings, required this.riceFloor,
   });
   final SequenceInput input;
   final bool isExisting;
@@ -65,6 +67,7 @@ class RotationRow {
   final int gapDays;
   final num heatMedian, heatP10, heatP90;
   final Map<String, int> extra; // extra hot days vs a 15 Nov sowing at 30/32/34 C
+  final List<int> series; // hot days in each season 1990 onwards (for the sparkline)
   final int? turnMm;
   final SaltFit? saltSummer, saltWheat;
   final List<String> warnings;
@@ -114,7 +117,7 @@ String saltStatus(double? y) => y == null ? 'not advised' : (y >= 90 ? 'fine' : 
 SaltFit saltFit(EngineData d, String crop, double ece) {
   final pts = ((d.salt['crops'][crop]['points']) as List).map<List<double>>((p) => [(p[0] as num).toDouble(), (p[1] as num).toDouble()]).toList();
   final y = yieldPotential(pts, ece);
-  return SaltFit(y == null ? null : y.round(), saltStatus(y));
+  return SaltFit(y?.round(), saltStatus(y));
 }
 
 Comparison compare(EngineData d, String site, List<SequenceInput> seqs, {double? ece, String? signs, int? intervalDays}) {
@@ -149,6 +152,7 @@ Comparison compare(EngineData d, String site, List<SequenceInput> seqs, {double?
       ratio: (etc / baseEtc * 100).roundToDouble() / 100, peakDaily: peak, harvest: harvestText(d, s.crop, s.summerSowing), gapDays: gap,
       heatMedian: h['median'] as num, heatP10: h['p10'] as num, heatP90: h['p90'] as num,
       extra: {for (final k in ['30', '32', '34']) k: (h['extra'][k] as num).toInt()},
+      series: ((h['series'] as List?) ?? const []).map<int>((e) => (e as num).toInt()).toList(),
       turnMm: intervalDays == null ? null : roundHalfEven(peak * intervalDays),
       saltSummer: e == null ? null : saltFit(d, s.crop, e), saltWheat: e == null ? null : saltFit(d, 'wheat', e),
       warnings: warns, riceFloor: s.crop == 'rice',

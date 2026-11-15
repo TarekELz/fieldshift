@@ -53,8 +53,10 @@ def main():
         heat[s] = {}
         for (m, d), row in zip(wheat_dates, c["rows"]):
             e = row["extra_vs_baseline"]
+            per = cal.heat_risk(w, m, d, cfg)["per_season"]  # hot days in each season, for the sparkline
             heat[s][key(m, d)] = {"median": row["heat_days_median"], "p10": row["heat_days_p10_p90"][0], "p90": row["heat_days_p10_p90"][1],
-                                  "extra": {"30": e[30.0], "32": e[32.0], "34": e[34.0]}, "dropped": row["seasons_dropped"]}
+                                  "extra": {"30": e[30.0], "32": e[32.0], "34": e[34.0]}, "dropped": row["seasons_dropped"],
+                                  "series": [per[y] for y in sorted(per)], "first_season": min(per)}
         sw = wat.SiteWeather(ROOT / "data/raw/power" / f"{s}_daily.json")
         water[s] = {}
         for crop, (a, b) in SOWING_WINDOWS.items():
@@ -73,7 +75,21 @@ def main():
         "baseline_wheat_sowing": "11-15",
         "data_note": "Weather: NASA POWER daily 1990-2025 (reanalysis, about 50 km cell). Salt: farmer input + FAO paper 29. No NASA product measures soil salinity.",
     }
-    for name, obj in (("heat", heat), ("water", water), ("salt", saltj), ("meta", meta)):
+    climate = {}
+    for s in SITES:
+        raw = json.loads((ROOT / "data/raw/power" / f"{s}_daily.json").read_text())["properties"]["parameter"]
+        monthly = {}
+        for var in ("T2M_MAX", "T2M_MIN", "RH2M", "WS2M", "PRECTOTCORR", "ALLSKY_SFC_SW_DWN"):
+            by_m = {m: [] for m in range(1, 13)}
+            for k, v in raw[var].items():
+                if v > -900 and k < "20260101":
+                    by_m[int(k[4:6])].append(v)
+            monthly[var] = [round(sum(by_m[m]) / len(by_m[m]), 1) for m in range(1, 13)]
+        days_in = [31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        monthly["RAIN_MM_MONTH"] = [round(monthly["PRECTOTCORR"][i] * days_in[i], 1) for i in range(12)]
+        climate[s] = monthly
+    meta["climate_note"] = "Monthly means of NASA POWER daily values, 1990-2025 (reanalysis, about 50 km cell)"
+    for name, obj in (("heat", heat), ("water", water), ("salt", saltj), ("meta", meta), ("climate", climate)):
         (OUT / f"{name}.json").write_text(json.dumps(obj, ensure_ascii=False, indent=None, separators=(",", ":")), encoding="utf8")
     # golden cases for the Dart tests
     cases = []
@@ -87,7 +103,7 @@ def main():
                                         "turn_mm": r["water"].get("turn_check", {}).get("mm_needed_per_turn_at_peak"),
                                         "salt_summer": (r["salt"] or {}).get("summer", {}).get("status"), "salt_wheat": (r["salt"] or {}).get("wheat", {}).get("status")} for r in res["rotations"]]})
     (FIX / "rotation_cases.json").write_text(json.dumps(cases, indent=1), encoding="utf8")
-    sizes = {n: (OUT / f"{n}.json").stat().st_size for n in ("heat", "water", "salt", "meta")}
+    sizes = {n: (OUT / f"{n}.json").stat().st_size for n in ("heat", "water", "salt", "meta", "climate")}
     print("wrote", sizes, "and", len(cases), "golden cases")
 
 
