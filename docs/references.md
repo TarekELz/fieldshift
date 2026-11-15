@@ -34,7 +34,8 @@ The NASA Space Apps rules require every external resource used in the project (c
 - IBM Plex Sans and IBM Plex Sans Arabic fonts (SIL Open Font License 1.1): https://github.com/IBM/plex
 - Design inspiration: the team's own Advanced Monitor app (design system), not copied from third parties.
 
-## AI tools used (details in docs/ai-disclosure.md, to be updated)
+## AI tools used
+Full disclosure (every tool, where, what for, and what is human-written): [ai-disclosure.md](ai-disclosure.md).
 - Claude (Anthropic) as a coding and research assistant.
 - Gemini (Google) API: rewording advice text behind a number-and-fact guard, classifying a short phrase that is not among the options, adding diacritics to spoken text.
 - Hamsa text-to-speech (voice "Ibrahim", Egyptian Arabic): AI-generated voice for Eyad.

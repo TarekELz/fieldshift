@@ -10,7 +10,7 @@
 <img alt="Licence" src="https://img.shields.io/badge/licence-MIT-green">
 <a href="https://github.com/TarekELz/fieldshift/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/TarekELz/fieldshift/actions/workflows/ci.yml/badge.svg"></a>
 </p>
-<p align="center"><a href="docs/index.html">Project page</a> · <a href="docs/status.md">Status</a> · <a href="docs/decisions.md">Decisions</a> · <a href="docs/methodology.md">Method and limits</a> · <a href="docs/references.md">References</a></p>
+<p align="center"><a href="docs/index.html">Project page</a> · <a href="docs/status.md">Status</a> · <a href="docs/decisions.md">Decisions</a> · <a href="docs/methodology.md">Method and limits</a> · <a href="docs/references.md">References</a> · <a href="docs/ai-disclosure.md">AI use</a></p>
 
 **Field Shift helps a Nile Delta farmer decide what to grow and when, by voice, in Egyptian Arabic, using NASA data, and it shows its numbers.** Eyad, the voice assistant, asks where the field is and what the farmer wants: **earn more**, **grow a certain crop at a certain time**, or **improve what he grows now**. He answers with a verdict for each crop (*tamam*, a small problem, a big problem), then water, heat and salt, one page at a time.
 
@@ -138,7 +138,7 @@ It **supports, and does not replace,** the farmer's judgement and local agricult
 | Yes | Open source | MIT licence, [`LICENSE`](LICENSE) |
 | Yes | External resources listed | [`docs/references.md`](docs/references.md) |
 | Yes | Decisions and sources logged | [`docs/decisions.md`](docs/decisions.md), [`literature/papers.csv`](literature/papers.csv) |
-| In progress | Use of AI disclosed | `docs/ai-disclosure.md` is being updated before the repo is made public |
+| Yes | Use of AI disclosed | [`docs/ai-disclosure.md`](docs/ai-disclosure.md): every AI tool, where it is used and what is human-written |
 | In progress | Demo (30-second video or 7 slides, English) | with the team |
 
 <a id="scorecard"></a>
