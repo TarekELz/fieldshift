@@ -66,7 +66,7 @@ For agronomists, extension officers and researchers the app has a second way in:
   </tr>
 </table>
 
-Its Method tab names every source and what each number does and does not mean.
+Every source, and what each number does and does not mean, is in [`docs/methodology.md`](docs/methodology.md) and [`data/catalog.yaml`](data/catalog.yaml).
 
 ## Meet Abu Ahmed (a fictional farmer)
 Abu Ahmed grows rice and wheat on a few feddans in Gharbia. He cannot read well, his sons and the TV are his only advice, and canal water comes every ten days. In the Delta that is not unusual: **31.7% of surveyed Delta farmers are illiterate and most get information from their sons or TV (kassem2019)**. He opens the app, taps Gharbia, says he grows rice in mid June and wheat in December, and that the soil has white patches. Eyad tells him, in his own dialect, that late wheat will meet more heat and that cotton tolerates his salt better, and shows why.

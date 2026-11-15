@@ -1,4 +1,4 @@
-// The professional view builds on a phone-sized screen in both languages and all three tabs, without layout errors, and the charts get real data.
+// The professional view builds on a phone-sized screen in both languages and both tabs, without layout errors, and the charts get real data.
 import 'dart:io';
 
 import 'package:field_shift/engine.dart';
@@ -35,12 +35,7 @@ void main() {
       }
       expect(find.byType(LinearProgressIndicator), findsWidgets); // the ranking bars
       noErrors('compare tab');
-      await tester.tap(find.byType(Tab).at(2));
-      for (var i = 0; i < 8; i++) {
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-      expect(find.textContaining('NASA POWER'), findsWidgets);
-      noErrors('method tab');
+      expect(find.byType(Tab), findsNWidgets(2)); // Place and Compare only: the Method tab (English paragraphs, file paths) was removed
       lang.value = 'ar';
     });
   }

@@ -1,6 +1,6 @@
 // Professional view (decision D21): the same engines and tables as the farmer view, laid open for people who read data (agronomists, extension agents,
-// researchers). Place analysis with charts, a regional comparison of all NASA data points (a question a chatbot cannot answer), and the methods and data behind
-// every number. Nothing here is new data: it reads the exported tables (heat, water, climate, season, salt, crops) and can copy them as CSV.
+// researchers). Place analysis with charts and a regional comparison of the Delta governorates. The methods and sources stay in the repository
+// (docs/methodology.md, data/catalog.yaml), not on the phone. Nothing here is new data: it reads the exported tables (heat, water, climate, season, salt, crops) and can copy them as CSV.
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -53,14 +53,14 @@ class _ProViewState extends State<ProView> {
     return ListenableBuilder(
       listenable: lookChanged,
       builder: (context, _) => DefaultTabController(
-        length: 3,
+        length: 2,
         child: Scaffold(
           appBar: AppBar(
             title: Text(tr('عرض المحترفين', 'Professional view')),
             actions: [const LangPill(), const SizedBox(width: 6), const ThemeButton(), const SizedBox(width: 12)],
-            bottom: TabBar(tabs: [Tab(text: tr('تحليل مكان', 'Place')), Tab(text: tr('مقارنة المناطق', 'Compare')), Tab(text: tr('الطريقة والبيانات', 'Method'))]),
+            bottom: TabBar(tabs: [Tab(text: tr('تحليل مكان', 'Place')), Tab(text: tr('مقارنة المناطق', 'Compare'))]),
           ),
-          body: data == null ? Center(child: CircularProgressIndicator(color: Fs.accent)) : TabBarView(children: [_place(data), _compare(data), _method()]),
+          body: data == null ? Center(child: CircularProgressIndicator(color: Fs.accent)) : TabBarView(children: [_place(data), _compare(data)]),
         ),
       ),
     );
@@ -328,48 +328,6 @@ class _ProViewState extends State<ProView> {
           ]),
         ),
       ),
-    ]);
-  }
-
-  // ---------- tab 3: method ----------
-  Widget _method() {
-    Widget h(String t) => Padding(padding: const EdgeInsets.only(top: 14, bottom: 4), child: Text(t, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)));
-    Widget p(String t) => Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(t, style: TextStyle(fontSize: 13.5, height: 1.5, color: Fs.dim)));
-    Widget row(String a, String b, String c) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(flex: 3, child: Text(a, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
-            Expanded(flex: 3, child: Text(b, style: TextStyle(fontSize: 12.5, color: Fs.dim))),
-            Expanded(flex: 4, child: Text(c, style: TextStyle(fontSize: 12.5, color: Fs.dim))),
-          ]),
-        );
-    return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 28), children: [
-      h(tr('البيانات', 'Data')),
-      SoftCard(
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: Column(children: [
-            row('NASA POWER', '0.5 x 0.625 deg, daily, 1990-2025', 'T2M, T2M_MAX/MIN, RH2M, WS2M, solar: every number'),
-            row('MODIS MOD13Q1', '250 m, 16-day, 2014-2025', 'pictures; vegetation context'),
-            row('MODIS MCD12Q2', '500 m, yearly, 2015-2025', 'phenology cross-check (not in a result)'),
-            row('MODIS MOD16A3GF', '500 m, yearly', 'input check: ET0 within 1-8%'),
-            row('GPM IMERG', '0.1 deg, daily', 'context: summer rain ~ 0'),
-            row('FAO-56, FAO-29', 'tables', 'Kc and stage lengths; salt tolerance'),
-            row('FAO EcoCrop', 'tables', 'crop temperature ranges (generic)'),
-            row('FAOSTAT', 'national, 2020-24 / 2022', 'yield and farm-gate price (not NASA)'),
-          ]),
-        ),
-      ),
-      h(tr('الحسابات', 'Calculations')),
-      p('ET0: FAO-56 Penman-Monteith, daily step, G = 0, from POWER T2M_MAX/MIN, RH2M, WS2M, ALLSKY_SFC_SW_DWN. ETc = Kc(stage) x ET0 summed over the FAO-56 stage lengths from the sowing date, for every complete year 1990-2025; the app shows the median and p10 to p90.'),
-      p('Wheat heat: days with Tmax >= 32 C in the grain-filling window (last 30% of thermal time before maturity), from the sowing date; shown against a 15 November sowing. The 32 C threshold, the window and the thermal-time constant are assumptions (models/wheat_calendar.yaml).'),
-      p('Salt: piecewise-linear relative yield between the four FAO-29 Table 4 points at the soil ECe; above the 50% point the table gives no value (shown as under 50%, at most half in the income table).'),
-      p('Season fit: share of the growing days whose daily mean temperature is inside the crop\'s EcoCrop optimal range; the label compares a date with the best date of the year (thresholds are team assumptions, D17). Crops whose score barely changes through the year are "cannot judge".'),
-      p('Income: FAOSTAT Egypt yield (2020-2024 mean) x 0.42 ha x producer price (2022 annual mean) x the salt factor. Gross, before costs, national averages.'),
-      h(tr('حدود', 'Limits')),
-      p('POWER is a model product at about 50 km, not yet validated against Delta weather stations. Cells of mostly desert or sea carry a caution. No yield forecast; no NASA product measures soil salinity; EcoCrop ranges are generic; prices have moved since 2022.'),
-      h(tr('التكرار', 'Reproducibility')),
-      p('The Dart code reproduces the Python engines on golden cases (see app/test). Sources, decisions and checks: docs/methodology.md, docs/decisions.md, data/catalog.yaml.'),
     ]);
   }
 }
