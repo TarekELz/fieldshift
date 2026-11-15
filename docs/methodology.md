@@ -5,7 +5,7 @@ Parameters live in `models/*.yaml` and `models/salt_tolerance.csv`, each with `e
 Two terms: an **input check** compares our inputs with ground data (it shows the inputs are sound, not that outputs are right); a **plausibility check** asks whether outputs agree with published findings and move the right way when an input changes. We cannot show that following the tool improves results on a real farm, and we will not say so.
 
 ## What was chosen, and by whom
-Tarek asked on 2026-11-15 for two independent reviews of the method options and for the choice to follow from them. Two read-only AI reviewers (science and code; strategy and judging) recommended the options below. The choice is logged as D7; Tarek can overrule it.
+The team (Tarek) chose these methods and logged the choice as D7. For a second opinion on the options, two read-only AI reviewers (science and code; strategy and judging) were consulted; their recommendations are inputs the team weighed, not the decision. The team can change the choice.
 
 | Engine | Chosen | Why | Not chosen |
 |---|---|---|---|
