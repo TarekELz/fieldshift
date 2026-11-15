@@ -27,7 +27,7 @@ Not AI: the explorer's "Ask Eyad" answers only from the tables, with rule-based 
 
 ## Visible marks
 - **Eyad's avatar** carries a visible "AI" mark wherever it is shown: in the app (`app/lib/eyad.dart`), on the project page and in the explorer. Keep it visible in screenshots, slides and the video.
-- **The explorer field scene** is captioned "Illustration: drawn by AI".
+- **The explorer field scene** is captioned "Illustration: drawn by AI", and the crop pictures under it "Illustrations: drawn by AI".
 - **Eyad's voice** is AI-generated. This is stated in the app's Terms screen (`app/lib/terms.dart`), here, and in `app/lib/voice.dart`. The demo video narration is AI-generated (Piper) and is stated in the video description.
 - **Advice rewording**: the app's Terms state that an AI model (Gemini) may reword the advice and that the numbers come from calculations, not from the AI.
 - No AI-generated content uses or modifies NASA logos, flags or mission identifiers.

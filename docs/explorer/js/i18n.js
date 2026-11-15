@@ -45,7 +45,7 @@
     learn_eyebrow: ['NILE DELTA · ONE SEASON, THREE PRESSURES', 'دلتا النيل · موسم واحد وتلات ضغوط'],
     learn_h: ['What decides a Delta farmer’s season?', 'إيه اللي بيحدد موسم فلاح الدلتا؟'],
     learn_sub: ['Tap a glowing point in the field. Each one plays out in four steps: cause, effect, what NASA data shows, and what Eyad advises.', 'دوس على نقطة منورة في الأرض. كل واحدة بتتحكي في أربع خطوات: السبب، والنتيجة، وبيانات ناسا بتقول إيه، وإياد بينصح بإيه.'],
-    illus: ['Illustration: drawn by AI', 'رسم: مرسوم بالذكاء الاصطناعي'],
+    illus: ['Illustration: drawn by AI', 'رسم: مرسوم بالذكاء الاصطناعي'], illus_crops: ['Illustrations: drawn by AI', 'رسوم: مرسومة بالذكاء الاصطناعي'],
     hs_canal: ['Canal turn', 'دور المية'], hs_rice: ['Rice stubble', 'بقايا الرز'], hs_wheat: ['Wheat field', 'غيط القمح'], hs_salt: ['White salt patch', 'بقعة ملح بيضا'], hs_sat: ['NASA satellite', 'قمر ناسا'],
     step_cause: ['Cause', 'السبب'], step_effect: ['Effect', 'النتيجة'], step_nasa: ['What NASA data shows', 'بيانات ناسا بتقول إيه'], step_eyad: ['What Eyad advises', 'إياد بينصح بإيه'],
     replay: ['Replay', 'من الأول'], next: ['Next', 'اللي بعده'],
