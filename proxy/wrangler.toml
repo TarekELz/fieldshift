@@ -12,6 +12,6 @@ DAILY_GEMINI_CAP = "3000"
 
 # Optional, for the daily caps (without it only the per address limit applies):
 # create it with `npx wrangler kv namespace create STATS`, then paste the id here and remove the leading #.
-# [[kv_namespaces]]
-# binding = "STATS"
-# id = "<id printed by the command above>"
+[[kv_namespaces]]
+binding = "STATS"
+id = "df593aad17c748a5a45592cbc453e562"

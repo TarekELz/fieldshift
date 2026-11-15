@@ -12,6 +12,8 @@ The Android app and the explorer website call this small Cloudflare Worker for E
 
 **Protection against misuse.** The Worker address is public, so it limits what a stranger could spend: one fixed voice and model, a text length cap, 30 requests a minute per address, an optional daily total cap (needs the KV binding), an optional shared header value, an allowed list of website origins, and a kill switch. The shared header value is not a secret once it is inside an APK. For stronger limits add a Cloudflare rate limiting rule (step 8).
 
+**Deployed:** `https://fieldshift-proxy.fieldshift-proxy.workers.dev` (Cloudflare account of the team lead; `/health` shows key counts). Two notes from the real deployment: the Cache API does nothing on `workers.dev` addresses (only on a custom domain), so repeated lines are not cached; and Cloudflare rate limiting rules need a custom domain, so on `workers.dev` the limits in `worker.js` and the daily caps are the protection.
+
 ## Deploy (about 15 minutes, once)
 You need a free Cloudflare account (cloudflare.com) and Node.js. Everything below runs from this `proxy/` folder.
 
