@@ -236,7 +236,7 @@ String? siteInSameCell(EngineData d, double lat, double lon) {
 }
 
 Map<String, dynamic>? areaAt(EngineData d, double lat, double lon) {
-  for (final a in d.areas) {
+  for (final a in d.areas.where((a) => a['kind'] != 'plain')) {
     for (final ring in a['rings'] as List) {
       if (_inRing(ring as List, lon, lat)) return a as Map<String, dynamic>;
     }

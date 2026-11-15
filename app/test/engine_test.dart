@@ -141,18 +141,19 @@ void main() {
       expect(d.handleLocation(25.70, 32.65).first.ar, contains('الأقصر'));
     });
 
-    test('the Halayeb triangle and Bir Tawil are drawn as named areas, and recognised outside the Delta', () {
-      expect(data.areas.map((a) => a['ar']).toSet(), {'حلايب وشلاتين', 'بئر طويل'});
-      expect(data.areas.firstWhere((a) => a['id'] == 'Bir Tawil')['kind'], 'unclaimed'); // not painted as part of Egypt
+    test('the Halayeb triangle is named; Bir Tawil is drawn like the rest of the map, without a name', () {
+      expect(data.areas.firstWhere((a) => a['kind'] != 'plain')['ar'], 'حلايب وشلاتين');
+      expect(data.areas.firstWhere((a) => a['id'] == 'Bir Tawil')['kind'], 'plain');
       final h = Dialogue(data).handleLocation(22.3, 36.2); // Halayeb
       expect(h.first.ar, contains('حلايب وشلاتين'));
       expect(h.first.ar, contains('منطقة'));
       expect(h.first.retry, isTrue);
-      final b = Dialogue(data).handleLocation(21.95, 33.6); // Bir Tawil
-      expect(b.first.ar, contains('بئر طويل'));
-      for (final word in ['حلايب', 'شلاتين', 'halayeb', 'Shalateen', 'halaib', 'بير طويل', 'bir tawil']) {
+      final b = Dialogue(data).handleLocation(21.95, 33.6); // inside the Bir Tawil outline
+      expect(b.first.ar, contains('برا دلتا النيل'));
+      expect(b.first.ar, isNot(contains('بئر')));
+      for (final word in ['حلايب', 'شلاتين', 'halayeb', 'Shalateen', 'halaib']) {
         final d = Dialogue(data);
-        expect(d.handle(word).first.ar, anyOf(contains('حلايب وشلاتين'), contains('بئر طويل')), reason: word);
+        expect(d.handle(word).first.ar, contains('حلايب وشلاتين'), reason: word);
         expect(d.step, Step.site);
       }
       expect(Dialogue(data).handle('shalateen').first.en, contains('outside the Nile Delta'));

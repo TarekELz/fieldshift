@@ -10,7 +10,7 @@ import 'engine.dart';
 import 'i18n.dart';
 import 'ui_kit.dart';
 
-const _lonMin = 24.5, _lonMax = 36.95, _latMin = 21.35, _latMax = 31.9;
+const _lonMin = 24.5, _lonMax = 36.95, _latMin = 21.62, _latMax = 31.9;
 final _cosLat = math.cos(26.5 * math.pi / 180);
 
 class MapPicker extends StatefulWidget {
@@ -140,18 +140,6 @@ class _EgyptPainter extends CustomPainter {
     tp.paint(c, at - Offset(tp.width / 2, tp.height / 2));
   }
 
-  /// A dashed outline of a path.
-  void _dashedPath(Canvas c, Path path, Paint paint) {
-    final dash = 3.0 / zoom, gap = 2.5 / zoom;
-    for (final m in path.computeMetrics()) {
-      var dist = 0.0;
-      while (dist < m.length) {
-        c.drawPath(m.extractPath(dist, math.min(dist + dash, m.length)), paint);
-        dist += dash + gap;
-      }
-    }
-  }
-
   @override
   void paint(Canvas c, Size size) {
     final govs = d.governorates;
@@ -182,9 +170,10 @@ class _EgyptPainter extends CustomPainter {
       for (final r in a['rings'] as List) {
         path.addPath(_ring(r as List), Offset.zero);
       }
-      if (a['kind'] == 'unclaimed') {
-        c.drawPath(path, Paint()..color = Fs.dim.withValues(alpha: 0.18));
-        _dashedPath(c, path, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.0 / zoom..color = Fs.dim);
+      if (a['kind'] == 'plain') {
+        // drawn exactly like the governorates around it
+        c.drawPath(path, Paint()..color = Fs.card2);
+        c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 0.9 / zoom..color = Fs.line..strokeJoin = StrokeJoin.round);
       } else {
         c.drawPath(path, Paint()..color = Fs.warning.withValues(alpha: 0.20));
         c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.0 / zoom..color = Fs.warning.withValues(alpha: 0.85));
@@ -213,9 +202,9 @@ class _EgyptPainter extends CustomPainter {
       _label(c, (isAr ? g['ar'] : g['id']) as String, p(lbl[0] as num, lbl[1] as num), size: 11, color: delta ? Fs.text : Fs.dim);
     }
     for (final a in d.areas) {
+      if (a['kind'] == 'plain') continue; // no label
       final lbl = a['label'] as List;
-      final unclaimed = a['kind'] == 'unclaimed';
-      _label(c, (isAr ? a['ar'] : a['id']) as String, p(lbl[0] as num, (lbl[1] as num) + (unclaimed ? -0.22 : 0)), size: 8, color: unclaimed ? Fs.dim : Fs.warning);
+      _label(c, (isAr ? a['ar'] : a['id']) as String, p(lbl[0] as num, lbl[1] as num), size: 8, color: Fs.warning);
     }
     if (zoom < 2.0) {
       final b = d.deltaBox;

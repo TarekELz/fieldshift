@@ -56,15 +56,14 @@ def named_areas():
     """Two areas at Egypt's southern edge, from Natural Earth's disputed-areas layer (public domain).
     Halayeb Triangle: inside Egypt's official outline (north of the 22nd parallel, which is Egypt's border); the HDX
     governorate polygons already contain it, so it is only drawn and named as its own area.
-    Bir Tawil: south of 22N, claimed by neither Egypt nor Sudan; NOT inside Egypt's outline. Drawn as a separate, dashed,
-    neutral area (kind 'unclaimed') so the border is shown honestly and the area is not painted as a governorate."""
+    Bir Tawil: south of 22N. Added to the map at Tarek's request (2026-11-15), drawn like the other territory: same fill and
+    outline, no label, not selectable (kind 'plain'). Its status is disputed/unclaimed; see decision D12."""
     h_rings, h_label = _ne_disputed("Halayib Triangle")
     b_rings, b_label = _ne_disputed("Bir Tawil")
     return [
         {"id": "Halayeb and Shalateen", "ar": "حلايب وشلاتين", "parent": "Red Sea", "kind": "egypt_administered",
          "aliases": ["حلايب", "شلاتين", "ابو رماد", "halayeb", "halaib", "halayib", "shalateen", "shalatin", "abu ramad"], "label": h_label, "rings": h_rings},
-        {"id": "Bir Tawil", "ar": "بئر طويل", "parent": None, "kind": "unclaimed",
-         "aliases": ["بير طويل", "بئر طويل", "bir tawil", "bir tawil", "birtawil"], "label": b_label, "rings": b_rings},
+        {"id": "Bir Tawil", "ar": "بئر طويل", "parent": None, "kind": "plain", "aliases": [], "label": None, "rings": b_rings},
     ]
 
 
