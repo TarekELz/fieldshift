@@ -1,6 +1,7 @@
 // Welcome screen: black canvas, huge headline, circular go button, Earth horizon drawn in code.
 import 'package:flutter/material.dart';
 
+import 'eyad.dart';
 import 'ui_kit.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -16,13 +17,10 @@ class WelcomeScreen extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(28, 28, 28, 0),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Fs.teal, width: 2), boxShadow: [BoxShadow(color: Fs.teal.withValues(alpha: 0.4), blurRadius: 18)]),
-                child: const Icon(Icons.eco_rounded, color: Fs.teal, size: 30),
-              ),
-              const SizedBox(height: 40),
+              const EyadAvatar(mood: EyadMood.excited, size: 124),
+              const SizedBox(height: 10),
+              const Text('أنا إياد، مساعدك الذكي', style: TextStyle(fontSize: 15, color: Fs.teal, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 26),
               const Text('اعرف أرضك\nقبل ما تزرع', style: TextStyle(fontSize: 46, height: 1.15, fontWeight: FontWeight.w800)),
               const SizedBox(height: 12),
               const Directionality(textDirection: TextDirection.ltr, child: Text('Know your field before you sow', style: TextStyle(fontSize: 16, color: Fs.dim))),

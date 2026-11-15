@@ -23,12 +23,14 @@ class Choice {
 }
 
 class BotMessage {
-  BotMessage(this.ar, {this.en, this.choices = const [], this.result, this.spoken});
+  BotMessage(this.ar, {this.en, this.choices = const [], this.result, this.spoken, this.showMap = false, this.retry = false});
   final String ar;
   final String? en;
   final List<Choice> choices;
   final Comparison? result;
   final String? spoken; // what to read aloud (defaults to ar)
+  final bool showMap; // show the map picker under this message
+  final bool retry; // the assistant did not understand
 }
 
 enum Step { site, crop, summerWhen, wheatWhen, interval, salt, done }
@@ -151,9 +153,10 @@ class Dialogue {
     switch (step) {
       case Step.site:
         return BotMessage(
-          'أهلاً بيك! أنا مساعد فيلد شيفت. هقارن لك بين دورات زراعية ببيانات ناسا. أرضك في أنهي محافظة؟',
-          en: 'Hello! I am the Field Shift assistant. I compare crop rotations using NASA data. Which governorate is your field in?',
+          'أهلاً بيك! أنا إياد، مساعدك الذكي. هقارن لك بين دورات زراعية ببيانات ناسا. أرضك فين؟ اضغط على مكانها في الخريطة، أو قول اسم المحافظة.',
+          en: 'Hello! I am Eyad, your AI assistant. I compare crop rotations using NASA data. Where is your field? Tap its place on the map, or say the governorate.',
           choices: [for (final k in data.siteKeys) Choice(arSite[k]!, k)],
+          showMap: true,
         );
       case Step.crop:
         return BotMessage('إيه المحصول الصيفي اللي بتزرعه دلوقتي؟ رز ولا ذرة ولا قطن؟', en: 'Which summer crop do you grow now: rice, maize or cotton?',
@@ -177,7 +180,7 @@ class Dialogue {
     }
   }
 
-  BotMessage _retry(String ar, String en) => BotMessage(ar, en: en, choices: prompt().choices);
+  BotMessage _retry(String ar, String en) => BotMessage(ar, en: en, choices: prompt().choices, retry: true, showMap: step == Step.site);
 
   /// Handle one answer (typed, spoken or a tapped choice). Returns the bot messages to show, in order.
   List<BotMessage> handle(String raw) {
@@ -234,6 +237,29 @@ class Dialogue {
       case Step.done:
         return [prompt()];
     }
+  }
+
+  /// The farmer tapped the map. Finds the nearest NASA data point, or says the place is outside the Delta.
+  List<BotMessage> handleLocation(double lat, double lon) {
+    if (step != Step.site) {
+      return [BotMessage('عشان تغير المكان، اضغط على "ابدأ من جديد".', en: 'To change the place, tap Start again.')];
+    }
+    if (!insideDelta(data, lat, lon)) {
+      return [
+        BotMessage('المكان ده برا دلتا النيل. أنا دلوقتي بشتغل على الدلتا بس، من الإسكندرية لحد بورسعيد ولحد القاهرة. اضغط على الدلتا من فضلك.',
+            en: 'That place is outside the Nile Delta, which is all I cover for now.', choices: prompt().choices, retry: true, showMap: true),
+      ];
+    }
+    final n = nearestSite(data, lat, lon);
+    site = n.key;
+    step = Step.crop;
+    final km = n.km.round();
+    final far = n.km > 60;
+    return [
+      BotMessage('تمام. أقرب نقطة بيانات من ناسا لمكانك هي ${arSite[n.key]}، على بعد حوالي ${arDigits(km)} كم.${far ? ' المسافة بعيدة شوية، فالأرقام تقريبية.' : ''}',
+          en: 'Nearest NASA data point: ${data.siteName(n.key)}, about $km km away${far ? '; that is far, so the numbers are approximate' : ''}.'),
+      prompt(),
+    ];
   }
 
   Comparison run() {

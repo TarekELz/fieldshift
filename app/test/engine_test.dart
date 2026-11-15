@@ -67,6 +67,57 @@ void main() {
     expect(() => compare(data, 'gharbia', [SequenceInput(name: 'x', crop: 'rice', summerSowing: '05-15', wheatSowing: '11-15')], ece: 3, signs: 'none'), throwsArgumentError);
   });
 
+  group('map picker logic', () {
+    test('a tap near each data point picks that point', () {
+      for (final k in data.siteKeys) {
+        final p = data.siteLatLon(k);
+        final n = nearestSite(data, p.lat + 0.01, p.lon - 0.01);
+        expect(n.key, k);
+        expect(n.km, lessThan(3));
+      }
+    });
+
+    test('tapping Tanta picks the Gharbia data point and moves on to the crop question', () {
+      final d = Dialogue(data);
+      final msgs = d.handleLocation(30.79, 31.00);
+      expect(d.site, 'gharbia');
+      expect(d.step, Step.crop);
+      expect(msgs.first.ar, contains('الغربية'));
+      expect(msgs.first.ar, contains('كم'));
+    });
+
+    test('a tap outside the Delta is refused and the map stays', () {
+      final d = Dialogue(data);
+      final msgs = d.handleLocation(25.70, 32.65); // Luxor
+      expect(d.site, isNull);
+      expect(d.step, Step.site);
+      expect(msgs.first.retry, isTrue);
+      expect(msgs.first.showMap, isTrue);
+      expect(msgs.first.ar, contains('برا دلتا النيل'));
+    });
+
+    test('a map tap after the place is chosen does not change it', () {
+      final d = Dialogue(data);
+      d.handleLocation(30.86, 31.05);
+      final before = d.site;
+      d.handleLocation(31.35, 31.75);
+      expect(d.site, before);
+    });
+
+    test('the opening message introduces Eyad as an AI assistant and shows the map', () {
+      final m = Dialogue(data).opening();
+      expect(m.ar, contains('إياد'));
+      expect(m.ar, contains('الذكي'));
+      expect(m.showMap, isTrue);
+    });
+
+    test('the map file has Egypt, the Nile and both Delta branches', () {
+      final names = (data.egyptMap['water'] as List).map((w) => w['name']).toSet();
+      expect(names, containsAll(['Nile', 'Rosetta Branch', 'Damietta Branch']));
+      expect((data.egyptMap['outline'] as List).first.length, greaterThan(100));
+    });
+  });
+
   group('understanding Arabic answers', () {
     test('governorates, crops, dates, days, salt', () {
       expect(parseSite(normalizeAr('أنا في كفر الشيخ')), 'kafr_el_sheikh');

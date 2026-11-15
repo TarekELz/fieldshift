@@ -4,6 +4,7 @@
 //
 // Supports, and does not replace, the farmer's judgement and local agricultural advice.
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/services.dart' show rootBundle;
 
 const _months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -18,13 +19,13 @@ int roundHalfEven(double x) {
 }
 
 class EngineData {
-  EngineData(this.heat, this.water, this.salt, this.meta, this.climate);
-  final Map<String, dynamic> heat, water, salt, meta, climate;
+  EngineData(this.heat, this.water, this.salt, this.meta, this.climate, this.egyptMap);
+  final Map<String, dynamic> heat, water, salt, meta, climate, egyptMap;
 
   static Future<EngineData> load([AssetBundleLike? bundle]) async {
     Future<Map<String, dynamic>> read(String n) async =>
         jsonDecode(await (bundle?.loadString('assets/data/$n.json') ?? rootBundle.loadString('assets/data/$n.json'))) as Map<String, dynamic>;
-    return EngineData(await read('heat'), await read('water'), await read('salt'), await read('meta'), await read('climate'));
+    return EngineData(await read('heat'), await read('water'), await read('salt'), await read('meta'), await read('climate'), await read('egypt_map'));
   }
 
   List<String> get siteKeys => (meta['sites'] as Map<String, dynamic>).keys.toList();
@@ -35,6 +36,9 @@ class EngineData {
   List<String> summerDates(String site, String crop) => (water[site][crop] as Map<String, dynamic>).keys.toList();
   /// Monthly mean of a NASA POWER variable (T2M_MAX, T2M_MIN, RH2M, WS2M, RAIN_MM_MONTH, ALLSKY_SFC_SW_DWN), 12 values.
   List<double> climateVar(String site, String v) => (climate[site][v] as List).map<double>((e) => (e as num).toDouble()).toList();
+  /// [lon_min, lat_min, lon_max, lat_max] of the Nile Delta, where the six data points apply.
+  List<double> get deltaBox => (meta['delta_bbox'] as List).map<double>((e) => (e as num).toDouble()).toList();
+  ({double lat, double lon}) siteLatLon(String k) => (lat: (meta['sites'][k]['lat'] as num).toDouble(), lon: (meta['sites'][k]['lon'] as num).toDouble());
   List<String> get crops => (meta['crops'] as Map<String, dynamic>).keys.toList();
 }
 
@@ -159,4 +163,39 @@ Comparison compare(EngineData d, String site, List<SequenceInput> seqs, {double?
     ));
   }
   return Comparison(site, d.siteName(site), d.siteCaveat(site), rows, e, assumed, intervalDays);
+}
+
+/// Great-circle distance in km.
+double haversineKm(double lat1, double lon1, double lat2, double lon2) {
+  const r = 6371.0;
+  double rad(double d) => d * 3.141592653589793 / 180;
+  final dLat = rad(lat2 - lat1), dLon = rad(lon2 - lon1);
+  final a = math.pow(math.sin(dLat / 2), 2) + math.cos(rad(lat1)) * math.cos(rad(lat2)) * math.pow(math.sin(dLon / 2), 2);
+  return 2 * r * math.asin(math.sqrt(a));
+}
+
+class NearestSite {
+  NearestSite(this.key, this.km);
+  final String key;
+  final double km;
+}
+
+/// The data point closest to a tapped place. Menoufia and Sharqia are different places but two data points.
+NearestSite nearestSite(EngineData d, double lat, double lon) {
+  String? best;
+  var bestKm = double.infinity;
+  for (final k in d.siteKeys) {
+    final p = d.siteLatLon(k);
+    final km = haversineKm(lat, lon, p.lat, p.lon);
+    if (km < bestKm) {
+      bestKm = km;
+      best = k;
+    }
+  }
+  return NearestSite(best!, bestKm);
+}
+
+bool insideDelta(EngineData d, double lat, double lon) {
+  final b = d.deltaBox;
+  return lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3];
 }

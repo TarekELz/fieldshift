@@ -19,8 +19,9 @@ Confirmed by Tarek on 2026-11-14. The main build (engines, documents, review) is
    - "There is white crust on my soil. What can I grow?"
    - plus the 4 or 5 questions the assistant must ask the farmer first (where is the field, what was the last crop, how often does water come, any salt signs).
    *Put it in:* `app/conversation_ar.md`. *Done when:* a teammate reads it aloud and it sounds natural.
-3. **Decide at the gates** when asked (method G3, scope G4, demo G5, final claims G6).
-4. **Record the 30-second demo** on Sunday (or approve the 7 slides).
+3. **Confirm the avatar** (about 5 minutes). Eyad's pictures are an AI-generated cartoon of a friend's face (the file is named by Gemini). Check with that friend: (a) they agree to being the face of the app, and (b) they are over 18 (the competition does not allow likenesses of people under 18). Until confirmed, do not push or publish `app/assets/eyad/`. The "AI" mark must stay on every use of the pictures (app, slides, video).
+4. **Decide at the gates** when asked (method G3, scope G4, demo G5, final claims G6).
+5. **Record the 30-second demo** on Sunday (or approve the 7 slides).
 
 ## Hussain: data
 1. **Share the big files** (about 20 minutes). Upload the MODIS GeoTIFFs and SRTM tiles you have to a shared drive folder, and write the link in `data/NOTES.md`. Do not put them in git.

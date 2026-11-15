@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'arabic.dart';
 import 'dialogue.dart';
 import 'engine.dart';
+import 'eyad.dart';
+import 'map_picker.dart';
 import 'ui_kit.dart';
 import 'voice.dart';
 import 'welcome.dart';
@@ -75,6 +77,16 @@ class _ChatScreenState extends State<ChatScreen> {
     _start();
   }
 
+  bool _precached = false;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_precached) {
+      _precached = true;
+      precacheEyad(context);
+    }
+  }
+
   Future<void> _start() async {
     try {
       final data = await EngineData.load();
@@ -109,6 +121,36 @@ class _ChatScreenState extends State<ChatScreen> {
     // Read the full result if there is one, otherwise everything the assistant just said.
     final withSpoken = replies.where((r) => r.spoken != null);
     voice.speak(withSpoken.isNotEmpty ? withSpoken.first.spoken! : replies.map((r) => r.ar).join(' '));
+  }
+
+  EyadMood get _mood {
+    if (listening) return EyadMood.main;
+    final bots = items.where((i) => !i.fromUser).toList();
+    if (bots.isEmpty) return EyadMood.excited;
+    final m = bots.last.msg!;
+    if (m.result != null) {
+      if (m.result!.caveat != null) return EyadMood.surprised;
+      return m.result!.rows.any((r) => r.warnings.isNotEmpty) ? EyadMood.worried : EyadMood.success;
+    }
+    if (m.retry) return EyadMood.thoughtful;
+    return items.length <= 1 ? EyadMood.excited : EyadMood.guiding;
+  }
+
+  /// The farmer tapped a place on the map.
+  void _pickLocation(double lat, double lon) {
+    final d = dialogue;
+    if (d == null) return;
+    voice.stopSpeaking();
+    final before = d.site;
+    final replies = d.handleLocation(lat, lon);
+    setState(() {
+      items.add(ChatItem.user(d.site != before && d.site != null ? '📍 ${arSite[d.site]}' : '📍 على الخريطة'));
+      for (final r in replies) {
+        items.add(ChatItem.bot(r));
+      }
+    });
+    _scrollDown();
+    voice.speak(replies.map((r) => r.ar).join(' '));
   }
 
   void _restart() {
@@ -174,17 +216,18 @@ class _ChatScreenState extends State<ChatScreen> {
         padding: const EdgeInsets.fromLTRB(14, 8, 14, 4),
         child: Row(children: [
           RoundButton(icon: Icons.arrow_back_rounded, onTap: widget.onHome, tooltip: 'رجوع'),
-          const Expanded(child: Center(child: Text('فيلد شيفت', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)))),
+          const Expanded(child: Center(child: Text('إياد', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)))),
           RoundButton(icon: Icons.refresh_rounded, onTap: _restart, tooltip: 'ابدأ من جديد'),
         ]),
       );
 
-  /// Ring with progress through the six questions, and a one-line summary of the answers so far.
+  /// Eyad's avatar inside a ring that shows progress through the six questions, with a summary of the answers so far.
   Widget _header() {
     final d = dialogue;
     if (d == null) return const SizedBox(height: 8);
     final answered = [d.site, d.crop, d.summerSowing, d.wheatSowing, d.interval, d.salt].where((e) => e != null).length;
     final parts = <String>[
+      if (d.site != null) arSite[d.site]!,
       if (d.crop != null) '${arCrop[d.crop]}${d.summerSowing != null ? ' ${arDate(d.summerSowing!)}' : ''}',
       if (d.wheatSowing != null) 'قمح ${arDate(d.wheatSowing!)}',
       if (d.interval != null) 'ري كل ${arDigits(d.interval!)} يوم',
@@ -194,13 +237,21 @@ class _ChatScreenState extends State<ChatScreen> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(22), border: Border.all(color: Fs.line)),
       child: Row(children: [
-        RingGauge(progress: answered / 6, size: 70, stroke: 6, child: Text('${arDigits(answered)}/٦', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800))),
+        EyadAvatar(mood: _mood, size: 84, progress: answered / 6),
         const SizedBox(width: 14),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(d.site != null ? arSite[d.site]! : 'مساعد دورتك الزراعية', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 2),
-            Text(parts.isEmpty ? 'جاوب على الأسئلة وأنا هقارن لك' : parts.join(' · '), style: const TextStyle(fontSize: 13, color: Fs.dim, height: 1.3)),
+            Row(children: [
+              const Text('إياد', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
+                decoration: BoxDecoration(color: Fs.teal.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
+                child: const Text('مساعد ذكي AI', style: TextStyle(fontSize: 10, color: Fs.teal)),
+              ),
+            ]),
+            const SizedBox(height: 3),
+            Text(parts.isEmpty ? 'جاوب على الأسئلة وأنا هقارن لك (${arDigits(answered)}/٦)' : '${parts.join(' · ')}  (${arDigits(answered)}/٦)', style: const TextStyle(fontSize: 13, color: Fs.dim, height: 1.3)),
           ]),
         ),
       ]),
@@ -223,6 +274,8 @@ class _ChatScreenState extends State<ChatScreen> {
     final children = <Widget>[
       Text(m.ar, style: const TextStyle(fontSize: 18, height: 1.45)),
       if (m.en != null) Padding(padding: const EdgeInsets.only(top: 3), child: Directionality(textDirection: TextDirection.ltr, child: Text(m.en!, style: const TextStyle(fontSize: 12, color: Fs.dim)))),
+
+      if (m.showMap && isLast) Padding(padding: const EdgeInsets.only(top: 10), child: MapPicker(data: dialogue!.data, onPick: _pickLocation)),
     ];
     final chips = (isLast && m.choices.isNotEmpty)
         ? Padding(

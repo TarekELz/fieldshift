@@ -1,0 +1,8 @@
+Eyad avatar pictures (eyad_*.jpg)
+
+These pictures were generated with an AI image tool (Google Gemini) from a prompt supplied by the team, and
+show a stylized cartoon character. NASA Space Apps rules require AI-generated images to carry a visible
+watermark: the app draws an "AI" mark on every avatar and the words "AI-generated" on the large one.
+Do not remove the mark. Do not use these pictures anywhere without it (slides, video, README).
+The character is a stylized likeness of a person; the team confirms that person's consent and that they are
+over 18 (the competition does not allow likenesses of people under 18).
