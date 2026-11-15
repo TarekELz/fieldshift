@@ -29,6 +29,36 @@ NASA Space Apps Challenge 2026, challenge **"Field Shift: Adapting Farms with NA
 ## Meet Abu Ahmed (a fictional farmer)
 Abu Ahmed grows rice and wheat on a few feddans in Gharbia. He cannot read well, his sons and the TV are his only advice, and canal water comes every ten days. In the Delta that is not unusual: **31.7% of surveyed Delta farmers are illiterate and most get information from their sons or TV (kassem2019)**. He opens the app, taps Gharbia, says he grows rice in mid June and wheat in December, and that the soil has white patches. Eyad tells him, in his own dialect, that late wheat will meet more heat and that cotton tolerates his salt better, and shows why.
 
+## See it working
+Screenshots of the app (Arabic, dark theme; the web preview of the same Flutter code):
+
+<table>
+  <tr>
+    <td width="25%"><img src="docs/screenshots/01_ask.jpg" alt="Eyad asks where the field is, with a map of Egypt"></td>
+    <td width="25%"><img src="docs/screenshots/02_goal.jpg" alt="The goal question: earn more, grow a certain crop at a certain time, or improve what I grow now"></td>
+    <td width="25%"><img src="docs/screenshots/03_earn_more.jpg" alt="Earn more: crops ranked by approximate income per feddan"></td>
+    <td width="25%"><img src="docs/screenshots/04_verdict.jpg" alt="A verdict for each crop"></td>
+  </tr>
+  <tr>
+    <td><b>Ask.</b> Where is the field? Speak, type or tap the map.</td>
+    <td><b>Goal.</b> What the farmer looks for most right now.</td>
+    <td><b>Earn more.</b> Crops ranked by approximate income per feddan, adjusted for the farmer's salt.</td>
+    <td><b>Verdict.</b> One plain verdict per crop, with the reason.</td>
+  </tr>
+  <tr>
+    <td width="25%"><img src="docs/screenshots/05_advice.jpg" alt="Eyad's advice: do X because Y"></td>
+    <td width="25%"><img src="docs/screenshots/06_water.jpg" alt="Water: each option against what the farmer grows now"></td>
+    <td width="25%"><img src="docs/screenshots/07_salt.jpg" alt="Salt: how well each crop tolerates the soil"></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><b>Advice.</b> Do X because Y, in the farmer's own dialect.</td>
+    <td><b>Water.</b> Each option against what he grows now.</td>
+    <td><b>Salt.</b> How well each crop tolerates his soil.</td>
+    <td></td>
+  </tr>
+</table>
+
 <a id="judges-checklist"></a>
 ## Judges' checklist
 | | Requirement | Where |

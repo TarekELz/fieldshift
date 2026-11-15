@@ -24,7 +24,7 @@ String _label(RotationRow r) => r.isExisting ? '${tr('اللي بتزرعه دل
 }
 
 Color _levelColor(int l) => l == 0 ? Fs.ok : (l == 1 ? Fs.warning : Fs.alert);
-String _levelWord(int l) => l == 0 ? tr('مناسب', 'Fine') : (l == 1 ? tr('محتاج تخلي بالك من حاجات بسيطة', 'A few things to watch') : tr('محتاج تخلي بالك من حاجات كتير', 'Many things to watch'));
+String _levelWord(int l) => l == 0 ? tr('تمام', 'Fine') : (l == 1 ? tr('مشكلة بسيطة', 'A small problem') : tr('مشكلة كبيرة', 'A big problem'));
 
 class ResultPager extends StatefulWidget {
   const ResultPager({super.key, required this.c, required this.onRestart, required this.onReadAloud, this.onSpeak});
