@@ -13,9 +13,17 @@ OUT = ROOT / "docs" / "text_review"
 FONTS = ROOT / "app" / "assets" / "fonts"
 
 items = json.loads((OUT / "texts.json").read_text(encoding="utf8"))
-(OUT / "fonts").mkdir(exist_ok=True)
-for f in ("IBMPlexSans-Regular.ttf", "IBMPlexSans-SemiBold.ttf", "IBMPlexSansArabic-Regular.ttf", "IBMPlexSansArabic-SemiBold.ttf"):
-    shutil.copy(FONTS / f, OUT / "fonts" / f)
+import base64
+import hashlib
+
+
+def font_css():
+    """The four IBM Plex faces embedded as data URIs, so the page is one file that works offline on a phone."""
+    out = []
+    for fam, file, w in (("Plex", "IBMPlexSans-Regular.ttf", 400), ("Plex", "IBMPlexSans-SemiBold.ttf", 600), ("PlexAr", "IBMPlexSansArabic-Regular.ttf", 400), ("PlexAr", "IBMPlexSansArabic-SemiBold.ttf", 600)):
+        b64 = base64.b64encode((FONTS / file).read_bytes()).decode()
+        out.append('@font-face { font-family: "%s"; src: url(data:font/ttf;base64,%s); font-weight: %d; }' % (fam, b64, w))
+    return chr(10).join(out)
 
 data = json.dumps(items, ensure_ascii=False).replace("</", "<\\/")
 
@@ -26,10 +34,7 @@ HTML = r"""<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Field Shift: text review</title>
 <style>
-@font-face { font-family: "Plex"; src: url("fonts/IBMPlexSans-Regular.ttf"); font-weight: 400; }
-@font-face { font-family: "Plex"; src: url("fonts/IBMPlexSans-SemiBold.ttf"); font-weight: 600; }
-@font-face { font-family: "PlexAr"; src: url("fonts/IBMPlexSansArabic-Regular.ttf"); font-weight: 400; }
-@font-face { font-family: "PlexAr"; src: url("fonts/IBMPlexSansArabic-SemiBold.ttf"); font-weight: 600; }
+__FONTS__
 :root { --bg:#F3F2EF; --card:#FFFFFF; --muted:#F0EEEA; --line:#E6E3DD; --text:#1B1D1F; --dim:#585D63; --accent:#0067AC; --onaccent:#fff; --ok:#1A7340; --warn:#9A5800; --shadow:0 8px 24px rgba(27,29,31,.10); }
 @media (prefers-color-scheme: dark) { :root { --bg:#0F1113; --card:#1A1D21; --muted:#23272B; --line:#2E3338; --text:#ECEDEE; --dim:#A3A9AF; --accent:#62B2EC; --onaccent:#0B1A26; --ok:#5DC48A; --warn:#E3A33B; --shadow:none; } }
 * { box-sizing: border-box; }
@@ -77,7 +82,9 @@ code { font-family:ui-monospace, monospace; font-size:12px; color:var(--dim); }
 <body>
 <header>
   <h1>Field Shift: text review</h1>
-  <p class="lead">Every piece of text in the app, one question each: <b>is this wording OK?</b> Press <b>Yes</b> to keep it, or <b>No, change it</b> and write what it should say.</p>
+  <p class="lead">Thank you for helping! Field Shift is an app for Nile Delta farmers. Below is every text in it. For each one: <b>is this wording OK?</b> Press <b>Yes</b> to keep it, or <b>No, change it</b> and write what it should say. It takes about 10 to 15 minutes, and you can stop and come back.</p>
+  <p class="lead" dir="rtl" style="font-family:PlexAr,sans-serif">شكراً لمساعدتك! ده تطبيق لمزارعي دلتا النيل. تحت كل النصوص اللي فيه. لكل نص اضغط <b>Yes</b> لو الكلام مظبوط، أو <b>No, change it</b> واكتب الصيغة اللي تحبها.</p>
+  <p class="lead"><b>Your name / اسمك:</b> <input id="who" placeholder="e.g. Youssef" style="font:inherit;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text)"></p>
   <p class="lead">Words in <span class="ph">{dashed boxes}</span> are numbers and names the app fills in. Keep them where they make sense. Your answers save in this browser as you go.</p>
 </header>
 <div class="bar"><div class="bar-in">
@@ -88,8 +95,8 @@ code { font-family:ui-monospace, monospace; font-size:12px; color:var(--dim); }
 <main>
   <div class="sum">
     <b>When you finish</b>
-    <p class="note">Press <b>Download answers</b> (a file called <code>text_review_answers.json</code> goes to your Downloads), or <b>Copy answers</b> and paste them to me in the chat. Then I apply every change in the app and rebuild.</p>
-    <button class="on" id="dl">Download answers</button><button id="cp">Copy answers</button><button class="ghost" id="reset">Clear all answers</button>
+    <p class="note">Write your name at the top, then press <b>Send my answers</b> and pick WhatsApp or Telegram to send them to Tarek. If that does not open, press <b>Download answers</b> and send the file, or <b>Copy answers</b> and paste them in a message.</p>
+    <button class="on" id="send">Send my answers</button><button id="dl">Download answers</button><button id="cp">Copy answers</button><button class="ghost" id="reset">Clear all answers</button>
     <p class="note" id="msg"></p>
   </div>
 </main>
@@ -162,14 +169,30 @@ function exportData() {
       en: it.en && { file: it.en.file, line: it.en.line, original: it.en.text, raw: it.en.raw, new: a.status === "no" && a.en !== undefined ? a.en : null },
       note: a.note || "" });
   }
-  return { exported: new Date().toISOString(), total: ITEMS.length, approved: out.filter((o) => o.status === "yes").length, to_change: out.filter((o) => o.status === "no").length, answers: out };
+  return { version: "__VERSION__", reviewer: ($("#who").value || "").trim(), exported: new Date().toISOString(), total: ITEMS.length, approved: out.filter((o) => o.status === "yes").length, to_change: out.filter((o) => o.status === "no").length, answers: out };
 }
+const NAMEKEY = "fs_text_review_name";
+try { $("#who").value = localStorage.getItem(NAMEKEY) || ""; } catch (e) {}
+$("#who").oninput = () => { try { localStorage.setItem(NAMEKEY, $("#who").value); } catch (e) {} };
+function needName() { if (!($("#who").value || "").trim()) { $("#msg").textContent = "Please write your name at the top first."; $("#who").focus(); window.scrollTo(0, 0); return true; } return false; }
+function fname() { return "text_review_" + ($("#who").value || "friend").trim().replace(/[^A-Za-z0-9؀-ۿ]+/g, "_") + ".json"; }
+function asFile() { return new File([JSON.stringify(exportData(), null, 1)], fname(), { type: "application/json" }); }
+$("#send").onclick = async () => {
+  if (needName()) return;
+  const f = asFile();
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: "Field Shift text review", text: "My answers for the Field Shift text review" }); $("#msg").textContent = "Thank you!"; return; }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  $("#dl").click();
+  $("#msg").textContent = "Your phone cannot share from here, so the file " + fname() + " was downloaded. Please send that file to Tarek.";
+};
 $("#dl").onclick = () => {
-  const blob = new Blob([JSON.stringify(exportData(), null, 1)], { type: "application/json" });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "text_review_answers.json"; a.click();
-  $("#msg").textContent = "Downloaded text_review_answers.json to your Downloads folder.";
+  if (needName()) return;
+  const a = document.createElement("a"); a.href = URL.createObjectURL(asFile()); a.download = fname(); a.click();
+  $("#msg").textContent = "Downloaded " + fname() + ". Send that file to Tarek.";
 };
 $("#cp").onclick = async () => {
+  if (needName()) return;
   try { await navigator.clipboard.writeText(JSON.stringify(exportData())); $("#msg").textContent = "Copied. Paste it into the chat."; }
   catch (e) { $("#msg").textContent = "Could not copy automatically; use Download instead."; }
 };
@@ -179,5 +202,5 @@ filters(); render();
 </body>
 </html>
 """
-(OUT / "index.html").write_text(HTML.replace("__DATA__", data), encoding="utf8")
+(OUT / "index.html").write_text(HTML.replace("__FONTS__", font_css()).replace("__DATA__", data).replace("__VERSION__", hashlib.sha1((OUT / "texts.json").read_bytes()).hexdigest()[:10]), encoding="utf8")
 print("wrote", (OUT / "index.html").stat().st_size // 1024, "KB with", len(items), "texts")

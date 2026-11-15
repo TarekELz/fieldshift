@@ -34,3 +34,6 @@ build_apk.log
 
 # copied from app/assets/fonts by scripts/make_text_review.py
 docs/text_review/fonts/
+
+# friends' answers and the decision page (names and opinions)
+docs/text_review_answers/
