@@ -50,6 +50,21 @@ Set<String> _spokenSentences(EngineData data) {
       add(e.handle('xyz'));
     }
   }
+  // lines said only when something goes wrong or the farmer asks for something else: a place outside the Delta, an uncovered crop, a date that is not understood, restart
+  const edge = [
+    ['الجيزة'], ['حلايب'], ['المنصورة'], ['الدقهلية'], ['كفر شكر'], ['الشيخ زايد'],
+    ['الغربية', 'ضمان ربح'], ['الغربية', 'pro'],
+    ['الغربية', 'improve', 'ذرة رفيعة'], ['الغربية', 'improve', 'فول سوداني'], ['الغربية', 'improve', 'rice', 'xyz'], ['الغربية', 'improve', 'rice', '06-15', 'xyz'],
+    ['الغربية', 'improve', 'rice', '06-15', '12-01', 'xyz'],
+    ['الغربية', 'plan', 'فول سوداني'], ['الغربية', 'plan', 'بصل', 'xyz'], ['الغربية', 'money', 'xyz'],
+    ['الغربية', 'improve', 'rice', '06-15', '12-01', '10', 'patches', 'restart'],
+  ];
+  for (final inputs in edge) {
+    final d = Dialogue(data)..opening();
+    for (final i in inputs) {
+      add(d.handle(i));
+    }
+  }
   return out;
 }
 
