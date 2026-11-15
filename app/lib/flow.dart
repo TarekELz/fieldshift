@@ -151,17 +151,9 @@ class _FlowScreenState extends State<FlowScreen> {
     });
   }
 
-  EyadMood get _mood {
-    if (listening) return EyadMood.main;
-    final m = current;
-    if (m == null) return EyadMood.main;
-    if (m.result != null) {
-      if (m.result!.caveatKind == 'sea') return EyadMood.surprised;
-      return m.result!.rows.any((r) => r.warnings.isNotEmpty) ? EyadMood.worried : EyadMood.success;
-    }
-    if (m.retry) return EyadMood.thoughtful;
-    return dialogue?.step == Step.site ? EyadMood.main : EyadMood.guiding;
-  }
+  /// Tarek chose the calm pose for every screen (2026-11-15). The other poses stay in the app's assets and in EyadMood, unused,
+  /// in case a screen should react again later.
+  EyadMood get _mood => EyadMood.main;
 
   @override
   Widget build(BuildContext context) {
