@@ -13,6 +13,7 @@ import 'engine.dart';
 import 'eyad.dart';
 import 'i18n.dart';
 import 'map_picker.dart';
+import 'stt_locale.dart';
 import 'ui_kit.dart';
 import 'voice.dart';
 
@@ -198,6 +199,14 @@ class _FlowScreenState extends State<FlowScreen> {
       setState(() => partial = text);
       if (isFinal) {
         setState(() => listening = false);
+        // Arabic mode but the phone heard English words ("kab bread" for كفر الشيخ): its speech service has no Arabic. Do not act on the wrong words.
+        if (heardInWrongScript(text, arabic: isAr)) {
+          setState(() => partial = '');
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              duration: const Duration(seconds: 8),
+              content: Text('الموبايل ده سمع كلامك بالإنجليزي. اكتب ردك أو اختار من الأزرار، أو ضيف اللغة العربية للكتابة بالصوت من إعدادات الموبايل.')));
+          return;
+        }
         if (text.trim().isNotEmpty) send(text);
       }
     });
@@ -276,7 +285,7 @@ class _FlowScreenState extends State<FlowScreen> {
         valueListenable: voice.speaking,
         builder: (context, speaking, _) => GestureDetector(
           onTap: _readAgain, // tap Eyad to hear the question again
-          onLongPress: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${tr('آخر صوت', 'Last voice')}: ${voice.lastNote}'), duration: const Duration(seconds: 6))),
+          onLongPress: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${tr('آخر صوت', 'Last voice')}: ${voice.lastNote}${kVoiceDiagnostics ? '\n${voice.sttDiag}' : ''}'), duration: const Duration(seconds: 6))),
           child: EyadAvatar(mood: _mood, size: kb ? 56 : (compact ? 84 : 148), progress: done / 6, active: speaking || listening),
         ),
       ),
