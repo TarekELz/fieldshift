@@ -68,12 +68,13 @@ class CropBook {
 
   /// The crop named in a (normalised) phrase: the longest matching alias wins, so "ذرة رفيعة" is sorghum and "ذرة" alone is maize.
   CropInfo? parse(String n) {
+    if (notCoveredCrop(n) != null) return null; // peanut, sweet potato: not on the list, never guessed as faba bean or potato
     CropInfo? best;
     var bestLen = 0;
     for (final c in all) {
       for (final a in c.aliases) {
         final na = normalizeAr(a);
-        if (na.length >= 2 && na.length > bestLen && n.contains(na)) {
+        if (na.length >= 2 && na.length > bestLen && hasWord(n, na)) {
           best = c;
           bestLen = na.length;
         }
@@ -250,8 +251,8 @@ class GoalView extends StatelessWidget {
 String goalSpoken(Object r, CropBook book) {
   if (r is MoneyResult) {
     final w = r.groups['winter']!.first, s = r.groups['summer']!.first;
-    return 'دي أكتر اختيارات بتجيب دخل للفدان من متوسط مصر. في الشتا ${book.info(w.crop)!.ar} حوالي ${nd(w.grossEgp)} جنيه، وفي الصيف ${book.info(s.crop)!.ar} حوالي ${nd(s.grossEgp)} جنيه. ده إجمالي قبل التكاليف، وتقدير مش وعد.';
+    return 'أكتر اختيار دخل في الشتا ${book.info(w.crop)!.ar}، وفي الصيف ${book.info(s.crop)!.ar}. الأرقام قدامك على الشاشة.';
   }
   final p = r as PlanResult;
-  return 'خطة ${p.crop.ar}. الدخل التقريبي للفدان حوالي ${nd(p.gross.grossEgp)} جنيه، قبل التكاليف، وتقدير مش وعد.';
+  return 'خطة ${p.crop.ar}. الدخل التقريبي حوالي ${nd(p.gross.grossEgp)} جنيه للفدان، قبل التكاليف.';
 }

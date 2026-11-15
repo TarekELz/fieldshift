@@ -5,6 +5,7 @@ import 'package:flutter/material.dart' hide Step;
 
 import 'dialogue.dart';
 import 'goals.dart';
+import 'pro_view.dart';
 import 'result_pages.dart';
 import 'terms.dart';
 import 'interpret.dart';
@@ -44,6 +45,7 @@ class _FlowScreenState extends State<FlowScreen> {
     voice.muted = !widget.speakReplies;
     lang.addListener(_onLang);
     voice.listeningNow.addListener(_onListenEnd);
+    voice.micProblem.addListener(_onMicProblem);
     _start();
   }
 
@@ -51,6 +53,7 @@ class _FlowScreenState extends State<FlowScreen> {
   void dispose() {
     lang.removeListener(_onLang);
     voice.listeningNow.removeListener(_onListenEnd);
+    voice.micProblem.removeListener(_onMicProblem);
     voice.stopSpeaking(); // pressing Back must not leave Eyad talking
     voice.stopListening();
     input.dispose();
@@ -70,6 +73,17 @@ class _FlowScreenState extends State<FlowScreen> {
 
   void _onListenEnd() {
     if (!voice.listeningNow.value && listening && mounted) setState(() => listening = false); // a timeout or an error ends the listening screen too
+  }
+
+  void _onMicProblem() {
+    final p = voice.micProblem.value;
+    if (p == null || !mounted) return;
+    voice.micProblem.value = null;
+    final perm = p.contains('permission');
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(perm
+            ? tr('الميكروفون ممنوع. اسمح للتطبيق من إعدادات الموبايل، أو اكتب.', 'The microphone is blocked. Allow it in the phone settings, or type.')
+            : tr('الميكروفون مش شغال دلوقتي ($p). جرّب تاني أو اكتب.', 'The microphone did not work ($p). Try again or type.'))));
   }
 
   void _onLang() {
@@ -108,9 +122,7 @@ class _FlowScreenState extends State<FlowScreen> {
     });
     input.clear();
     if (typing) focus.requestFocus(); // keep the keyboard open between typed answers
-    voice.speak(main.result != null
-        ? spokenN(main.result!)
-        : (main.goalResult != null && isAr ? (main.spoken ?? msgText(main)) : '${n != null ? '${msgText(n)} ' : ''}${msgText(main)}'));
+    if (main.result == null) voice.speak(main.goalResult != null && isAr ? (main.spoken ?? msgText(main)) : '${n != null ? '${msgText(n)} ' : ''}${msgText(main)}');
   }
 
   Future<void> send(String text) async {
@@ -118,6 +130,10 @@ class _FlowScreenState extends State<FlowScreen> {
     if (d == null || text.trim().isEmpty) return;
     voice.stopSpeaking();
     var replies = d.handle(text);
+    if (replies.last.openPro) {
+      if (mounted) await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const ProView()));
+      return;
+    }
     // an answer that is not among the options: the AI says which option it means (it sees only this short phrase)
     final opts = replies.last.retry ? interpretOptions(d) : null;
     if (opts != null && !RegExp(r'^[a-z_0-9-]+$').hasMatch(text.trim())) {
@@ -168,7 +184,8 @@ class _FlowScreenState extends State<FlowScreen> {
       setState(() => listening = false);
       return;
     }
-    if (!voice.canListen) {
+    if (!voice.canListen && !await voice.ensureMic()) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(tr('الميكروفون مش شغال على الموبايل ده. اكتب أو اختار من الأزرار.', 'The microphone is not available on this phone. Type or tap an answer.'))));
       return;

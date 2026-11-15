@@ -120,6 +120,9 @@ class Voice {
   List<LocaleName> _sttLocales = [];
   bool arabic = true;
 
+  /// The last recognition problem (for example a denied permission or no speech service), shown to the farmer once; null when none.
+  final ValueNotifier<String?> micProblem = ValueNotifier<String?>(null);
+
   Future<void> init() async {
     try {
       sttReady = await _stt.initialize(
@@ -127,6 +130,8 @@ class Voice {
           lastError = e.errorMsg;
           listening = false;
           listeningNow.value = false;
+          // 'error_no_match' and 'error_speech_timeout' only mean he said nothing we could hear; anything else is a real problem
+          if (e.errorMsg != 'error_no_match' && e.errorMsg != 'error_speech_timeout') micProblem.value = e.errorMsg;
         },
         onStatus: (s) {
           if (s == 'done' || s == 'notListening') {
@@ -141,8 +146,9 @@ class Voice {
         String norm(String s) => s.toLowerCase().replaceAll('-', '_');
         final eg = locales.where((l) => norm(l.localeId) == 'ar_eg');
         final ar = locales.where((l) => norm(l.localeId).startsWith('ar'));
+        // no Arabic entry in the list: still listen with the phone's own language rather than refuse (many phones list locales late or not at all)
         sttLocale = eg.isNotEmpty ? eg.first.localeId : (ar.isNotEmpty ? ar.first.localeId : null);
-        if (sttLocale == null) lastError = 'no Arabic speech recognition locale on this phone';
+        if (sttLocale == null) lastError = 'no Arabic speech recognition locale listed on this phone; using the default';
       }
     } catch (e) {
       sttReady = false;
@@ -191,7 +197,15 @@ class Voice {
     }
   }
 
-  bool get canListen => sttReady && sttLocale != null;
+  bool get canListen => sttReady;
+
+  /// Asks again for the permission and the speech service when the first attempt failed (the farmer may have allowed the microphone after the app started).
+  Future<bool> ensureMic() async {
+    if (sttReady) return true;
+    await init();
+    if (!sttReady) micProblem.value = lastError ?? 'speech recognition is not available';
+    return sttReady;
+  }
 
   /// Start listening; [onResult] gets partial text and, once, the final text.
   Future<void> listen(void Function(String text, bool isFinal) onResult) async {

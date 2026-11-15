@@ -8,9 +8,12 @@ import 'i18n.dart';
 import 'ui_kit.dart';
 
 class AdviceCard extends StatefulWidget {
-  const AdviceCard({super.key, required this.c, this.onSpeak});
+  const AdviceCard({super.key, required this.c, this.onSpeak, this.autoSpeak = false, this.onText});
   final Comparison c;
   final void Function(String text)? onSpeak;
+  /// Speak the main advice once its final text is ready (after the AI rewording, or at once when there is none).
+  final bool autoSpeak;
+  final void Function(String text)? onText;
   @override
   State<AdviceCard> createState() => _AdviceCardState();
 }
@@ -19,6 +22,17 @@ class _AdviceCardState extends State<AdviceCard> {
   AdviceResult? res;
   bool thinking = false;
   int _run = 0;
+  bool _spoke = false;
+
+  void _ready() {
+    final r = res;
+    if (r == null) return;
+    widget.onText?.call(r.text);
+    if (widget.autoSpeak && !_spoke) {
+      _spoke = true;
+      widget.onSpeak?.call(r.text);
+    }
+  }
 
   @override
   void initState() {
@@ -48,8 +62,12 @@ class _AdviceCardState extends State<AdviceCard> {
       res = quick;
       thinking = false;
     });
+    widget.onText?.call(quick.text);
     final keys = await geminiKeys();
-    if (keys.isEmpty) return;
+    if (keys.isEmpty) {
+      _ready();
+      return;
+    }
     setState(() => thinking = true);
     final smart = await adviceFor(a, widget.c, keys: keys);
     if (!mounted || run != _run) return;
@@ -57,6 +75,7 @@ class _AdviceCardState extends State<AdviceCard> {
       if (smart.ai) res = smart;
       thinking = false;
     });
+    _ready();
   }
 
   @override

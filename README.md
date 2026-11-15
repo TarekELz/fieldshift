@@ -59,6 +59,24 @@ Screenshots of the app (Arabic, dark theme; the web preview of the same Flutter 
   </tr>
 </table>
 
+### Professional view (decision D21)
+For agronomists, extension officers and researchers, the app has a second way in: the fourth answer to the goal question, or the "Professional view" button on the first screen. It shows the numbers behind the verdicts, not a chat answer. The same engines, no AI text.
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/screenshots/08_pro_climate_heat.jpg" alt="Professional view: NASA POWER climate and wheat heat-stress days for one place"></td>
+    <td width="33%"><img src="docs/screenshots/09_pro_heat_water.jpg" alt="Professional view: heat days by sowing date and crop water need"></td>
+    <td width="33%"><img src="docs/screenshots/10_pro_compare.jpg" alt="Professional view: regional comparison of the 19 NASA data points on a map and in a ranking"></td>
+  </tr>
+  <tr>
+    <td><b>Place.</b> NASA POWER climate, wheat heat days by sowing date.</td>
+    <td><b>Water and salt.</b> FAO-56 crop water need and FAO-29 salt tolerance, with the inputs listed.</td>
+    <td><b>Compare.</b> Rank the 19 data points on one measure (hot days, water need, season fit); copy the table as CSV.</td>
+  </tr>
+</table>
+
+Its Method tab names every source and what each number does and does not mean.
+
 <a id="judges-checklist"></a>
 ## Judges' checklist
 | | Requirement | Where |

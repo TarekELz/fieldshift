@@ -38,9 +38,49 @@ class ResultPager extends StatefulWidget {
 class _ResultPagerState extends State<ResultPager> {
   final _ctl = PageController();
   int page = 0;
+  String _adviceText = ''; // what the advice card shows now, so the speaker button can read it
 
   Comparison get c => widget.c;
   static const _count = 5;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _speakPage(0)); // Eyad says one short line per page, never the whole result at once
+  }
+
+  void _speakPage(int p) {
+    final t = _spoken(p);
+    if (t.isNotEmpty) widget.onSpeak?.call(t); // the advice page speaks itself when its final text is ready
+  }
+
+  /// One short line for a page (the first row only; the rest is on the screen).
+  String _spoken(int p) {
+    switch (p) {
+      case 0:
+        final r = c.rows.first, v = verdictOf(r);
+        return '${_levelWord(v.level)}. ${v.reason}.';
+      case 1:
+        return _adviceText;
+      case 2:
+        final alt = c.rows.length > 1 ? c.rows[1] : null;
+        if (alt == null) return tr('احتياج المية للمحصول ده حوالي ${nd(c.rows.first.etc)} مم في الموسم.', 'This crop needs about ${c.rows.first.etc} mm of water in the season.');
+        final pct = ((alt.ratio - 1).abs() * 100).round();
+        if (pct == 0) return tr('${cropN(alt.input.crop)} محتاج نفس مية اللي بتزرعه دلوقتي.', '${cropN(alt.input.crop)} needs the same water as what you grow now.');
+        return alt.ratio < 1
+            ? tr('${cropN(alt.input.crop)} محتاج مية أقل بـ${nd(pct)} في المية.', '${cropN(alt.input.crop)} needs $pct percent less water.')
+            : tr('${cropN(alt.input.crop)} محتاج مية أكتر بـ${nd(pct)} في المية.', '${cropN(alt.input.crop)} needs $pct percent more water.');
+      case 3:
+        final r = c.rows.first, e = r.extra['32'] ?? 0;
+        final base = tr('القمح هيقابل حوالي ${daysN(r.heatMedian.round())} حر وقت امتلاء الحبوب', 'Wheat meets about ${daysN(r.heatMedian.round())} of heat while filling grain');
+        if (e == 0) return '$base.';
+        return e > 0 ? tr('$base، أكتر بـ${daysN(e)} من زراعته في ١٥ نوفمبر.', '$base, ${daysN(e)} more than sowing on 15 November.') : tr('$base، أقل بـ${daysN(-e)} من زراعته في ١٥ نوفمبر.', '$base, ${daysN(-e)} fewer than sowing on 15 November.');
+      default:
+        final r = c.rows.first;
+        if (r.saltSummer == null) return tr('مقلتليش على الملوحة.', 'I was not told about salt.');
+        return tr('${cropN(r.input.crop)}: ${saltN(r.saltSummer!.status)}.', '${cropN(r.input.crop)}: ${saltN(r.saltSummer!.status)}.');
+    }
+  }
 
   @override
   void dispose() {
@@ -60,13 +100,16 @@ class _ResultPagerState extends State<ResultPager> {
         padding: const EdgeInsets.fromLTRB(20, 4, 12, 0),
         child: Row(children: [
           Expanded(child: Text('${tr('المقارنة لـ', 'For')} ${siteN(c.site)}', style: TextStyle(fontSize: 14, color: Fs.dim))),
-          IconButton(onPressed: widget.onReadAloud, icon: Icon(Icons.volume_up_rounded, color: Fs.accent), tooltip: tr('اسمع', 'Listen')),
+          IconButton(onPressed: () => _speakPage(page), icon: Icon(Icons.volume_up_rounded, color: Fs.accent), tooltip: tr('اسمع', 'Listen')),
         ]),
       ),
       Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Align(alignment: AlignmentDirectional.centerStart, child: Text(_title, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w600)))),
       const SizedBox(height: 8),
       Expanded(
-        child: PageView(controller: _ctl, onPageChanged: (i) => setState(() => page = i), children: [_verdict(), _advice(), _water(), _heat(), _salt()]),
+        child: PageView(controller: _ctl, onPageChanged: (i) {
+          setState(() => page = i);
+          if (i != 1) _speakPage(i);
+        }, children: [_verdict(), _advice(), _water(), _heat(), _salt()]),
       ),
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
@@ -133,7 +176,7 @@ class _ResultPagerState extends State<ResultPager> {
         for (final r in c.rows) _small('${_label(r)}: ${tr('زراعة', 'sown')} ${dateN(r.input.summerSowing)}, ${tr('حصاد تقريباً', 'harvest about')} ${harvestN(r.harvest)}. ${cropN('wheat')}: ${dateN(r.input.wheatSowing)}${r.isExisting ? '' : tr(' (افتراض)', ' (assumed)')}'),
       ]);
 
-  Widget _advice() => ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), children: [AdviceCard(c: c, onSpeak: widget.onSpeak)]);
+  Widget _advice() => ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), children: [AdviceCard(c: c, onSpeak: widget.onSpeak, autoSpeak: true, onText: (t) => _adviceText = t)]);
 
   Widget _water() {
     final base = c.rows.first;

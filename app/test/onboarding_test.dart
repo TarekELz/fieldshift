@@ -1,4 +1,5 @@
 // The setup flow has three screens and one real setting: whether Eyad reads replies aloud.
+import 'package:field_shift/i18n.dart';
 import 'package:field_shift/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -34,7 +35,7 @@ void main() {
     _phone(t);
     bool? result;
     await t.pumpWidget(_app((v) => result = v));
-    await t.tap(find.byType(TextButton));
+    await t.tap(find.widgetWithText(TextButton, tr('تخطّي', 'Skip')));
     expect(result, isTrue);
     result = null;
     await t.pumpWidget(_app((v) => result = v));

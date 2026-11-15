@@ -23,7 +23,7 @@ FIX = ROOT / "app" / "test" / "fixtures"
 NAMED = ["gharbia", "kafr_el_sheikh", "beheira", "menoufia", "sharqia", "damietta", "dakahlia"]
 _CELLS = rotation.load_sites()
 SITES = NAMED + sorted(k for k in _CELLS if k.startswith("cell_"))  # the named sites first, then the extra NASA cells (decision D15)
-SOWING_WINDOWS = {"rice": ((5, 1), (6, 30)), "maize": ((4, 15), (5, 31)), "cotton": ((3, 15), (5, 15))}
+SOWING_WINDOWS = {"rice": ((5, 1), (6, 30)), "maize": ((4, 15), (6, 25)), "cotton": ((3, 15), (5, 15))}
 
 
 GRID_DAYS = (1, 10, 15, 20, 25)  # early, 10th, middle, 20th, late month: how a farmer says a date
