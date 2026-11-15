@@ -70,7 +70,7 @@ class _OnboardingState extends State<Onboarding> {
         const SizedBox(height: 22),
         const Text('إياد بيحسبلك،\nوإنت اللي بتقرر', textAlign: TextAlign.center, style: TextStyle(fontSize: 34, height: 1.2, fontWeight: FontWeight.w800)),
         const SizedBox(height: 10),
-        const Text('ميعاد القمح والمية والملوحة\nمن بيانات ناسا في دلتا النيل', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, height: 1.5, color: Colors.white70)),
+        const Text('الطقس من بيانات ناسا،\nوالملوحة من جداول الفاو وكلامك', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, height: 1.5, color: Colors.white70)),
         const Directionality(textDirection: TextDirection.ltr, child: Padding(padding: EdgeInsets.only(top: 6), child: Text('Know your field before you sow', style: TextStyle(fontSize: 12, color: Fs.dim)))),
         const Spacer(flex: 3),
         Row(children: [
@@ -82,9 +82,9 @@ class _OnboardingState extends State<Onboarding> {
   // 2. what he does
   Widget _what() {
     const cards = [
-      (Icons.grass_rounded, 'ميعاد زراعة القمح', 'الحرارة وقت امتلاء الحبوب لكل ميعاد'),
+      (Icons.grass_rounded, 'ميعاد زراعة القمح', 'حرارة ناسا وقت امتلاء الحبوب لكل ميعاد'),
       (Icons.water_drop_rounded, 'احتياج المية', 'محاصيل الصيف قصاد دورتك'),
-      (Icons.grain_rounded, 'ملوحة الأرض', 'المحصول هيستحمل أرضك ولا لأ'),
+      (Icons.grain_rounded, 'ملوحة الأرض', 'من جداول الفاو وكلامك عن أرضك'),
       (Icons.compare_arrows_rounded, 'مقارنة دورات', 'دورتك الحالية قصاد بديلين'),
     ];
     return Column(children: [
@@ -93,7 +93,7 @@ class _OnboardingState extends State<Onboarding> {
       const SizedBox(height: 10),
       const Text('إياد هيساعدك في إيه؟', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
       const SizedBox(height: 6),
-      const Text('من بيانات ناسا وجداول الفاو', style: TextStyle(fontSize: 14, color: Fs.dim)),
+      const Text('طقس ناسا وجداول الفاو', style: TextStyle(fontSize: 14, color: Fs.dim)),
       const SizedBox(height: 18),
       Expanded(
         child: GridView.count(

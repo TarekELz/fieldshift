@@ -31,6 +31,8 @@ class EngineData {
   List<String> get siteKeys => (meta['sites'] as Map<String, dynamic>).keys.toList();
   String siteName(String k) => meta['sites'][k]['name_en'] as String;
   String? siteCaveat(String k) => meta['sites'][k]['caveat'] as String?;
+  String? siteCaveatKind(String k) => meta['sites'][k]['caveat_kind'] as String?; // 'sea' or 'shared_cell'
+  String? siteSharesCellWith(String k) => meta['sites'][k]['shares_cell_with'] as String?;
   List<String> get notModelled => (meta['not_modelled'] as List).cast<String>();
   List<String> wheatDates(String site) => (heat[site] as Map<String, dynamic>).keys.toList();
   List<String> summerDates(String site, String crop) => (water[site][crop] as Map<String, dynamic>).keys.toList();
@@ -80,9 +82,9 @@ class RotationRow {
 }
 
 class Comparison {
-  Comparison(this.site, this.siteName, this.caveat, this.rows, this.eceUsed, this.saltBasisAssumed, this.intervalDays);
+  Comparison(this.site, this.siteName, this.caveat, this.rows, this.eceUsed, this.saltBasisAssumed, this.intervalDays, {this.caveatKind, this.sharesCellWith});
   final String site, siteName;
-  final String? caveat;
+  final String? caveat, caveatKind, sharesCellWith;
   final List<RotationRow> rows;
   final double? eceUsed;
   final bool saltBasisAssumed; // true when ECe came from sign classes (a team assumption)
@@ -163,7 +165,7 @@ Comparison compare(EngineData d, String site, List<SequenceInput> seqs, {double?
       warnings: warns, riceFloor: s.crop == 'rice',
     ));
   }
-  return Comparison(site, d.siteName(site), d.siteCaveat(site), rows, e, assumed, intervalDays);
+  return Comparison(site, d.siteName(site), d.siteCaveat(site), rows, e, assumed, intervalDays, caveatKind: d.siteCaveatKind(site), sharesCellWith: d.siteSharesCellWith(site));
 }
 
 /// Great-circle distance in km.

@@ -6,7 +6,7 @@ nasa_power_daily:
   access: open, no account
   variables: [T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, ALLSKY_SFC_SW_DWN, RH2M, WS2M, GWETTOP, GWETROOT, GWETPROF, EVPTRNS]
   resolution: ~0.5 x 0.625 deg, daily
-  coverage: 1990-01-01..2025-12-31 at Mead and at 30.79N 31.00E (Tanta city point; to be moved)
+  coverage: 1990-01-01..2025-12-31 at Mead and at 30.79N 31.00E (Tanta city point, an early test; the six Delta points of models/sites.yaml are in data/raw/power_sites)
   license: NASA open data
   citation: NASA Langley Research Center POWER Project
   status: on disk, verified (13,149 days, no missing values)
@@ -162,7 +162,7 @@ modis_delta_rasters:
   access: open, no account; script src/fieldshift/ingest/fetch_modis_delta.py
   layers: [250m_16_days_NDVI, 250m_16_days_EVI, 250m_16_days_pixel_reliability]
   resolution: 250 m (231.66 m sinusoidal grid), 16-day
-  coverage: 254 dates, 2014-12-19..2025-12-19, clipped to the Delta box 29.64-32.49E, 30.21-31.67N (same granules as the AppEEARS request)
+  coverage: "242 of 254 dates on disk (2014-12-19..2025-12-19 expected). Missing, HTTP 404 from the Planetary Computer mirror: 2023049, 2024225, 2024353, 2025145 and nine consecutive composites 2025193-2025305 (July-October 2025). Clipped to the Delta box 29.64-32.49E, 30.21-31.67N (same granules as the AppEEARS request)"
   format: GeoTIFF, MODIS sinusoidal projection (not reprojected), NDVI/EVI int16 scale 0.0001, nodata -3000
   status: on disk in data/raw/modis_delta_tif/ (not in git)
   check: for 2014-12-19 the NDVI mean inside the box is 0.4882 (AppEEARS statistics file 0.4879), median 0.5597 (0.5596)
@@ -182,7 +182,7 @@ map_sources_candidates:
     license: CC BY-IGO
     access: open; GeoJSON zip 16.9 MB at data.humdata.org (resource list read through the HDX API on 2026-11-15)
     caveats: 23 English names map to several Arabic names at admin 2
-    status: candidate, not used yet; best official-source option for governorates (admin 1) and markaz/qism (admin 2)
+    status: admin 1 USED in the app since 2026-11-15 (see egypt_map); admin 2 (markaz/qism) available but not used
   geoboundaries_egy:
     source: geoBoundaries gbOpen EGY. ADM1 (27 units, from OpenStreetMap, ODbL, 2017); ADM2 (365 units, from OCHA/CAPMAS, CC BY 3.0 IGO, 2020)
     status: candidate

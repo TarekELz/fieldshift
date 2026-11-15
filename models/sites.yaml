@@ -14,6 +14,7 @@ sites:
     lat: 31.35
     lon: 31.75
     why: saline coastal land; teammate's NDVI point damietta3
+    caveat_kind: sea
     weather_caveat: NASA POWER cell is mostly sea (July Tmax about 30 C, zero heat days at every sowing date). Do not use for heat claims or show as low risk.
     evidence: [hagage2024]
   beheira:
@@ -33,6 +34,8 @@ sites:
     lat: 30.54
     lon: 30.95
     why: small old-land holdings
+    caveat_kind: shared_cell
+    shares_cell_with: sharqia
     weather_caveat: same NASA POWER cell as Sharqia, so weather and results are identical; show as one area in the demo.
     evidence: []
   sharqia:
@@ -40,5 +43,7 @@ sites:
     lat: 30.49
     lon: 31.43
     why: remote-sensing water productivity study area
+    caveat_kind: shared_cell
+    shares_cell_with: menoufia
     weather_caveat: same NASA POWER cell as Menoufia, so weather and results are identical; show as one area in the demo.
     evidence: [ayyad2024]

@@ -69,7 +69,7 @@ def main():
              "sign_to_ece": salt.SIGN_TO_ECE, "sign_note": salt.SIGN_NOTE}
     meta = {
         "generated": dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "sites": {s: {"name_en": sites[s]["name_en"], "caveat": sites[s].get("weather_caveat"), "lat": sites[s]["lat"], "lon": sites[s]["lon"]} for s in SITES},
+        "sites": {s: {"name_en": sites[s]["name_en"], "caveat": sites[s].get("weather_caveat"), "caveat_kind": sites[s].get("caveat_kind"), "shares_cell_with": sites[s].get("shares_cell_with"), "lat": sites[s]["lat"], "lon": sites[s]["lon"]} for s in SITES},
         "delta_bbox": [29.6, 30.0, 32.6, 31.7],  # lon_min, lat_min, lon_max, lat_max: where the data points apply
         "crops": {c: {"stage_days": params["crops"][c]["stage_days"], "excludes": params["crops"][c].get("excludes", [])} for c in params["crops"]},
         "not_modelled": rotation.NOT_MODELLED,

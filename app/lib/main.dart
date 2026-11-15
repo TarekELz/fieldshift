@@ -137,7 +137,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (bots.isEmpty) return EyadMood.excited;
     final m = bots.last.msg!;
     if (m.result != null) {
-      if (m.result!.caveat != null) return EyadMood.surprised;
+      if (m.result!.caveatKind == 'sea') return EyadMood.surprised;
       return m.result!.rows.any((r) => r.warnings.isNotEmpty) ? EyadMood.worried : EyadMood.success;
     }
     if (m.retry) return EyadMood.thoughtful;
@@ -376,12 +376,12 @@ class ResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final maxRatio = c.rows.map((r) => r.ratio).reduce((a, b) => a > b ? a : b);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      if (c.caveat != null)
+      if (caveatAr(c) != null)
         Container(
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: Fs.orange.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(16), border: Border.all(color: Fs.orange.withValues(alpha: 0.6))),
-          child: const Text('⚠️ بيانات الطقس للمنطقة دي مش دقيقة لأنها قريبة من البحر. ما تعتمدش على أرقام الحر هنا.', style: TextStyle(fontSize: 14, height: 1.4)),
+          decoration: BoxDecoration(color: (c.caveatKind == 'sea' ? Fs.orange : Fs.teal).withValues(alpha: 0.14), borderRadius: BorderRadius.circular(16), border: Border.all(color: (c.caveatKind == 'sea' ? Fs.orange : Fs.teal).withValues(alpha: 0.6))),
+          child: Text('${c.caveatKind == 'sea' ? '⚠️' : 'ℹ️'} ${caveatAr(c)}', style: const TextStyle(fontSize: 14, height: 1.4)),
         ),
       _climateCard(),
       for (final r in c.rows) _rotationCard(r, maxRatio),
@@ -504,7 +504,7 @@ class ResultCard extends StatelessWidget {
               icon: Icons.thermostat_rounded,
               label: 'أيام فوق ٣٢ درجة وقت امتلاء حبوب القمح',
               value: '${arDigits(r.heatMedian.round())} يوم',
-              note: 'في أغلب السنين من ${arDigits(r.heatP10.round())} لـ ${arDigits(r.heatP90.round())}',
+              note: 'قارن بين المواعيد، الرقم نفسه تقريبي. في أغلب السنين من ${arDigits(r.heatP10.round())} لـ ${arDigits(r.heatP90.round())}',
               accent: Fs.orange,
               spark: r.series.isEmpty ? null : r.series,
             ),
@@ -531,7 +531,7 @@ class ResultCard extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('🧂 الملوحة (إنتاج متوقع للمحصول الصيفي)', style: TextStyle(fontSize: 13, color: Fs.dim)),
+                const Text('🧂 الملوحة (قدرة المحصول الصيفي على تحمّل أرضك)', style: TextStyle(fontSize: 13, color: Fs.dim)),
                 const SizedBox(height: 4),
                 Row(children: [
                   _dot(Fs.status(r.saltSummer!.status)),

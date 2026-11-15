@@ -317,7 +317,7 @@ class Dialogue {
 
 String _heatPhrase(RotationRow r) {
   final e = r.extra['32']!;
-  final base = 'أيام الحر وقت امتلاء الحبوب حوالي ${arDigits(r.heatMedian.round())} يوم';
+  final base = 'أيام الحر وقت امتلاء الحبوب حوالي ${arDigits(r.heatMedian.round())} يوم، للمقارنة بين المواعيد مش رقم مظبوط';
   if (r.input.wheatSowing == '11-15') return '$base، وده الميعاد المعتاد';
   if (e == 0) return base;
   return e > 0 ? '$base، يعني أكتر بـ ${arDigits(e)} يوم من زراعة منتصف نوفمبر' : '$base، يعني أقل بـ ${arDigits(-e)} يوم من زراعة منتصف نوفمبر';
@@ -328,9 +328,19 @@ String warningAr(RotationRow r, String w) {
   return 'تنبيه: فاضل ${arDigits(r.gapDays)} يوم بس بين حصاد ${arCrop[r.input.crop]} وزراعة القمح.';
 }
 
+/// Arabic note about the weather data of the chosen place, or null. 'sea': the NASA cell is mostly sea, so heat
+/// numbers are not trustworthy. 'shared_cell': two governorates fall in one 50 km NASA cell, so they get identical results.
+String? caveatAr(Comparison c) {
+  if (c.caveat == null) return null;
+  if (c.caveatKind == 'sea') return 'تنبيه: بيانات الطقس للمنطقة دي مش دقيقة لأنها قريبة من البحر. ما تعتمدش على أرقام الحر هنا.';
+  final other = arSite[c.sharesCellWith] ?? '';
+  return 'ملحوظة: بيانات ناسا للمنطقة دي هي نفسها بيانات $other، فالنتايج هتطلع زي بعض.';
+}
+
 String spokenSummary(Comparison c) {
   final b = StringBuffer('المقارنة لمنطقة ${arSite[c.site]}. ');
-  if (c.caveat != null) b.write('تنبيه: بيانات الطقس للمنطقة دي مش دقيقة لأنها قريبة من البحر. ');
+  final cv = caveatAr(c);
+  if (cv != null) b.write('$cv ');
   for (final r in c.rows) {
     b.write('${r.isExisting ? 'دورتك الحالية' : 'البديل'}: ${arCrop[r.input.crop]} وبعده قمح يتزرع ${arDate(r.input.wheatSowing)}. ');
     b.write('${_heatPhrase(r)}. ');
