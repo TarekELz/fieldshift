@@ -10,6 +10,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 
+import 'proxy.dart';
+
 import 'sentences.dart';
 import 'spoken_ar.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -51,12 +53,12 @@ class LiveVoice {
   static String lastError = 'not tried';
 
   static Future<List<String>> keys() async {
+    final direct = <String>[];
     try {
       final j = jsonDecode(await rootBundle.loadString('assets/secrets/secrets.json')) as Map<String, dynamic>;
-      return ((j['hamsa'] as List?) ?? const []).cast<String>().where((k) => k.isNotEmpty).toList();
-    } catch (_) {
-      return const [];
-    }
+      direct.addAll(((j['hamsa'] as List?) ?? const []).cast<String>().where((k) => k.isNotEmpty));
+    } catch (_) {}
+    return [if (hasProxy) kProxyKey, ...direct]; // the proxy first: it holds the keys, rotates them and applies the limits
   }
 
   static Future<Uint8List?> generate(String text, {Duration budget = const Duration(seconds: 15), List<String>? keyList}) async {
@@ -79,6 +81,17 @@ class LiveVoice {
     Duration left() => budget - sw.elapsed;
     for (final k in ks) {
       if (left() <= Duration.zero) break;
+      if (k == kProxyKey) {
+        // the proxy answers with the WAV itself; it tries its own keys in turn, so a failure here means all are resting or the limit is reached
+        try {
+          final r = await http.post(Uri.parse('$kProxyUrl/tts'), headers: proxyHeaders, body: jsonEncode({'text': text})).timeout(left() < const Duration(seconds: 12) ? left() : const Duration(seconds: 12));
+          if (r.statusCode == 200 && r.bodyBytes.length > 44 && String.fromCharCodes(r.bodyBytes.take(4)) == 'RIFF') return _cache[text] = r.bodyBytes;
+          lastError = 'proxy answered ${r.statusCode}';
+        } catch (e) {
+          lastError = 'proxy ${e.runtimeType} after ${sw.elapsed.inMilliseconds} ms';
+        }
+        continue;
+      }
       final h = {'Authorization': 'Token $k', 'Content-Type': 'application/json'}; // 'Bearer' is rejected as deprecated; only 'Token' works
       // The realtime endpoint returns the WAV in the same response (about one second on a good connection, several on mobile data). One retry on the same key,
       // because a first request on a phone often fails on a cold connection; the jobs endpoint below is a slower fallback that has to be polled.
@@ -107,7 +120,8 @@ class LiveVoice {
           final url = ((job['jobResponse'] as Map?)?['ttsMediaFile'] ?? job['mediaUrl']) as String?;
           if (job['status'] == 'COMPLETED' && url != null) {
             final a = await http.get(Uri.parse(url)).timeout(left());
-            if (a.statusCode == 200 && a.bodyBytes.isNotEmpty) return _cache[text] = a.bodyBytes;
+            if (a.statusCode == 200 && a.bodyBytes.length > 44 && String.fromCharCodes(a.bodyBytes.take(4)) == 'RIFF') return _cache[text] = a.bodyBytes;
+            lastError = 'jobs audio is not a WAV';
             break;
           }
           if (job['status'] == 'FAILED') break;
@@ -271,7 +285,10 @@ class Voice {
     final whole = await Clips.lookup(text);
     final parts = whole != null ? [text.trim()] : splitSentences(text);
     // start every part's audio at once (clips are instant, live lines take about a second each), then play them in order
-    final ready = [for (final p in parts) _resolve(p)];
+    final ready = <Future<({Source? src, String how})>>[];
+    for (var i = 0; i < parts.length; i++) {
+      ready.add(i < 2 ? _resolve(parts[i]) : ready[i - 2].then((_) => _resolve(parts[i]))); // at most two requests in flight
+    }
     speaking.value = true;
     final notes = <String>[];
     for (var i = 0; i < parts.length; i++) {
@@ -283,6 +300,7 @@ class Voice {
         status.value = 'Hamsa ${notes.join(', ')}';
         continue;
       }
+      if (my != _gen) return; // cancelled while playing (a newer line, the mic): never fall back to the phone voice for an old line
       notes.add('phone (${r.src == null ? r.how : 'play error: $_playErr'})');
       status.value = 'phone: ${notes.last}';
       aiVoice.value = false;
@@ -312,8 +330,13 @@ class Voice {
       aiVoice.value = true;
       final done = _player.onPlayerComplete.first;
       await _player.play(src);
-      await done.timeout(const Duration(seconds: 90));
-      return true;
+      final started = Stopwatch()..start();
+      while (true) {
+        final finished = await Future.any<bool>([done.then((_) => true), Future<bool>.delayed(const Duration(milliseconds: 300), () => false)]);
+        if (finished) return true;
+        if (my != _gen) return true; // stopped or replaced: the caller sees the cancel and ends; no 90 second wait for a "finished" signal that never comes
+        if (started.elapsed > const Duration(seconds: 90)) throw TimeoutException('clip did not finish');
+      }
     } catch (e) {
       _playErr = e.toString().replaceAll(RegExp(r'\s+'), ' ');
       lastNote = 'play error: $_playErr';
