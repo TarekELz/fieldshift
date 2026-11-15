@@ -153,6 +153,7 @@ class Dialogue {
   int? interval;
   Salt? salt;
   Comparison? last;
+  bool intervalAnswered = false; // the canal-water question was answered, or skipped
 
   void reset() {
     step = Step.site;
@@ -160,6 +161,7 @@ class Dialogue {
     interval = null;
     salt = null;
     last = null;
+    intervalAnswered = false;
   }
 
   BotMessage opening() => prompt();
@@ -172,8 +174,8 @@ class Dialogue {
     switch (step) {
       case Step.site:
         return BotMessage(
-          'أرضك فين؟ اضغط على مكانها في الخريطة، أو قول اسم المحافظة.',
-          en: 'Where is your field? Tap it on the map, or say the governorate.',
+          'احكيلي عن أرضك بصوتك: فين هي، وبتزرع إيه، وإمتى؟ أو اضغط على مكانها في الخريطة.',
+          en: 'Tell me about your field in your own words: where it is, what you grow and when. Or tap it on the map.',
           choices: [for (final k in data.siteKeys) Choice(arSite[k]!, k)],
           showMap: true,
         );
@@ -209,6 +211,10 @@ class Dialogue {
       return [prompt()];
     }
     if (n == 'repeat' && last != null) return [resultMessage(last!)];
+    if (step != Step.done) {
+      final free = _absorb(n); // a sentence that gives several answers at once
+      if (free != null) return free;
+    }
     switch (step) {
       case Step.site:
         if (n.contains('منصور') || n.contains('mansoura')) {
@@ -260,6 +266,7 @@ class Dialogue {
           if (v == null) return [_retry('مفهمتش. قول عدد الأيام، مثلاً ١٠.', 'I did not understand. Say a number of days, for example 10.')];
           interval = v;
         }
+        intervalAnswered = true;
         step = Step.salt;
         return [prompt()];
       case Step.salt:
@@ -289,14 +296,22 @@ class Dialogue {
   List<BotMessage> _useGovernorate(Map<String, dynamic> g, double lat, double lon) {
     final ar = g['ar'] as String;
     if (g['delta'] != true) return _outside(ar);
+    final r = _resolveGov(g, lat, lon)!;
+    site = r.key;
+    step = Step.crop;
+    return [r.note, prompt()];
+  }
+
+  /// Which NASA data point a Delta governorate place uses, and the sentence that says so. Changes nothing.
+  ({String key, BotMessage note})? _resolveGov(Map<String, dynamic> g, double lat, double lon) {
+    final ar = g['ar'] as String;
+    if (g['delta'] != true) return null;
     final own = g['site'] as String?;
     final cellSite = siteInSameCell(data, lat, lon, prefer: own); // same NASA cell: identical weather, whatever the distance
     final key = cellSite ?? own ?? nearestSite(data, lat, lon).key;
     final p = data.siteLatLon(key);
     final km = haversineKm(lat, lon, p.lat, p.lon);
     final far = km > 60;
-    site = key;
-    step = Step.crop;
     final approx = far ? ' المسافة بعيدة شوية، فالأرقام تقريبية.' : '';
     final text = (cellSite != null && cellSite != own)
         ? 'تمام. محافظة $ar. مكانك في نفس خلية بيانات ناسا (حوالي ٥٠ كم) بتاعة ${arSite[key]}، فهستخدم بياناتها.'
@@ -308,7 +323,7 @@ class Dialogue {
         : own != null
         ? 'Governorate ${g['id']}: using the NASA data point ${data.siteName(key)}${far ? '; far from where you tapped, so numbers are approximate' : ''}.'
         : 'Governorate ${g['id']} has no data point of its own: using the nearest, ${data.siteName(key)}, about ${km.round()} km away.';
-    return [BotMessage(text, en: en, note: true), prompt()];
+    return (key: key, note: BotMessage(text, en: en, note: true));
   }
 
   /// The farmer tapped the map.
@@ -321,6 +336,177 @@ class Dialogue {
     final g = governorateAt(data, lat, lon);
     if (g == null) return _outside(null);
     return _useGovernorate(g, lat, lon);
+  }
+
+  static const _cropWords = {
+    'rice': ['رز', 'ارز', 'rice'],
+    'maize': ['ذره', 'دره', 'شامي', 'maize', 'corn'],
+    'cotton': ['قطن', 'cotton'],
+    'wheat': ['قمح', 'wheat'],
+  };
+  static const _enCropNames = {'rice': 'Rice', 'maize': 'Maize', 'cotton': 'Cotton', 'wheat': 'Wheat'};
+  static const _enMonthsFull = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  static String _enDate(String mmdd) => '${int.parse(mmdd.split('-')[1])} ${_enMonthsFull[int.parse(mmdd.split('-')[0]) - 1]}';
+
+  int? _intervalIn(String n) {
+    final m = RegExp(r'(?:كل|every|each)\s*(\d{1,2})\s*(?:يوم|ايام|days?)').firstMatch(n);
+    if (m != null) {
+      final v = int.parse(m.group(1)!);
+      return v >= 1 && v <= 60 ? v : null;
+    }
+    if (RegExp(r'(?:كل|every|each)\s*(?:اسبوعين|two weeks|2 weeks)').hasMatch(n)) return 14;
+    if (RegExp(r'(?:كل|every|each)\s*(?:ثلاث|تلات|three|3)\s*(?:اسابيع|weeks)').hasMatch(n)) return 21;
+    if (RegExp(r'(?:كل|every|each)\s*(?:اسبوع|week)').hasMatch(n)) return 7;
+    return null;
+  }
+
+  Salt? _saltIn(String n) {
+    if (!RegExp(r'ملح|قشر|بقع|بيضا|salt|crust|patch|no signs').hasMatch(n)) return null;
+    final s = parseSalt(n.replaceAll(RegExp(r'\d+'), ' ')); // signs only: numbers in a sentence are dates and days
+    return (s == null || s.skipped || s.ece != null) ? null : s;
+  }
+
+  Step _nextMissing() {
+    if (site == null) return Step.site;
+    if (crop == null) return Step.crop;
+    if (summerSowing == null) return Step.summerWhen;
+    if (wheatSowing == null) return Step.wheatWhen;
+    if (!intervalAnswered) return Step.interval;
+    if (salt == null) return Step.salt;
+    return Step.done;
+  }
+
+  /// Free speech: one sentence that gives several answers ("I am in Gharbia, I grow rice in mid June and wheat in early
+  /// December"). Finds every answer it can with the same parsers as the step-by-step questions, keeps them, and asks only for
+  /// what is missing. Returns null when fewer than two answers are found, so a single answer goes through the normal step logic.
+  /// Nothing here calculates anything: the numbers still come only from the engines.
+  List<BotMessage>? _absorb(String n) {
+    if (_areaByName(n) != null) return null;
+    String? fSite;
+    BotMessage? placeNote;
+    if (n.contains('منصور') || n.contains('mansoura')) {
+      final dk = data.governorates.cast<Map<String, dynamic>>().firstWhere((g) => g['id'] == 'Dakahlia');
+      final r = _resolveGov(dk, 31.04, 31.38);
+      if (r != null) {
+        fSite = r.key;
+        placeNote = r.note;
+      }
+    } else {
+      fSite = parseSite(n);
+      if (fSite == null) {
+        final g = _governorateByName(n);
+        if (g != null) {
+          final lbl = g['label'] as List;
+          final r = _resolveGov(g, (lbl[1] as num).toDouble(), (lbl[0] as num).toDouble());
+          if (r == null) return null; // outside the Delta: the step logic says so
+          fSite = r.key;
+          placeNote = r.note;
+        }
+      }
+    }
+    final fCrop = parseCrop(n);
+
+    // months, each tied to the nearest crop word (summer crop or wheat); with no crop word the season decides
+    final hits = <List<int>>[]; // [position, length, month]
+    for (var i = 0; i < 12; i++) {
+      var from = 0;
+      while (true) {
+        final k = n.indexOf(_monthKeys[i], from);
+        if (k < 0) break;
+        hits.add([k, _monthKeys[i].length, i + 1]);
+        from = k + 1;
+      }
+    }
+    const enM = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    for (final m in RegExp(r'\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b').allMatches(n)) {
+      if (m.group(0) == 'maybe') continue;
+      hits.add([m.start, m.group(0)!.length, enM.indexOf(m.group(1)!) + 1]);
+    }
+    final crops = <List<Object>>[]; // [position, key]
+    _cropWords.forEach((key, words) {
+      for (final w in words) {
+        var from = 0;
+        while (true) {
+          final k = n.indexOf(w, from);
+          if (k < 0) break;
+          crops.add([k, key]);
+          from = k + 1;
+        }
+      }
+    });
+    List<int>? sHit, wHit;
+    for (final h in hits) {
+      String? kind;
+      var best = 1 << 30;
+      for (final c in crops) {
+        final d = ((c[0] as int) - h[0]).abs();
+        if (d < best) {
+          best = d;
+          kind = c[1] == 'wheat' ? 'wheat' : 'summer';
+        }
+      }
+      final m = h[2];
+      if (kind == null) {
+        kind = (m >= 11 || m <= 2) ? 'wheat' : 'summer';
+      } else if (kind == 'summer' && (m >= 11 || m <= 1)) {
+        kind = 'wheat';
+      } else if (kind == 'wheat' && m >= 3 && m <= 7) {
+        kind = 'summer';
+      }
+      if (kind == 'summer') sHit ??= h;
+      if (kind == 'wheat') wHit ??= h;
+    }
+    final tableSite = fSite ?? site ?? 'gharbia', tableCrop = fCrop ?? crop ?? 'rice';
+    // only the words right next to the month ("mid June", "15 June"): a wider window would take the next month's "early"
+    String window(List<int> h) => n.substring(h[0] - 9 < 0 ? 0 : h[0] - 9, h[0] + h[1] + 3 > n.length ? n.length : h[0] + h[1] + 3);
+    final fSummer = sHit == null ? null : parseWhen(window(sHit), data.summerDates(tableSite, tableCrop));
+    final fWheat = wHit == null ? null : parseWhen(window(wHit), data.wheatDates(tableSite));
+    final fInt = _intervalIn(n);
+    final fSalt = _saltIn(n);
+    final found = [fSite, fCrop, fSummer, fWheat, fInt, fSalt].where((e) => e != null).length;
+    if (found < 2) return null;
+
+    if (fSite != null) site = fSite;
+    if (fCrop != null) crop = fCrop;
+    if (fSummer != null) summerSowing = fSummer;
+    if (fWheat != null) wheatSowing = fWheat;
+    if (fInt != null) {
+      interval = fInt;
+      intervalAnswered = true;
+    }
+    if (fSalt != null) salt = fSalt;
+    if (site != null && crop != null && summerSowing != null && data.water[site][crop][summerSowing] == null) summerSowing = null; // asked again
+
+    const arSaltWords = {'none': 'مفيش علامات', 'patches': 'بقع', 'crust': 'قشرة بيضاء'};
+    const enSaltWords = {'none': 'no signs', 'patches': 'salty patches', 'crust': 'white crust'};
+    final ar = <String>[], en = <String>[];
+    if (site != null) {
+      ar.add(arSite[site]!);
+      en.add(data.siteName(site!));
+    }
+    if (crop != null) {
+      ar.add('${arCrop[crop]}${summerSowing != null ? ' ${arDate(summerSowing!)}' : ''}');
+      en.add('${_enCropNames[crop]}${summerSowing != null ? ' ${_enDate(summerSowing!)}' : ''}');
+    }
+    if (wheatSowing != null) {
+      ar.add('قمح ${arDate(wheatSowing!)}');
+      en.add('Wheat ${_enDate(wheatSowing!)}');
+    }
+    if (interval != null) {
+      ar.add('ري كل ${arDigits(interval!)} يوم');
+      en.add('water every $interval days');
+    }
+    if (salt?.signs != null) {
+      ar.add('ملح: ${arSaltWords[salt!.signs]}');
+      en.add('salt: ${enSaltWords[salt!.signs]}');
+    }
+    final head = BotMessage('فهمت: ${ar.join(' · ')}.${placeNote != null ? ' ${placeNote.ar}' : ''}', en: 'Got it: ${en.join(' · ')}.${placeNote?.en != null ? ' ${placeNote!.en}' : ''}', note: true);
+    step = _nextMissing();
+    if (step == Step.done) {
+      last = run();
+      return [head, resultMessage(last!)];
+    }
+    return [head, prompt()];
   }
 
   /// Halayeb or Shalateen named by voice or typing.

@@ -63,10 +63,10 @@ Data finding: IMERG over the whole Delta box gives 14-181 mm of rain a year (202
 Gharbia annual reference ET0 (mean of full years): 1857 mm.
 
 **Limits**
-- **ET0 looks high** (about 1,857 mm a year at Gharbia, 8 mm/day in June). I have no source read in full for a typical Delta value, so I cannot say it is wrong; it is probably the warm POWER bias above. **Use ratios between crops, not millimetres, until checked.**
+- **ET0 magnitude (input check done 2026-11-15):** the engine's yearly ET0 (about 1,870 mm at Gharbia, 2015-2023 mean) is within 1 to 8% of NASA's own MOD16A3GF yearly potential evapotranspiration at all seven points (ratio 0.92 to 0.99; MOD16 median 1,962 mm at Gharbia). So it is not an outlier against another NASA product. This is **not** a weather-station check: both products rest on similar satellite-era meteorology, and the definitions of potential evapotranspiration differ. No source read in full gives a typical Delta station value. **Keep using ratios between crops, not millimetres.** MOD16's actual evapotranspiration (385 to 677 mm a year) is far below a crop's irrigated water need and is not comparable, so it is not used.
 - Rice needs more than the FAO figure: ponding, puddling, percolation and seepage are excluded, so rice is a floor and comparisons with rice understate the other crops' relative advantage.
 - No canal supply, rain, capillary rise or irrigation losses. Sowing dates are assumptions unless the farmer states them.
-- Hussain's MOD16 evapotranspiration request would be an input check if it arrives.
+- The MOD16A3GF check above was done from the open Planetary Computer copy (script `src/fieldshift/ingest/fetch_input_checks.py`); Hussain's AppEEARS MOD16 request is no longer needed for it.
 
 ## Engine 3: salt
 Question: which crops can the farmer's soil take?
@@ -89,6 +89,7 @@ No NASA product measures soil salinity (NASA's salinity missions measure the oce
 
 ## Validation (Step 8, still to do)
 - Input check of POWER Tmax against Delta station data (above).
-- Input check of ET0 against a published Delta value or the MOD16 data.
+- Input check of ET0 against NASA MOD16 potential evapotranspiration: done, within 1 to 8% (above). Against weather stations: not done.
+- Farmland check of the seven points with ESA WorldCover 2021 (European Space Agency, not NASA): cropland is 73 to 91% within about 2.5 km of six points and 50% at Damietta (already flagged as a mostly-sea weather cell); built-up 4 to 16%; open water about 0.
 - Plausibility checks: the direction checks above are done and covered by tests (`tests/`).
 - Everything shown to the farmer is tagged as NASA data, model assumption, farmer input or literature.

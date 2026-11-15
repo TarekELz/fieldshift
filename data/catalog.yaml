@@ -196,3 +196,16 @@ app_hero_images:
   files: app/assets/img/delta_winter.jpg, delta_summer.jpg (about 440 KB each)
   status: used as the hero picture on the welcome and result screens, captioned as NASA MODIS greenness. Data art, not a map or a photograph
 
+mod16a3gf_et_yearly:
+  source: "NASA MOD16A3GF v061 (Terra, yearly gap-filled evapotranspiration, 500 m), read from the open Microsoft Planetary Computer copy"
+  coverage: "2015-2024, 3x3 pixel median at each of the 7 Delta points (data/raw/nasa_extra/mod16_site_years.csv); fetched by src/fieldshift/ingest/fetch_input_checks.py"
+  result: "yearly potential ET 1,787 to 2,011 mm (Gharbia 1,962); the engine's yearly ET0 is 92 to 99% of it (2015-2023). Actual ET 385 to 677 mm a year, not comparable with irrigated crop need"
+  used_by: ["water (input check only, no farmer-facing number)"]
+  caveat: "MOD16 is a model product on MERRA-2 meteorology, so this is a consistency check, not validation against measurements"
+
+esa_worldcover_2021:
+  source: "ESA WorldCover 2021 v200 (10 m land cover, European Space Agency, CC BY 4.0), NOT NASA data, read from Planetary Computer"
+  coverage: "share of land-cover classes within about 2.5 km of each of the 7 points (data/raw/nasa_extra/worldcover_sites.csv)"
+  result: "cropland 73 to 91% at six points, 50% at Damietta; built-up 4 to 16%; open water about 0"
+  used_by: ["site selection check (are the points farmland)"]
+

@@ -38,9 +38,10 @@ No yield forecast, no yield loss in percent, no field-level or weather-station-v
 | NASA POWER daily weather, 7 Delta points, 1990-2025 | **Every number the farmer sees** (heat, water) |
 | MODIS MOD13Q1 vegetation index, Delta, 2014-2025 (242 of 254 dates) | The satellite pictures in the app, and a plausibility check of the wheat calendar. No farmer-facing number |
 | GPM IMERG daily rainfall | Context only: summer rain is almost zero, so summer crops depend on irrigation |
+| MODIS MOD16A3GF yearly evapotranspiration, 7 points, 2015-2024 | An input check: the engine's yearly ET0 is within 1 to 8% of NASA's own potential ET. No farmer-facing number |
 | SRTM 30 m terrain | On disk, not yet used in any result |
 
-Other data: administrative boundaries from CAPMAS via HDX (CC BY-IGO); Natural Earth for rivers, lakes and the Halayeb Triangle and Bir Tawil outlines (public domain); FAO tables for crop water and salt tolerance; IBM Plex fonts (SIL Open Font License, in `app/assets/fonts/`).
+Other data: ESA WorldCover 2021 (not NASA) to confirm the points are farmland; administrative boundaries from CAPMAS via HDX (CC BY-IGO); Natural Earth for rivers, lakes and the Halayeb Triangle and Bir Tawil outlines (public domain); FAO tables for crop water and salt tolerance; IBM Plex fonts (SIL Open Font License, in `app/assets/fonts/`).
 
 ## Repository map
 | Path | What is in it |
