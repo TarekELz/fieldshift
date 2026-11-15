@@ -58,9 +58,8 @@ void main() {
     final sentences = _spokenSentences(data).where((s) => s.length >= 4).toList()..sort();
     final idx = (jsonDecode(File('assets/audio/index.json').readAsStringSync()) as Map).keys.map((k) => k.toString().trim()).toSet();
     if (Platform.environment['DUMP_SPOKEN'] == '1') {
-      final all = {...idx, ...sentences}.toList()..sort();
-      File('../scripts/spoken_lines.json').writeAsStringSync(const JsonEncoder.withIndent(' ').convert(all));
-      stdout.writeln('dumped ${all.length} lines (${sentences.length} sentences from the dialogue)');
+      File('../scripts/spoken_dialogue.json').writeAsStringSync(const JsonEncoder.withIndent(' ').convert(sentences));
+      stdout.writeln('dumped ${sentences.length} sentences from the dialogue');
       return;
     }
     final missing = sentences.where((s) => !idx.contains(s)).toList();

@@ -196,7 +196,7 @@ class Dialogue {
           showMap: true,
         );
       case Step.goal:
-        return BotMessage('إيه اللي عايزه دلوقتي؟', en: 'What do you want to do?', choices: const [
+        return BotMessage('إيه أكتر حاجة بتدور عليها دلوقتي؟', en: 'What are you looking for most right now?', choices: const [
           Choice('أكسب أكتر', 'money', en: 'Earn more'),
           Choice('أزرع محصول معين في ميعاد معين', 'plan', en: 'Grow a certain crop at a certain time'),
           Choice('أحسّن اللي بزرعه دلوقتي', 'improve', en: 'Improve what I grow now'),
@@ -625,7 +625,7 @@ class Dialogue {
 
   Comparison run() {
     final seqs = <SequenceInput>[
-      SequenceInput(name: 'دورتك الحالية', crop: crop!, summerSowing: summerSowing!, wheatSowing: wheatSowing!),
+      SequenceInput(name: 'اللي بتزرعه دلوقتي', crop: crop!, summerSowing: summerSowing!, wheatSowing: wheatSowing!),
       for (final c in ['rice', 'maize', 'cotton'].where((c) => c != crop))
         SequenceInput(name: 'بديل: ${arCrop[c]} ثم قمح', crop: c, summerSowing: _defaultSummer[c]!, wheatSowing: _altWheat),
     ];
@@ -670,7 +670,7 @@ String spokenSummary(Comparison c) {
   final cv = caveatAr(c);
   if (cv != null) b.write('$cv ');
   for (final r in c.rows) {
-    b.write('${r.isExisting ? 'دورتك الحالية' : 'البديل'}: ${arCrop[r.input.crop]} وبعده قمح يتزرع ${arDate(r.input.wheatSowing)}. ');
+    b.write('${r.isExisting ? 'اللي بتزرعه دلوقتي' : 'البديل'}: ${arCrop[r.input.crop]} وبعده قمح يتزرع ${arDate(r.input.wheatSowing)}. ');
     b.write('${_heatPhrase(r)}. ');
     b.write('${arCrop[r.input.crop]} ${arRatio(r.ratio)} في المية. ');
     if (r.saltSummer != null) {

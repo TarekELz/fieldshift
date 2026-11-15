@@ -59,46 +59,52 @@ def test_closeness_is_a_share():
 
 
 def test_fill_puts_engine_numbers_in_arabic_and_english():
-    f = facts(heat_extra=6, wheat_date=(12, 1))
-    b = next(x for x in BP["blueprints"] if x["id"] == "wheat_late")
+    f = facts(gap=5)
+    b = next(x for x in BP["blueprints"] if x["id"] == "tight_gap")
     ar, en = advice.fill(b, f, "ar"), advice.fill(b, f, "en")
-    assert "٦" in ar and "١ ديسمبر" in ar and "{" not in ar
-    assert "about 6 more" in en and "1 Dec" in en and "{" not in en
+    assert "خمس أيام" in ar and "{" not in ar
+    assert "5 days" in en and "{" not in en
+    b2 = next(x for x in BP["blueprints"] if x["id"] == "wheat_late")
+    assert advice.fill(b2, facts(heat_extra=6), "ar") == b2["ar"]  # no slots: the advice is the same words every time
 
 
-def _case(bid="wheat_late", **kw):
-    f = facts(heat_extra=6, wheat_date=(12, 1), **kw)
+def _case(bid="tight_gap", **kw):
+    f = facts(gap=5, **kw)
     b = next(x for x in BP["blueprints"] if x["id"] == bid)
     return f, b, advice.fill(b, f, "ar")
 
 
 def test_guard_accepts_faithful_rewrite_and_rejects_changes():
     f, b, filled = _case()
-    good = "القمح في ١ ديسمبر متأخر، وهيقابل حوالي ٦ يوم حر زيادة من زراعته في ١٥ نوفمبر. قدّمه لو تقدر، ده أحسن للحرارة."
+    good = filled + " ده مهم."
     assert advice.guard(good, filled, b, BP, "ar")[0]
-    assert "new number" in advice.guard(good.replace("٦", "٧") + " ٣٠", filled, b, BP, "ar")[1]
-    assert "missing number" in advice.guard("القمح متأخر وفيه حر زيادة.", filled, b, BP, "ar")[1]
+    assert "missing day count" in advice.guard(filled.replace("خمس أيام", "أربع أيام"), filled, b, BP, "ar")[1]
+    assert "new number" in advice.guard(good + " ٣٠", filled, b, BP, "ar")[1]
     assert "forbidden" in advice.guard(good + " وهتكسب فلوس", filled, b, BP, "ar")[1]
-    assert "missing key word" in advice.guard("القمح في ١ ديسمبر متأخر ٦ يوم زيادة من ١٥ نوفمبر.", filled, b, BP, "ar")[1]
     assert not advice.guard("", filled, b, BP, "ar")[0]
     assert not advice.guard(good * 6, filled, b, BP, "ar")[0]
+    f2, b2, filled2 = _case("water_heavy", alt_pct=85)  # a text with a digit number: it must survive
+    assert "missing number" in advice.guard(filled2.replace("٨٥", "ثمانين"), filled2, b2, BP, "ar")[1]
+    assert "missing key word" in advice.guard("الرز بياخد كتير.", filled2, b2, BP, "ar")[1] or "missing number" in advice.guard("الرز بياخد كتير.", filled2, b2, BP, "ar")[1]
 
 
 def test_tailor_uses_model_only_when_guard_passes_and_falls_back():
-    f = facts(heat_extra=6, wheat_date=(12, 1))
-    good = "القمح في ١ ديسمبر متأخر، وهيقابل حوالي ٦ يوم حر زيادة من زراعته في ١٥ نوفمبر. قدّمه لو تقدر، ده أحسن للحرارة."
+    f = facts(gap=5)
+    _, b, filled = _case()
+    good = filled + " ده مهم."
     r = advice.tailor(f, "ar", caller=lambda k, t, l, to: good, key_list=["k"], bp=BP)
-    assert r["source"] == "ai" and r["text"] == good and r["blueprint_id"] == "wheat_late"
-    bad = advice.tailor(f, "ar", caller=lambda k, t, l, to: "القمح تمام ومفيش مشكلة", key_list=["k"], bp=BP)
-    assert bad["source"] == "blueprint" and "٦" in bad["text"] and bad["reason"] != "ok"
+    assert r["source"] == "ai" and r["text"] == good and r["blueprint_id"] == "tight_gap"
+    bad = advice.tailor(f, "ar", caller=lambda k, t, l, to: "الوقت تمام ومفيش مشكلة", key_list=["k"], bp=BP)
+    assert bad["source"] == "blueprint" and "خمس أيام" in bad["text"] and bad["reason"] != "ok"
     boom = advice.tailor(f, "ar", caller=lambda k, t, l, to: (_ for _ in ()).throw(TimeoutError()), key_list=["k1", "k2"], bp=BP)
     assert boom["source"] == "blueprint"
     assert advice.tailor(f, "ar", key_list=[], bp=BP)["reason"] == "no key"
 
 
 def test_next_key_is_tried_when_the_first_fails():
-    f = facts(heat_extra=6, wheat_date=(12, 1))
-    good = "القمح في ١ ديسمبر متأخر، وهيقابل حوالي ٦ يوم حر زيادة من زراعته في ١٥ نوفمبر. قدّمه لو تقدر، ده أحسن للحرارة."
+    f = facts(gap=5)
+    _, _, filled = _case()
+    good = filled + " ده مهم."
     calls = []
 
     def caller(k, t, l, to):

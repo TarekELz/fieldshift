@@ -149,19 +149,10 @@ class GoalView extends StatelessWidget {
       const SizedBox(height: 12),
       if (r is MoneyResult) ..._money(r) else ..._plan(r as PlanResult),
       const SizedBox(height: 14),
-      _disclaimer(),
-      const SizedBox(height: 16),
+      const SizedBox(height: 4),
       SizedBox(height: 52, child: FilledButton.icon(onPressed: onRestart, icon: const Icon(Icons.refresh_rounded), label: Text(tr('ابدأ من جديد', 'Start again')))),
     ]);
   }
-
-  Widget _disclaimer() => SoftCard(
-        child: Text(
-          tr('ده تقدير من متوسط مصر كلها (أرقام الفاو، الإنتاجية للفدان من ٢٠٢٠ إلى ٢٠٢٤ وسعر المزارع سنة ٢٠٢٢): إجمالي الدخل قبل التكاليف، مش ربح ومش وعد. الخضار والفاكهة تكاليفها أعلى بكتير، والأسعار اتغيرت من وقتها. الملوحة من كلامك والتعديل من جداول الفاو.',
-              'An estimate from Egypt-wide averages (FAO figures: yield per feddan 2020 to 2024, farm-gate price 2022): gross income before costs, not profit and not a promise. Vegetables and fruit cost much more to grow, and prices have moved since. Salt comes from what you told me and the adjustment from the FAO tables.'),
-          style: TextStyle(fontSize: 12.5, height: 1.5, color: Fs.dim),
-        ),
-      );
 
   List<Widget> _money(MoneyResult r) {
     final out = <Widget>[];

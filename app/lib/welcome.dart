@@ -128,9 +128,9 @@ class _OnboardingState extends State<Onboarding> {
   Widget _what() {
     final cards = [
       (Icons.grass_rounded, tr('ميعاد زراعة القمح', 'Wheat sowing date'), tr('حرارة ناسا وقت امتلاء الحبوب لكل ميعاد', 'NASA heat during grain filling, for each date')),
-      (Icons.water_drop_rounded, tr('احتياج المية', 'Water need'), tr('محاصيل الصيف قصاد دورتك', 'Summer crops against your rotation')),
+      (Icons.water_drop_rounded, tr('احتياج المية', 'Water need'), tr('محاصيل الصيف قصاد اللي بتزرعه دلوقتي', 'Summer crops against your rotation')),
       (Icons.grain_rounded, tr('ملوحة الأرض', 'Soil salt'), tr('من جداول الفاو وكلامك عن أرضك', 'From FAO tables and what you tell me')),
-      (Icons.compare_arrows_rounded, tr('مقارنة دورات', 'Rotation comparison'), tr('دورتك الحالية قصاد بديلين', 'Your rotation against two alternatives')),
+      (Icons.compare_arrows_rounded, tr('مقارنة دورات', 'Rotation comparison'), tr('اللي بتزرعه دلوقتي قصاد بديلين', 'Your rotation against two alternatives')),
     ];
     return Column(children: [
       const SizedBox(height: 6),

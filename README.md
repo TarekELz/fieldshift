@@ -6,7 +6,8 @@
 <img alt="NASA Space Apps 2026" src="https://img.shields.io/badge/NASA%20Space%20Apps-2026-0b3d91">
 <img alt="Flutter" src="https://img.shields.io/badge/app-Flutter%20Android-02569B">
 <img alt="Licence" src="https://img.shields.io/badge/licence-MIT-green">
-<img alt="Tests" src="https://img.shields.io/badge/tests-403%20Python%20%2B%2043%20Flutter-brightgreen">
+<a href="https://github.com/TarekELz/fieldshift/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/TarekELz/fieldshift/actions/workflows/ci.yml/badge.svg"></a>
+<img alt="Tests" src="https://img.shields.io/badge/tests-306%20Python%20%2B%2051%20Flutter-brightgreen">
 </p>
 <p align="center"><a href="docs/index.html">Project page (open docs/index.html, or GitHub Pages once enabled)</a> · <a href="docs/status.md">Status</a> · <a href="docs/decisions.md">Decisions</a> · <a href="docs/methodology.md">Method and limits</a></p>
 
@@ -15,7 +16,52 @@
 
 NASA Space Apps Challenge 2026, challenge **"Field Shift: Adapting Farms with NASA Data"** (hackathon 14-15 November 2026). Team based in Egypt.
 
-> **Status (15 Nov):** a working **Flutter Android app** (Arabic and English, light and dark) built on three tested calculation engines that use NASA POWER weather and FAO tables. Not yet tested on a real phone; voice depends on the phone's own speech support. Live status: [`docs/status.md`](docs/status.md). Every decision: [`docs/decisions.md`](docs/decisions.md).
+> **Status (15 Nov):** a working **Flutter Android app** (Arabic and English, light and dark) with a goal question, tested engines on NASA POWER weather and FAO tables, short advice written from team blueprints, and Eyad's Egyptian-Arabic voice. Test builds are with the team; phone testing is under way. Live status: [`docs/status.md`](docs/status.md). Every decision: [`docs/decisions.md`](docs/decisions.md). Project page: [`docs/index.html`](docs/index.html).
+
+<a id="thirty-seconds"></a>
+## Understand it in 30 seconds
+**Field Shift helps a Nile Delta farmer decide what to grow and when, by voice, in Egyptian Arabic, using NASA data, and it shows its numbers.** Eyad asks where the field is and what the farmer wants: **earn more**, **grow a certain crop at a certain time**, or **improve what he grows now**. He answers with a verdict for each crop, then water, heat and salt, one page at a time.
+
+1. **Ask:** speak, type or tap the map. Eyad understands a whole sentence, and an AI helps with a phrase that is not among the options.
+2. **Compute:** wheat heat by thermal time, FAO-56 crop water, FAO-29 salt tolerance, a sowing-season screen and an income estimate, all on NASA POWER weather for the nearest data point (19 points, 1990 to 2025).
+3. **Advise:** short plain advice ("do X because Y"), spoken in an Egyptian voice. The numbers come from calculations, never from the AI.
+
+## Meet Abu Ahmed (a fictional farmer)
+Abu Ahmed grows rice and wheat on a few feddans in Gharbia. He cannot read well, his sons and the TV are his only advice, and canal water comes every ten days. In the Delta that is not unusual: **31.7% of surveyed Delta farmers are illiterate and most get information from their sons or TV (kassem2019)**. He opens the app, taps Gharbia, says he grows rice in mid June and wheat in December, and that the soil has white patches. Eyad tells him, in his own dialect, that late wheat will meet more heat and that cotton tolerates his salt better, and shows why.
+
+<a id="judges-checklist"></a>
+## Judges' checklist
+| | Requirement | Where |
+|---|---|---|
+| Yes | One official 2026 challenge | Field Shift: Adapting Farms with NASA Data |
+| Yes | NASA data is a core component | NASA POWER drives every farmer-facing number; MODIS gives the pictures and a phenology cross-check; five NASA datasets, listed in [`data/catalog.yaml`](data/catalog.yaml) |
+| Yes | Open source | MIT licence, [`LICENSE`](LICENSE) |
+| Yes | External resources listed | [`docs/references.md`](docs/references.md) |
+| Yes | Decisions and sources logged | [`docs/decisions.md`](docs/decisions.md), [`literature/papers.csv`](literature/papers.csv) |
+| In progress | Use of AI disclosed | `docs/ai-disclosure.md` is being updated before the repo is made public |
+| In progress | Demo (30-second video or 7 slides, English) | with the team |
+
+<a id="scorecard"></a>
+## Scorecard: how the project answers the five criteria
+| Criterion | What we did |
+|---|---|
+| **Impact** | A voice-first tool for farmers who cannot read well: the problem figures are from papers we read in full (water scarcity, salt, the wheat calendar). |
+| **Creativity** | A farmer's own goal question, a blueprint-and-guard advice layer where code chooses and an AI only rewords, an Egyptian voice, and a sowing-season screen from FAO EcoCrop plus 36 years of NASA weather. |
+| **Validity** | Engines checked against published methods and tested (hundreds of automated tests, golden cases that the Dart app must reproduce from Python); our evapotranspiration is within 1 to 8% of NASA's own MOD16 at all seven points; independent reviews found and fixed real bugs. Limits are stated in [`docs/methodology.md`](docs/methodology.md). |
+| **Relevance** | NASA POWER, MODIS MOD13Q1, MCD12Q2 phenology, MOD16A3GF and GPM IMERG: the weather behind every number and the satellite pictures and cross-checks. |
+| **Presentation** | [`docs/index.html`](docs/index.html): a project page with a "Try Eyad" playground running the same tables and rules as the app, and a season lab. |
+
+## What we checked (validation)
+| Check | Result |
+|---|---|
+| Engine yearly reference evapotranspiration against NASA MOD16A3GF potential ET, 7 points | within 1 to 8% (consistency check, not a station validation) |
+| Are the data points farmland (ESA WorldCover 2021)? | cropland 73 to 91% within 2.5 km of six points; Damietta is mostly sea and is flagged |
+| Wheat calendar against NASA MCD12Q2 satellite phenology | winter green-up in November and dormancy in May, summer green-up in June: consistent with our assumptions |
+| Season screen on known cases | rice sown in November, maize in December and wheat in March are flagged wrong; tomato, berseem, sugar beet, faba bean and tree crops are "cannot judge" |
+| Python and Dart give the same answers | 18 golden cases and 18 advice cases match |
+| Independent AI reviews of code and workflow | issues found (for example faba bean mislabelled, a number-only guard that let a wrong rotation through) and fixed |
+
+**Works offline:** the engines, the advice and 86 recorded voice lines are inside the app. Internet adds a language-model rewording of advice, live voice for other lines and understanding of free answers; without it the app falls back to fixed text and the phone's voice.
 
 ## The problem (decision D1)
 Farmers in the **Nile Delta** have to decide each season what to plant and when. Three pressures make that hard, and they interact:
@@ -29,9 +75,12 @@ Underneath all three: **many farmers cannot read and get little advice.** 31.7% 
 Evidence for each claim is in [`literature/papers.csv`](literature/papers.csv) (58 papers; only papers whose full text was read count as evidence). Other candidate problems we considered: [`docs/problem_statement_options.md`](docs/problem_statement_options.md).
 
 ## What the app does
-The farmer says (or types, or taps) where the field is, the summer crop, when it is sown, the wheat sowing date, how often canal water comes, and any salt signs. The app answers with a **comparison of the farmer's own rotation against two alternatives**: water need of the summer crop, heat during wheat grain filling for the chosen wheat sowing date, and how well each crop tolerates the soil salt. The farmer picks the place by tapping a map of Egypt's 27 governorates.
+After the place, Eyad asks what the farmer is looking for most:
+- **Earn more:** crops ranked by approximate income per feddan, from FAOSTAT's Egypt national averages (yield 2020 to 2024, farm-gate price 2022), lowered by FAO-29's relative yield at the farmer's salt. Gross income before costs, an estimate, not a profit.
+- **Grow a certain crop at a certain time:** any of 14 crops and a month, with a season label, the salt effect and the income, beside similar crops.
+- **Improve what I grow now:** the farmer's own rotation against two alternatives: summer-crop water need, heat during wheat grain filling for the chosen wheat sowing date, and salt tolerance, shown as swipeable pages (verdict, advice, water, heat, salt).
 
-It **supports, and does not replace,** the farmer's judgement and local agricultural experts.
+It **supports, and does not replace,** the farmer's judgement and local agricultural experts. Terms and notes are behind the info button in the app.
 
 ### The three engines (decisions D2, D7)
 | Engine | Question it answers | Method | Data |
@@ -40,7 +89,7 @@ It **supports, and does not replace,** the farmer's judgement and local agricult
 | Water | "How much water does the summer crop need, compared with my rotation?" | FAO-56 reference evapotranspiration times crop coefficients; shown as ratios, not millimetres | NASA POWER weather; crop tables from FAO-56 |
 | Salt | "Can my soil take this crop?" | FAO paper 29 salt-tolerance table | Farmer input (soil test or signs). No NASA product measures soil salinity |
 
-**Grounded, not fine-tuned (D2):** every number comes from these engines. The conversation itself is rule-based today; a language model could replace the understanding step later, but it would never calculate. Details, limits and the checks we did and did not do: [`docs/methodology.md`](docs/methodology.md).
+**Grounded, not fine-tuned (D2, D16, D20):** every number comes from engines and tables. Code chooses the advice blueprint; a language model may only reword it behind a guard that keeps every number and key fact, and may classify a phrase that is not among the options. It never calculates. Details, limits and the checks we did and did not do: [`docs/methodology.md`](docs/methodology.md).
 
 ### What we do not claim
 No yield forecast, no yield loss in percent, no field-level or weather-station-validated accuracy. Weather is a model product at about 50 km; absolute hot-day counts are approximate, so the app compares dates. The salt percentage is a crop-tolerance figure from the FAO table, not a forecast of the farmer's crop. Several wheat parameters have no full-text source (marked low confidence in `models/`).

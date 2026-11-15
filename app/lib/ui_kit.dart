@@ -232,7 +232,7 @@ class StatTile extends StatelessWidget {
 class RoundButton extends StatelessWidget {
   const RoundButton({super.key, required this.icon, required this.onTap, this.tooltip});
   final IconData icon;
-  final VoidCallback onTap;
+  final VoidCallback? onTap; // null = disabled
   final String? tooltip;
 
   @override
