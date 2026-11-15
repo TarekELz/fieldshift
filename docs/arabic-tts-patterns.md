@@ -22,7 +22,7 @@ Not read: a LiveKit Arabic voice-agent article (blocked with HTTP 403), and the 
 |---|---|---|---|
 | 1 | **Say the dialect and keep the text in that dialect.** Hamsa has a `dialect` code; the benchmark used `msa` for MSA text; write "دلوقتي", not "الآن", and do not mix | Hamsa docs, arena, Sestek | Text is Egyptian; voice is the Egyptian voice "Ibrahim". The live path now also sends `dialect: "egy"` |
 | 2 | **Make text preparation a separate, tested stage that fails loudly.** Log which rules ran; reject symbols the voice cannot take; never pass garbage on silently | arz-frontend, MMS pipeline | We had the stage (`scripts/add_tashkeel.py`) but **no test on its output**. This is how a bug sat unseen. Now tested (`tests/test_spoken_tashkeel.py`) |
-| 3 | **Numbers, dates, symbols and Latin letters become spoken Arabic words.** | Sestek, arz-frontend | **Not done yet.** 20 of 67 spoken lines contain digits ("١٥ نوفمبر") or Latin letters ("EC"). The round trip misread them (see below) |
+| 3 | **Numbers, dates, symbols and Latin letters become spoken Arabic words.** | Sestek, arz-frontend | **Done (Tarek approved the wording).** `app/lib/spoken_ar.dart`: the screen keeps digits, the voice gets "نص نوفمبر", "أول يناير", "تلاتة وعشرين في المية", "ست أيام", and the soil question says "رقم الملوحة" instead of "EC". 20 of 67 lines had digits or Latin letters; none do now |
 | 4 | **Diacritics sparingly and dialect-aware.** Only for ambiguous words; an Egyptian voice may do better without MSA-style marks; no case endings | Sestek, arz-frontend, papers | We vowel every line and strip case endings. In our own A/B (10 lines, round-trip scored) plain and voweled text scored the same (0.97 to 0.99), so we keep it; it was only harmful when corrupted |
 | 5 | **Short sentences, one request each.** | Sestek, Pipecat, Hamsa media guide | Sentence-wise playback; one short line per result page (v12); live lines capped at 300 characters |
 | 6 | **Realtime endpoint for interactive use, async jobs for batch.** | Hamsa docs, arena | Pre-recorded clips came from jobs (right). The live voice polled the jobs endpoint; it now calls the realtime endpoint first (about 1.1 s in our test) and falls back to jobs |
@@ -45,8 +45,10 @@ The check sends each recorded clip to Gemini's audio input and compares the tran
 3. **Hamsa's documentation is partly out of date.** The realtime quickstart shows `Authorization: Bearer`; the service answers that this header is deprecated, and only `Token <key>` works. The realtime endpoint accepts our voice's id in the `speaker` field.
 4. **A/B on 10 clean lines** (plain or voweled text, with or without `dialect: "egy"`): all four variants scored 0.97 to 0.99. With a sample this small the screen cannot tell them apart, so we changed nothing on those two points.
 
+## Done after the first round (pattern 3)
+Tarek chose: the 15th is said "نص", the 1st "أول", the soil question drops "EC" and says "رقم الملوحة", and every number is spelled in Egyptian style (تلاتة, never ثلاثة; counted nouns like "ست أيام", "حداشر يوم"). 21 new clips were generated and 20 digit clips retired. The new date clips scored 1.00 for most months; weak takes were retried (`scripts/retry_weak_clips.py`) and the best kept. Round-trip mean for all 87 clips is now 0.983. One measuring caveat: the transcriber writes numbers as digits, so a clip that correctly says "عشرة يناير" is heard as "10 يناير" and scores lower than it should.
+
 ## Recommended next steps (not done)
-1. **Spell numbers and "EC" as words in the spoken text** (pattern 3). This changes the spoken form of about 20 lines and means regenerating those clips. It needs Tarek's approval of the Egyptian number spelling (for example how "١٥ نوفمبر" is said), because it is Arabic wording.
-2. **A listening test** by two Egyptian speakers on the 10 lowest clips in `docs/checks/tts_roundtrip.csv` and on the A/B pairs, for accent and naturalness, which no script here can judge.
-3. **Try `expressiveness` 0.5 to 0.8** for a calmer delivery and listen.
-4. Keep the round-trip check as a gate whenever clips are regenerated.
+1. **A listening test** by two Egyptian speakers on the 10 lowest clips in `docs/checks/tts_roundtrip.csv` and on the A/B pairs, for accent and naturalness, which no script here can judge.
+2. **Try `expressiveness` 0.5 to 0.8** for a calmer delivery and listen.
+3. Keep the round-trip check as a gate whenever clips are regenerated.

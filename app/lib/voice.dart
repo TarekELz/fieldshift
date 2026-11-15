@@ -11,6 +11,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 
 import 'sentences.dart';
+import 'spoken_ar.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -254,6 +255,7 @@ class Voice {
   /// Speaks the text in Eyad's Egyptian voice: a whole-line clip if there is one, otherwise sentence by sentence (a clip, else a live line, else the phone's voice).
   Future<void> speak(String text) async {
     if (muted) return;
+    text = speakable(text); // words for digits, dates and the EC abbreviation (spoken_ar.dart)
     final my = ++_gen;
     try {
       await _player.stop();
