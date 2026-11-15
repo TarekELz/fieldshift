@@ -27,12 +27,13 @@ class Choice {
 }
 
 class BotMessage {
-  BotMessage(this.ar, {this.en, this.choices = const [], this.result, this.goalResult, this.spoken, this.showMap = false, this.retry = false, this.note = false});
+  BotMessage(this.ar, {this.en, this.choices = const [], this.result, this.goalResult, this.openPro = false, this.spoken, this.showMap = false, this.retry = false, this.note = false});
   final String ar;
   final String? en;
   final List<Choice> choices;
   final Comparison? result;
   final Object? goalResult; // a MoneyResult or a PlanResult (goals.dart)
+  final bool openPro; // the farmer chose the professional view: the screen opens it
   final String? spoken; // what to read aloud (defaults to ar)
   final bool showMap; // show the map picker under this message
   final bool retry; // the assistant did not understand
@@ -45,31 +46,156 @@ const _monthKeys = ['يناير', 'فبراير', 'مارس', 'ابريل', 'م�
 const _defaultSummer = {'rice': '05-15', 'maize': '05-01', 'cotton': '04-01'};
 const _altWheat = '11-15'; // recommended date; used for the alternatives and labelled as an assumption
 
+/// Words of a normalised phrase. Letters and digits only, so "kafr_el_sheikh" and "كفر-الشيخ" split the same way.
+List<String> _words(String n) => n.split(RegExp(r'[^\p{L}\p{N}]+', unicode: true)).where((e) => e.isNotEmpty).toList();
+
+const _prefixes = ['وبال', 'وال', 'بال', 'كال', 'فال', 'لل', 'ال', 'و', 'ب', 'ل', 'ف', 'ك'];
+
+/// A word as written and without its Arabic prefixes ("بالغربية" gives "غربيه"): up to two prefixes.
+Set<String> _variants(String t) {
+  final out = {t};
+  var cur = t;
+  for (var i = 0; i < 2; i++) {
+    String? next;
+    for (final p in _prefixes) {
+      if (cur.startsWith(p) && cur.length - p.length >= 2) {
+        next = cur.substring(p.length);
+        break;
+      }
+    }
+    if (next == null) break;
+    out.add(next);
+    cur = next;
+  }
+  return out;
+}
+
+/// True when [form] (one word or several, normalised) appears in [n] as WHOLE words, so "رز" is not found inside "يرزق"
+/// and "كفر الشيخ" is not found in "كفر الزيات". Arabic prefixes (ال، ب، و ...) are ignored.
+bool hasWord(String n, String form) {
+  final toks = _words(n), f = form.split(' ');
+  for (var i = 0; i + f.length <= toks.length; i++) {
+    var ok = true;
+    for (var j = 0; j < f.length; j++) {
+      if (!_variants(toks[i + j]).contains(f[j])) {
+        ok = false;
+        break;
+      }
+    }
+    if (ok) return true;
+  }
+  return false;
+}
+
+bool hasAnyWord(String n, Iterable<String> forms) => forms.any((f) => hasWord(n, f));
+
+/// Towns and villages a farmer may name instead of the governorate: governorate id (egypt_map.json) for each. Whole names only.
+const _townGov = {
+  'Beheira': ['دمنهور', 'كفر الدوار', 'ايتاي البارود', 'ابو حمص'],
+  'Gharbia': ['المحله', 'المحله الكبري', 'كفر الزيات', 'زفتي', 'سمنود', 'بسيون', 'قطور'],
+  'Kafr El-Shikh': ['دسوق', 'بلطيم', 'فوه', 'سيدي سالم', 'بيلا'],
+  'Dakahlia': ['ميت غمر', 'طلخا', 'اجا', 'السنبلاوين', 'بلقاس', 'دكرنس', 'شربين'],
+  'Kalyoubia': ['بنها', 'كفر شكر', 'شبين القناطر', 'الخانكه', 'قليوب', 'طوخ'],
+  'Menoufia': ['شبين الكوم', 'اشمون', 'السادات', 'تلا', 'منوف'],
+  'Sharkia': ['الزقازيق', 'العاشر من رمضان', 'بلبيس', 'ههيا', 'فاقوس', 'ابو كبير'],
+  'Giza': ['الشيخ زايد', 'السادس من اكتوبر', 'اكتوبر', 'الهرم', 'امبابه', 'الحوامديه'],
+  'Cairo': ['مدينه نصر', 'مصر الجديده', 'المعادي', 'التجمع'],
+};
+
 String? parseSite(String n) {
   const m = {
-    'kafr_el_sheikh': ['كفر', 'الشيخ', 'kafr'],
+    'kafr_el_sheikh': ['كفر الشيخ', 'كفرالشيخ', 'kafr el sheikh', 'kafr elsheikh', 'kafrelsheikh', 'دسوق'],
     'damietta': ['دمياط', 'damietta'],
-    'beheira': ['بحير', 'beheira'],
-    'gharbia': ['غربي', 'طنطا', 'gharbia', 'tanta'],
-    'menoufia': ['منوفي', 'شبين', 'menoufia'],
-    'sharqia': ['شرقي', 'زقازيق', 'sharqia'],
+    'beheira': ['بحيره', 'beheira', 'behera', 'دمنهور'],
+    'gharbia': ['غربيه', 'طنطا', 'المحله', 'كفر الزيات', 'gharbia', 'tanta'],
+    'menoufia': ['منوفيه', 'شبين الكوم', 'menoufia', 'menofia'],
+    'sharqia': ['شرقيه', 'زقازيق', 'sharqia', 'sharkia'],
   };
   for (final e in m.entries) {
-    if (e.value.any(n.contains)) return e.key;
+    if (hasAnyWord(n, e.value)) return e.key;
   }
   return null;
 }
 
+/// The summer crop, by whole word. Sorghum ("ذرة رفيعة") is NOT maize, so it is not returned here.
 String? parseCrop(String n) {
-  if (n.contains('رز') || n.contains('ارز') || n.contains('rice')) return 'rice';
-  if (n.contains('ذره') || n.contains('دره') || n.contains('شامي') || n.contains('maize') || n.contains('corn')) return 'maize';
-  if (n.contains('قطن') || n.contains('cotton')) return 'cotton';
+  if (hasAnyWord(n, ['ذره رفيعه', 'دره رفيعه', 'سورجم', 'sorghum'])) return null;
+  if (hasAnyWord(n, ['رز', 'ارز', 'rice'])) return 'rice';
+  if (hasAnyWord(n, ['ذره', 'دره', 'شامي', 'شاميه', 'ذره شاميه', 'maize', 'corn'])) return 'maize';
+  if (hasAnyWord(n, ['قطن', 'cotton'])) return 'cotton';
+  return null;
+}
+
+/// Crops a farmer may name that the app does not cover at all (checked by whole word before any crop is guessed).
+const _notCovered = {
+  'فول سوداني': 'peanut', 'سوداني': 'peanut', 'peanut': 'peanut', 'groundnut': 'peanut',
+  'بطاطا': 'sweet potato', 'بطاطه': 'sweet potato', 'sweet potato': 'sweet potato',
+};
+
+String? notCoveredCrop(String n) {
+  for (final e in _notCovered.entries) {
+    if (hasWord(n, e.key)) return e.value;
+  }
+  return null;
+}
+
+/// Number words as Egyptians say them (normalised): used for "شهر خمسة" (month 5) and "كل خمس ايام" (every 5 days).
+const _numWords = {
+  'واحد': 1, 'اتنين': 2, 'اثنين': 2, 'يومين': 2, 'تلات': 3, 'تلاته': 3, 'ثلاث': 3, 'ثلاثه': 3, 'اربع': 4, 'اربعه': 4, 'خمس': 5, 'خمسه': 5,
+  'ست': 6, 'سته': 6, 'سبع': 7, 'سبعه': 7, 'تمن': 8, 'تمانيه': 8, 'ثمان': 8, 'ثمانيه': 8, 'تسع': 9, 'تسعه': 9, 'عشر': 10, 'عشره': 10,
+  'حداشر': 11, 'احدي عشر': 11, 'اتناشر': 12, 'اثناشر': 12, 'اثني عشر': 12, 'خمستاشر': 15, 'خمسه عشر': 15, 'عشرين': 20, 'تلاتين': 30, 'ثلاثين': 30,
+};
+
+/// The Coptic months farmers still use for the crop calendar: (Gregorian month, day) where each starts. "في هاتور" is about 10 November to 9 December.
+const _copticMonths = {
+  'توت': [9, 11], 'بابه': [10, 11], 'هاتور': [11, 10], 'كيهك': [12, 10], 'طوبه': [1, 9], 'امشير': [2, 8],
+  'برمهات': [3, 10], 'برموده': [4, 9], 'بشنس': [5, 9], 'بؤونه': [6, 8], 'بوونه': [6, 8], 'ابيب': [7, 8], 'مسري': [8, 7],
+};
+
+/// A month given as a number or number word ("شهر 11", "شهر خمسة"), or null.
+int? _monthNumber(String n) {
+  final d = RegExp(r'شهر\s*(\d{1,2})\b').firstMatch(n) ?? RegExp(r'\bmonth\s*(\d{1,2})\b').firstMatch(n);
+  if (d != null) {
+    final v = int.parse(d.group(1)!);
+    return v >= 1 && v <= 12 ? v : null;
+  }
+  final toks = _words(n);
+  for (var i = 0; i < toks.length - 1; i++) {
+    if (_variants(toks[i]).contains('شهر')) {
+      for (final len in [2, 1]) {
+        if (i + 1 + len > toks.length) continue;
+        final w = toks.sublist(i + 1, i + 1 + len).join(' ');
+        final v = _numWords[w];
+        if (v != null && v >= 1 && v <= 12) return v;
+      }
+    }
+  }
+  return null;
+}
+
+/// A Coptic month named in the phrase as (month, day): early, middle (default) or late in that Coptic month, in the Gregorian calendar.
+List<int>? _copticDate(String n) {
+  for (final e in _copticMonths.entries) {
+    if (!hasWord(n, e.key)) continue;
+    final start = DateTime(2001, e.value[0], e.value[1]);
+    final early = n.contains('اول') || n.contains('بدري') || n.contains('بدايه');
+    final late = n.contains('اخر') || n.contains('نهايه');
+    final d = start.add(Duration(days: early ? 0 : (late ? 25 : 14)));
+    return [d.month, d.day];
+  }
   return null;
 }
 
 /// "MM-DD" snapped to the nearest date the tables hold, or null when no month is understood or it is out of range.
 String? parseWhen(String n, List<String> allowed) {
   int? month;
+  int? copticDay;
+  final cop = _copticDate(n);
+  if (cop != null) {
+    month = cop[0];
+    copticDay = cop[1];
+  }
+  month ??= _monthNumber(n);
   for (var i = 0; i < 12; i++) {
     if (n.contains(_monthKeys[i])) month = i + 1;
   }
@@ -85,13 +211,13 @@ String? parseWhen(String n, List<String> allowed) {
   } else if (RegExp(r'\b(late|end)').hasMatch(n)) {
     enDay = 25;
   }
-  final num = RegExp(r'\b(\d{1,2})(?:st|nd|rd|th)?\b').allMatches(n).map((m) => int.parse(m.group(1)!)).toList();
-  int? day = enDay;
-  if (n.contains('اول') || n.contains('بدري') || n.contains('بدايه') || n.contains('بداية')) {
+  final num = RegExp(r'\b(\d{1,2})(?:st|nd|rd|th)?\b').allMatches(n.replaceAll(RegExp(r'(?:شهر|month)\s*\d{1,2}'), ' ')).map((m) => int.parse(m.group(1)!)).toList();
+  int? day = enDay ?? copticDay;
+  if (cop == null && (n.contains('اول') || n.contains('بدري') || n.contains('بدايه') || n.contains('بداية'))) {
     day = 1;
-  } else if (n.contains('نص') || n.contains('منتصف') || n.contains('وسط')) {
+  } else if (cop == null && (n.contains('نص') || n.contains('منتصف') || n.contains('وسط'))) {
     day = 15;
-  } else if (n.contains('اخر') || n.contains('نهايه')) {
+  } else if (cop == null && (n.contains('اخر') || n.contains('نهايه'))) {
     day = 25;
   }
   if (month == null && num.length >= 2 && num[1] >= 1 && num[1] <= 12 && num[0] >= 1 && num[0] <= 31) {
@@ -115,6 +241,10 @@ int? parseDays(String n) {
   if (wk != null) return int.parse(wk.group(1)!) * 7;
   if (n.contains('اسبوعين')) return 14;
   if (n.contains('ثلاث اسابيع') || n.contains('تلات اسابيع')) return 21;
+  final perMonth = RegExp(r'(?:^|\s)(مره|مرتين|تلات مرات|ثلاث مرات|اربع مرات)\s+(?:في|ف)\s*(?:ال)?شهر').firstMatch(n);
+  if (perMonth != null) return const {'مره': 30, 'مرتين': 15, 'تلات مرات': 10, 'ثلاث مرات': 10, 'اربع مرات': 7}[perMonth.group(1)];
+  final w = _dayWords(n);
+  if (w != null) return w;
   final m = RegExp(r'\b(\d{1,2})\b').firstMatch(n);
   if (m != null) {
     final v = int.parse(m.group(1)!);
@@ -123,6 +253,22 @@ int? parseDays(String n) {
   if (n.contains('اسبوع') || n.contains('week')) return 7;
   if (n.contains('عشره') || n.contains('عشر ايام')) return 10;
   if (n.contains('خمستاشر') || n.contains('خمسه عشر')) return 15;
+  return null;
+}
+
+/// "كل خمس ايام", "خمس ايام" or "كل يومين": a number word before "ايام/يوم", or "كل يوم".
+int? _dayWords(String n) {
+  final toks = _words(n);
+  for (var i = 0; i < toks.length; i++) {
+    if (toks[i] == 'يومين') return 2;
+    if (toks[i] != 'ايام' && toks[i] != 'يوم') continue;
+    for (final len in [2, 1]) {
+      if (i - len < 0) continue;
+      final v = _numWords[toks.sublist(i - len, i).join(' ')];
+      if (v != null) return v;
+    }
+    if (i > 0 && toks[i - 1] == 'كل') return 1;
+  }
   return null;
 }
 
@@ -137,6 +283,8 @@ class Salt {
 
 Salt? parseSalt(String n) {
   if (_unknown(n)) return Salt(skipped: true);
+  // negation first: "مش فيه بقع", "مفيش ملح", "من غير قشرة", or a plain "لا"
+  if (RegExp(r'(?:^|\s)(?:مش|مفيش|مافيش|ما فيش|مفيهوش|بدون|من غير|لا يوجد|ما عنديش|لا توجد)\s+(?:فيه\s+|في\s+|فيها\s+)?(?:\S+\s+)?(?:بقع|قشر|ملح|ملوحه|بيضا)').hasMatch(n) || {'لا', 'لأ', 'no', 'nope'}.contains(n)) return Salt(signs: 'none');
   if (RegExp(r'\b(no signs?|no salt|clean|nothing)\b').hasMatch(n) || RegExp(r'\bno\b.*\b(crust|white|patch\w*)').hasMatch(n)) return Salt(signs: 'none');
   if (n.contains('white')) return Salt(signs: 'crust');
   final m = RegExp(r'\b(\d{1,2}(?:[.,]\d)?)\b').firstMatch(n);
@@ -145,8 +293,8 @@ Salt? parseSalt(String n) {
     if (v >= 0 && v <= 30) return Salt(ece: v);
   }
   if (n.contains('مفيش') || n.contains('مافيش') || n.contains('نضيف') || n.contains('عادي') || n.contains('none')) return Salt(signs: 'none');
-  if (n.contains('قشر') || n.contains('بيضا') || n.contains('crust')) return Salt(signs: 'crust');
-  if (n.contains('بقع') || n.contains('patch')) return Salt(signs: 'patches');
+  if (n.contains('قشر') || n.contains('بيضا') || n.contains('crust') || RegExp(r'ملح\s+(?:كتير|كثير|عالي)|(?:^|\s)مالحه?\s+(?:اوي|جدا|قوي)|ملوحه\s+(?:عاليه|كتير)').hasMatch(n)) return Salt(signs: 'crust');
+  if (n.contains('بقع') || n.contains('patch') || RegExp(r'(?:^|\s)(?:ملح|مالحه|مالح)(?:\s|$)').hasMatch(n)) return Salt(signs: 'patches');
   return null;
 }
 
@@ -200,6 +348,7 @@ class Dialogue {
           Choice('أكسب أكتر', 'money', en: 'Earn more'),
           Choice('أزرع محصول معين في ميعاد معين', 'plan', en: 'Grow a certain crop at a certain time'),
           Choice('أحسّن اللي بزرعه دلوقتي', 'improve', en: 'Improve what I grow now'),
+          Choice('أنا محترف: عايز أشوف البيانات', 'pro', en: 'I am a professional: show me the data'),
         ]);
       case Step.planCrop:
         return BotMessage('عايز تزرع إيه؟', en: 'What do you want to grow?', choices: [for (final c in book.all) Choice(c.ar, c.key, en: c.en)]);
@@ -246,7 +395,7 @@ class Dialogue {
     }
     switch (step) {
       case Step.site:
-        if (n.contains('منصور') || n.contains('mansoura')) {
+        if (hasAnyWord(n, ['منصوره', 'mansoura', 'mansura'])) {
           // Mansoura city: it sits in the same NASA cell as Gharbia, so it gets Gharbia's data (stated to the farmer)
           final dk = data.governorates.cast<Map<String, dynamic>>().firstWhere((g) => g['id'] == 'Dakahlia');
           return _useGovernorate(dk, 31.04, 31.38);
@@ -266,6 +415,9 @@ class Dialogue {
         step = _afterSite();
         return [BotMessage('تمام، ${arSite[s]}.', en: data.siteName(s)), prompt()];
       case Step.goal:
+        if (n == 'pro' || RegExp(r'محترف|بيانات|تحليل|professional|data view|analyst|researcher').hasMatch(n)) {
+          return [BotMessage('تمام، هفتحلك عرض المحترفين.', en: 'Opening the professional view.', openPro: true, choices: prompt().choices)];
+        }
         final g = parseGoal(n);
         if (g == 'unmeasurable') {
           return [_retry('أنا بحسب الدخل من متوسط مصر بس، مش بوعد بربح ولا بمحصول. اختار: أكسب أكتر، ولا محصول معين في ميعاد معين، ولا أحسّن اللي بزرعه؟', 'I estimate income from Egypt-wide averages only and never promise profit or yield. Choose: earn more, a certain crop at a certain time, or improve what I grow now.')];
@@ -275,7 +427,8 @@ class Dialogue {
         step = g == 'money' ? Step.salt : (g == 'plan' ? Step.planCrop : Step.crop);
         return [prompt()];
       case Step.planCrop:
-        final pc = book.parse(n);
+        final pc = notCoveredCrop(n) != null ? null : book.parse(n);
+        if (pc == null && notCoveredCrop(n) != null) return [_retry('المحصول ده مش عندي في القايمة لسه. جرّب محصول تاني، زي القمح أو البصل أو العنب.', 'That crop is not on my list yet. Try another, for example wheat, onion or grapes.')];
         if (pc == null) return [_retry('مفهمتش. قول اسم المحصول، زي القمح أو البصل أو العنب.', 'I did not understand. Say the crop, for example wheat, onion or grapes.')];
         planCrop = pc.key;
         step = Step.planWhen;
@@ -289,7 +442,14 @@ class Dialogue {
         return [BotMessage('تمام، ${arDate(pw)}.'), prompt()];
       case Step.crop:
         final c = parseCrop(n);
-        if (c == null) return [_retry('مفهمتش. رز ولا ذرة ولا قطن؟', 'Rice, maize or cotton?')];
+        if (c == null) {
+          final other = notCoveredCrop(n) != null ? null : book.parse(n);
+          if (other != null || notCoveredCrop(n) != null) {
+            final nameAr = other?.ar ?? 'المحصول ده';
+            return [_retry('$nameAr مش في مقارنة الدورة دلوقتي. أقارن الرز والذرة والقطن بس. تزرع أنهي واحد؟', 'That crop is not in the rotation comparison. I compare rice, maize and cotton only. Which of them do you grow?')];
+          }
+          return [_retry('مفهمتش. رز ولا ذرة ولا قطن؟', 'Rice, maize or cotton?')];
+        }
         crop = c;
         step = Step.summerWhen;
         return [prompt()];
@@ -350,7 +510,7 @@ class Dialogue {
     if (g['delta'] != true) return _outside(ar);
     final r = _resolveGov(g, lat, lon)!;
     site = r.key;
-    step = Step.crop;
+    step = _afterSite(); // the goal question comes next, as for a named place
     return [r.note, prompt()];
   }
 
@@ -445,7 +605,7 @@ class Dialogue {
     if (_areaByName(n) != null) return null;
     String? fSite;
     BotMessage? placeNote;
-    if (n.contains('منصور') || n.contains('mansoura')) {
+    if (hasAnyWord(n, ['منصوره', 'mansoura', 'mansura'])) {
       final dk = data.governorates.cast<Map<String, dynamic>>().firstWhere((g) => g['id'] == 'Dakahlia');
       final r = _resolveGov(dk, 31.04, 31.38);
       if (r != null) {
@@ -483,9 +643,18 @@ class Dialogue {
       if (m.group(0) == 'maybe') continue;
       hits.add([m.start, m.group(0)!.length, enM.indexOf(m.group(1)!) + 1]);
     }
+    for (final m in RegExp(r'شهر\s*(\d{1,2})\b').allMatches(n)) {
+      final v = int.parse(m.group(1)!);
+      if (v >= 1 && v <= 12) hits.add([m.start, m.group(0)!.length, v]);
+    }
+    for (final e in _copticMonths.entries) {
+      final k = n.indexOf(e.key);
+      if (k >= 0 && hasWord(n, e.key)) hits.add([k, e.key.length, _copticDate(e.key)![0]]);
+    }
     final crops = <List<Object>>[]; // [position, key]
     _cropWords.forEach((key, words) {
       for (final w in words) {
+        if (!hasWord(n, w)) continue;
         var from = 0;
         while (true) {
           final k = n.indexOf(w, from);
@@ -584,16 +753,19 @@ class Dialogue {
   Map<String, dynamic>? _governorateByName(String n) {
     for (final g in data.governorates) {
       final core = normalizeAr(g['ar'] as String).replaceFirst(RegExp('^ال'), '');
-      if (core.length >= 4 && n.contains(core)) return g as Map<String, dynamic>;
+      if (core.length >= 4 && hasWord(n, core)) return g as Map<String, dynamic>;
       final id = (g['id'] as String).toLowerCase();
-      if (id.length >= 4 && n.contains(id)) return g as Map<String, dynamic>;
+      if (id.length >= 4 && hasAnyWord(n, [id, id.replaceAll('-', ' ')])) return g as Map<String, dynamic>;
+    }
+    for (final e in _townGov.entries) {
+      if (hasAnyWord(n, e.value)) return data.governorates.cast<Map<String, dynamic>>().firstWhere((g) => g['id'] == e.key);
     }
     return null;
   }
 
   /// The goal the farmer named, 'unmeasurable' when he asks for profit or yield promises, or null.
   String? parseGoal(String n) {
-    if (RegExp(r'ضمان|اضمن|اكيد|guarantee|promise').hasMatch(n)) return 'unmeasurable';
+    if (RegExp(r'ضمان|اضمن|guarantee|promise').hasMatch(n)) return 'unmeasurable';
     if (RegExp(r'فلوس|ربح|مكسب|اكسب|اكتر دخل|دخل|ايراد|money|profit|income|earn|revenue').hasMatch(n)) return 'money';
     if (RegExp(r'احسن|حسن|دورتي|دورتك|الحالي|اللي بزرع|improve|current|my rotation|better').hasMatch(n)) return 'improve';
     if (RegExp(r'معين|ميعاد|عايز ازرع|اريد ان ازرع|ازرع|خطه|plan|specific|certain|grow').hasMatch(n)) return 'plan';

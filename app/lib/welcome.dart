@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'eyad.dart';
 import 'i18n.dart';
+import 'pro_view.dart';
 import 'ui_kit.dart';
 
 class Onboarding extends StatefulWidget {
@@ -120,6 +121,12 @@ class _OnboardingState extends State<Onboarding> {
             const Spacer(),
             TextButton(onPressed: () => widget.onDone(true), child: Text(tr('تخطّي', 'Skip'), style: TextStyle(fontSize: 16, color: Fs.dim))),
           ]),
+          Center(
+            child: TextButton.icon(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const ProView())),
+                icon: Icon(Icons.analytics_outlined, size: 18, color: Fs.dim),
+                label: Text(tr('عرض المحترفين (بيانات وتحليل)', 'Professional view (data and analysis)'), style: TextStyle(fontSize: 14, color: Fs.dim))),
+          ),
           const SizedBox(height: 14),
         ])),
       ]);

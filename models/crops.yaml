@@ -12,7 +12,7 @@ crops:
   faba_bean:  {en: Faba bean,  ar: الفول,          group: winter,  salt_key: faba_bean,  season: false, water: false, aliases: [فول, فول بلدي, فول حراتي, faba, broad bean]}
   sugar_beet: {en: Sugar beet, ar: بنجر السكر,     group: winter,  salt_key: sugar_beet, season: false, water: false, aliases: [بنجر, بنجر سكر, بنجر السكر, sugar beet, beet]}
   onion:      {en: Onion,      ar: البصل,          group: winter,  salt_key: onion,      season: true,  water: false, aliases: [بصل, onion]}
-  potato:     {en: Potato,     ar: البطاطس,        group: any,     salt_key: potato,     season: true,  water: false, aliases: [بطاطس, بطاطا, بطاطه, potato]}
+  potato:     {en: Potato,     ar: البطاطس,        group: any,     salt_key: potato,     season: true,  water: false, aliases: [بطاطس, potato]}
   tomato:     {en: Tomato,     ar: الطماطم,        group: any,     salt_key: tomato,     season: false, water: false, aliases: [طماطم, بندوره, tomato]}
   orange:     {en: Citrus,     ar: الموالح,        group: orchard, salt_key: orange,     season: false, water: false, aliases: [برتقال, موالح, يوسفي, ليمون, citrus, orange]}
   grape:      {en: Grapes,     ar: العنب,          group: orchard, salt_key: grape,      season: false, water: false, aliases: [عنب, grape]}

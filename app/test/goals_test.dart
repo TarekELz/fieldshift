@@ -78,7 +78,7 @@ void main() {
     final r = out.last.goalResult as MoneyResult;
     expect(r.ece, 6.0);
     expect(r.groups['winter']!.first.grossEgp, greaterThan(0));
-    expect(out.last.spoken, contains('جنيه'));
+    expect(out.last.spoken, contains('الشتا')); // short on purpose: the figures are on the screen
   });
 
   test('plan flow: any crop, any month, with season, salt and income', () {
@@ -100,6 +100,15 @@ void main() {
     g.handle('عنب');
     g.handle('فبراير');
     expect((g.handle('none').last.goalResult as PlanResult).seasonLabel, 'cannot judge');
+  });
+
+  test('the professional view is offered at the goal question and opens from a spoken word', () {
+    final d = Dialogue(data)..opening();
+    d.handle('الغربية');
+    expect(d.prompt().choices.map((c) => c.value), contains('pro'));
+    expect(d.handle('pro').last.openPro, isTrue);
+    expect(d.step, Step.goal);
+    expect(d.handle('عايز اشوف البيانات').last.openPro, isTrue);
   });
 
   test('original flow still works when the goal question is skipped', () {
