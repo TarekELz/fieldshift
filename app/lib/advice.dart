@@ -10,6 +10,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 
+import 'proxy.dart';
+
 import 'engine.dart';
 import 'i18n.dart';
 
@@ -228,20 +230,20 @@ const _system = {
 
 /// Optional API keys, bundled from assets/secrets/secrets.json when the build was made with keys (never committed). Empty list = no model.
 Future<List<String>> geminiKeys() async {
+  final direct = <String>[];
   try {
     final j = jsonDecode(await rootBundle.loadString('assets/secrets/secrets.json')) as Map<String, dynamic>;
-    return (j['gemini'] as List).cast<String>().where((k) => k.isNotEmpty).toList();
-  } catch (_) {
-    return const [];
-  }
+    direct.addAll((j['gemini'] as List).cast<String>().where((k) => k.isNotEmpty));
+  } catch (_) {}
+  return [if (hasProxy) kProxyKey, ...direct]; // the proxy first: it holds the keys, rotates them and applies the limits
 }
 
 typedef ModelCaller = Future<String> Function(String key, String text, String lang, Duration timeout);
 
 Future<String> _callGemini(String key, String text, String lang, Duration timeout) async {
   final r = await http
-      .post(Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent'),
-          headers: {'x-goog-api-key': key, 'Content-Type': 'application/json'},
+      .post(key == kProxyKey ? Uri.parse('$kProxyUrl/gemini') : Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent'),
+          headers: key == kProxyKey ? proxyHeaders : {'x-goog-api-key': key, 'Content-Type': 'application/json'},
           body: jsonEncode({
             'systemInstruction': {'parts': [{'text': _system[lang]}]},
             'contents': [{'role': 'user', 'parts': [{'text': text}]}],

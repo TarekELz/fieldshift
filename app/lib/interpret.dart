@@ -6,6 +6,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'proxy.dart';
+
 import 'advice.dart';
 import 'dialogue.dart';
 
@@ -33,8 +35,8 @@ typedef InterpretCaller = Future<String> Function(String key, String system, Str
 
 Future<String> _callGemini(String key, String system, String phrase, Duration timeout) async {
   final r = await http
-      .post(Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent'),
-          headers: {'x-goog-api-key': key, 'Content-Type': 'application/json'},
+      .post(key == kProxyKey ? Uri.parse('$kProxyUrl/gemini') : Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent'),
+          headers: key == kProxyKey ? proxyHeaders : {'x-goog-api-key': key, 'Content-Type': 'application/json'},
           body: jsonEncode({
             'systemInstruction': {'parts': [{'text': system}]},
             'contents': [{'role': 'user', 'parts': [{'text': phrase}]}],

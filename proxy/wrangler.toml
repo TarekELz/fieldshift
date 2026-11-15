@@ -1,0 +1,17 @@
+# Deploy with: npx wrangler deploy   (from this folder; see README.md for the full steps)
+name = "fieldshift-proxy"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+RATE_PER_MIN = "30"
+DAILY_TTS_CAP = "3000"
+DAILY_GEMINI_CAP = "3000"
+# ALLOWED_ORIGINS = "https://<your-github-pages-origin>"   # only for the website; the Android app sends no origin
+# DISABLED = "1"                                              # the kill switch: every request answers 503
+
+# Optional, for the daily caps (without it only the per address limit applies):
+# create it with `npx wrangler kv namespace create STATS`, then paste the id here and remove the leading #.
+# [[kv_namespaces]]
+# binding = "STATS"
+# id = "<id printed by the command above>"

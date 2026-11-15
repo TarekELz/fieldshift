@@ -10,6 +10,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 
+import 'proxy.dart';
+
 import 'sentences.dart';
 import 'spoken_ar.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -51,12 +53,12 @@ class LiveVoice {
   static String lastError = 'not tried';
 
   static Future<List<String>> keys() async {
+    final direct = <String>[];
     try {
       final j = jsonDecode(await rootBundle.loadString('assets/secrets/secrets.json')) as Map<String, dynamic>;
-      return ((j['hamsa'] as List?) ?? const []).cast<String>().where((k) => k.isNotEmpty).toList();
-    } catch (_) {
-      return const [];
-    }
+      direct.addAll(((j['hamsa'] as List?) ?? const []).cast<String>().where((k) => k.isNotEmpty));
+    } catch (_) {}
+    return [if (hasProxy) kProxyKey, ...direct]; // the proxy first: it holds the keys, rotates them and applies the limits
   }
 
   static Future<Uint8List?> generate(String text, {Duration budget = const Duration(seconds: 15), List<String>? keyList}) async {
@@ -79,6 +81,17 @@ class LiveVoice {
     Duration left() => budget - sw.elapsed;
     for (final k in ks) {
       if (left() <= Duration.zero) break;
+      if (k == kProxyKey) {
+        // the proxy answers with the WAV itself; it tries its own keys in turn, so a failure here means all are resting or the limit is reached
+        try {
+          final r = await http.post(Uri.parse('$kProxyUrl/tts'), headers: proxyHeaders, body: jsonEncode({'text': text})).timeout(left() < const Duration(seconds: 12) ? left() : const Duration(seconds: 12));
+          if (r.statusCode == 200 && r.bodyBytes.length > 44 && String.fromCharCodes(r.bodyBytes.take(4)) == 'RIFF') return _cache[text] = r.bodyBytes;
+          lastError = 'proxy answered ${r.statusCode}';
+        } catch (e) {
+          lastError = 'proxy ${e.runtimeType} after ${sw.elapsed.inMilliseconds} ms';
+        }
+        continue;
+      }
       final h = {'Authorization': 'Token $k', 'Content-Type': 'application/json'}; // 'Bearer' is rejected as deprecated; only 'Token' works
       // The realtime endpoint returns the WAV in the same response (about one second on a good connection, several on mobile data). One retry on the same key,
       // because a first request on a phone often fails on a cold connection; the jobs endpoint below is a slower fallback that has to be polled.

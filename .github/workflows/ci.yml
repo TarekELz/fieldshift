@@ -28,3 +28,11 @@ jobs:
         working-directory: app
       - run: flutter test
         working-directory: app
+  proxy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test proxy/test/worker.test.mjs

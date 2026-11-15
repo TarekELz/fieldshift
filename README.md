@@ -127,7 +127,7 @@ It **supports, and does not replace,** the farmer's judgement and local agricult
   2. In `app/`: `flutter pub get`, `flutter test`, `flutter build apk --debug`, then install `app/build/app/outputs/flutter-apk/app-debug.apk` on an Android phone. A web preview (`flutter build web`) shows the app in a phone-sized frame; `?theme=light`, `?lang=en`, `?skip=1` and `?demo=1` in the address open the light theme, English, the questions, or a sample result.
   3. The build needs a few GB of free memory; `app/android/gradle.properties` is set low (2 GB) because the default crashed a 16 GB laptop with many apps open.
   4. Voice uses the phone's own speech recognition and text-to-speech (free, no key). Arabic recognition usually needs internet. If the phone has no Arabic voice, type or tap the answer buttons.
-  5. Optional keys (Gemini for rewording, Hamsa for live voice) go in `.env` (see [`.env.example`](.env.example)) and are bundled into a gitignored file by `scripts/write_app_secrets.py`. Never commit them.
+  5. Keys (Gemini for rewording, Hamsa for the live voice) are not bundled in the app. A small proxy holds them and rotates them when one runs out: see [`proxy/README.md`](proxy/README.md), then build with `--dart-define=PROXY_URL=https://<your-proxy>`. For local team tests, keys in `.env` can still be bundled into a gitignored file by `scripts/write_app_secrets.py`. Never commit keys.
 
 <a id="judges-checklist"></a>
 ## For the judges

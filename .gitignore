@@ -46,3 +46,8 @@ app/assets/secrets/secrets.json
 
 # local web demo build (CI builds and publishes it)
 docs/app/
+
+# proxy
+proxy/.dev.vars
+proxy/.wrangler/
+proxy/node_modules/
