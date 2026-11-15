@@ -59,7 +59,7 @@ class LiveVoice {
     }
   }
 
-  static Future<Uint8List?> generate(String text, {Duration budget = const Duration(seconds: 6), List<String>? keyList}) async {
+  static Future<Uint8List?> generate(String text, {Duration budget = const Duration(seconds: 10), List<String>? keyList}) async {
     if (kIsWeb) {
       lastError = 'web build';
       return null;
@@ -76,40 +76,47 @@ class LiveVoice {
       return null;
     }
     final sw = Stopwatch()..start();
+    Duration left() => budget - sw.elapsed;
     for (final k in ks) {
-      try {
-        final h = {'Authorization': 'Token $k', 'Content-Type': 'application/json'}; // 'Bearer' is rejected as deprecated; only 'Token' works
-        // The realtime endpoint returns the WAV in the same response (about one second); the jobs endpoint below is a slower fallback that has to be polled.
+      if (left() <= Duration.zero) break;
+      final h = {'Authorization': 'Token $k', 'Content-Type': 'application/json'}; // 'Bearer' is rejected as deprecated; only 'Token' works
+      // The realtime endpoint returns the WAV in the same response (about one second on a good connection, several on mobile data). One retry on the same key,
+      // because a first request on a phone often fails on a cold connection; the jobs endpoint below is a slower fallback that has to be polled.
+      for (var attempt = 0; attempt < 2 && left() > const Duration(seconds: 2); attempt++) {
         try {
           final rt = await http
               .post(Uri.parse('$_base/v1/realtime/tts'), headers: h, body: jsonEncode({'text': text, 'speaker': _voiceId, 'dialect': 'egy'}))
-              .timeout(budget - sw.elapsed);
+              .timeout(left() < const Duration(seconds: 8) ? left() : const Duration(seconds: 8));
           if (rt.statusCode == 200 && rt.bodyBytes.length > 44 && String.fromCharCodes(rt.bodyBytes.take(4)) == 'RIFF') return _cache[text] = rt.bodyBytes;
-          lastError = 'Hamsa realtime answered ${rt.statusCode}';
+          lastError = 'Hamsa realtime answered ${rt.statusCode} after ${sw.elapsed.inMilliseconds} ms';
+          if (rt.statusCode == 401 || rt.statusCode == 402 || rt.statusCode == 403) break; // this key is refused or out of credit: next key
         } catch (e) {
-          lastError = 'realtime ${e.runtimeType}';
+          lastError = 'realtime ${e.runtimeType} after ${sw.elapsed.inMilliseconds} ms';
         }
-        if (sw.elapsed >= budget) break;
-        final r = await http.post(Uri.parse('$_base/v1/jobs/text-to-speech'), headers: h, body: jsonEncode({'voiceId': _voiceId, 'text': text})).timeout(budget - sw.elapsed);
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      }
+      if (left() < const Duration(seconds: 3)) continue;
+      try {
+        final r = await http.post(Uri.parse('$_base/v1/jobs/text-to-speech'), headers: h, body: jsonEncode({'voiceId': _voiceId, 'text': text})).timeout(left());
         if (r.statusCode != 200 && r.statusCode != 201) {
-          lastError = 'Hamsa answered ${r.statusCode}';
+          lastError = 'Hamsa jobs answered ${r.statusCode}';
           continue;
         }
         var job = (jsonDecode(r.body) as Map)['data'] as Map;
-        while (sw.elapsed < budget) {
+        while (left() > Duration.zero) {
           final url = ((job['jobResponse'] as Map?)?['ttsMediaFile'] ?? job['mediaUrl']) as String?;
           if (job['status'] == 'COMPLETED' && url != null) {
-            final a = await http.get(Uri.parse(url)).timeout(budget - sw.elapsed);
+            final a = await http.get(Uri.parse(url)).timeout(left());
             if (a.statusCode == 200 && a.bodyBytes.isNotEmpty) return _cache[text] = a.bodyBytes;
             break;
           }
           if (job['status'] == 'FAILED') break;
           await Future<void>.delayed(const Duration(milliseconds: 1000));
-          final g = await http.get(Uri.parse('$_base/v1/jobs?jobId=${job['id']}'), headers: h).timeout(budget - sw.elapsed);
+          final g = await http.get(Uri.parse('$_base/v1/jobs?jobId=${job['id']}'), headers: h).timeout(left());
           if (g.statusCode == 200) job = (jsonDecode(g.body) as Map)['data'] as Map;
         }
       } catch (e) {
-        lastError = e.runtimeType.toString(); // offline, quota or too slow
+        lastError = 'jobs ${e.runtimeType} after ${sw.elapsed.inMilliseconds} ms';
         continue; // next key, then the phone's voice
       }
     }
