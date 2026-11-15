@@ -170,10 +170,10 @@ modis_delta_rasters:
   used_by: [calendar]
 
 egypt_map:
-  source: Natural Earth (public domain): admin-1 governorates (with Arabic names), rivers, lakes; built by scripts/build_egypt_map.py
+  source: "Natural Earth (public domain), admin-1 governorates (with Arabic names), rivers, lakes; built by scripts/build_egypt_map.py"
   access: open, no account
   resolution: generalized cartographic data (about 0.5 km simplification), NOT a survey; disputed areas are drawn as administered today
-  status: in the app at app/assets/data/egypt_map.json (50 KB). Checked 2026-11-15 against OpenStreetMap: western, southern and Sinai land borders coincide; river lines lie within 0.4-2 km of Mansoura, Zifta, Mit Ghamr, Desouk, Rashid, Damietta, Aswan, Luxor, Asyut, Giza. A test checks each NASA data point lies inside its labelled governorate
+  status: "in the app at app/assets/data/egypt_map.json (50 KB). Checked 2026-11-15 against OpenStreetMap: western, southern and Sinai land borders coincide; river lines lie within 0.4-2 km of Mansoura, Zifta, Mit Ghamr, Desouk, Rashid, Damietta, Aswan, Luxor, Asyut, Giza. A test checks each NASA data point lies inside its labelled governorate"
   used_by: [app location picker]
 
 map_sources_candidates:
@@ -187,6 +187,6 @@ map_sources_candidates:
     source: geoBoundaries gbOpen EGY. ADM1 (27 units, from OpenStreetMap, ODbL, 2017); ADM2 (365 units, from OCHA/CAPMAS, CC BY 3.0 IGO, 2020)
     status: candidate
   osm_waterways_delta:
-    source: OpenStreetMap via Overpass: 175 named river/canal ways, 43 names, about 2,100 km in the Delta box (Damietta Branch 246 km, Rosetta Branch 238 km, Bahr Shebin 143 km, Ismailia Canal 131 km)
+    source: "OpenStreetMap via Overpass: 175 named river/canal ways, 43 names, about 2,100 km in the Delta box (Damietta Branch 246 km, Rosetta Branch 238 km, Bahr Shebin 143 km, Ismailia Canal 131 km)"
     license: ODbL
     status: candidate for drawing the main canals; the Delta's full network is about 40,000 km of canals and 18,000 km of drains (JICA figure, not verified here)
