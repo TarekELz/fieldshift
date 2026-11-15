@@ -141,6 +141,7 @@
     $('askInPanel').placeholder = t('ask_ph'); $('askSendPanel').textContent = t('send');
     $('pillTitle').textContent = t('pill_title'); $('pillPlaceLbl').textContent = t('pill_place'); $('pillWheatLbl').textContent = t('pill_wheat'); $('pillDone').textContent = t('done');
     $('illus1').textContent = t('illus');
+    if ($('illus2')) $('illus2').textContent = t('illus_crops');
     updatePill();
   }
   function updatePill() { $('pillText').textContent = I.site(S.site) + ' · ' + t('wheat_short') + ' ' + I.date(S.wheat); }
