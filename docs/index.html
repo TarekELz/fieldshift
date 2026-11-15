@@ -94,11 +94,11 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;p
 
 <div class="wrap">
   <div class="stats" id="stats">
-    <div class="stat"><b data-n="5">0</b><span>NASA datasets held</span></div>
+    <div class="stat"><b data-n="6">0</b><span>NASA datasets used</span></div>
     <div class="stat"><b data-n="36">0</b><span>years of daily NASA weather (13,149 days)</span></div>
     <div class="stat"><b data-n="19">0</b><span>NASA weather points in the app: 7 named places and 12 extra cells</span></div>
-    <div class="stat"><b data-n="4">0</b><span>engines: heat, water, salt, season</span></div>
-    <div class="stat"><b data-n="446">0</b><span>automated tests passing (15 Nov)</span></div>
+    <div class="stat"><b data-n="5">0</b><span>engines: heat, water, salt, season, income</span></div>
+    <div class="stat"><b data-n="371">0</b><span>automated tests passing (309 Python, 62 Flutter; 15 Nov)</span></div>
   </div>
 </div>
 
@@ -188,14 +188,14 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;p
 
 <section id="limits"><div class="wrap">
   <h2>Why you can trust it</h2>
-  <p class="sub">Advice only helps a farmer if it is right, so the project is built to be checked, not just to look convincing.</p>
+  <p class="sub">Every number on this page can be traced to a dataset, a table or a paper, and checked.</p>
   <div class="grid3">
     <div class="card"><h3>Numbers are computed, never made up</h3><p>Heat, water and salt come from engines on NASA POWER weather and FAO tables. The language model may rephrase a sentence; a guard throws the rewrite away if it changes a number or drops a key fact.</p></div>
     <div class="card"><h3>It says "cannot judge" when data cannot</h3><p>For berseem, tomato, sugar beet and tree crops, temperature alone does not separate the seasons, so Eyad says so and sends you to an agricultural engineer instead of guessing.</p></div>
-    <div class="card"><h3>Every answer is labelled</h3><p>Advice is marked as an estimate from NASA data, never a promise of a harvest. Anything the AI wrote or voiced is marked as AI, and each decision and data source is logged in the repository.</p></div>
-    <div class="card"><h3>Built to be tested</h3><p>446 automated tests, golden cases that the Dart app must reproduce from the Python engines, and independent reviews that caught and fixed real bugs before this page was published.</p></div>
+    <div class="card"><h3>Every answer is labelled</h3><p>Advice is marked as an estimate from NASA data, never a promise of a harvest. Eyad's picture carries a visible AI mark; the app's Terms say that his voice is AI-generated and that an AI model may reword the advice. Each decision and data source is logged in the repository.</p></div>
+    <div class="card"><h3>Built to be tested</h3><p>371 automated tests (309 Python, 62 Flutter), 18 golden cases that the Dart app must reproduce from the Python engines, and independent AI code reviews whose findings we fixed (for example a mislabelled faba bean).</p></div>
     <div class="card"><h3>Sources you can open</h3><p>Every problem figure cites a paper whose full text we read. Data sets are catalogued with their limits in <a href="../data/catalog.yaml">data/catalog.yaml</a>.</p></div>
-    <div class="card"><h3>Next steps</h3><p>Validate heat and water against Delta weather stations, add more crops with sourced parameters, and test with farmers on real phones. The foundations to do it are already in place.</p></div>
+    <div class="card"><h3>Next steps</h3><p>Validate heat and water against Delta weather stations, add more crops with sourced parameters, and test with farmers on real phones.</p></div>
   </div>
 </div></section>
 
@@ -212,7 +212,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;p
   </div>
 </div></section>
 </main>
-<footer><div class="wrap">Field Shift · NASA Space Apps Challenge 2026 · Data: NASA POWER, NASA MODIS, NASA GPM, FAO, ESA, CAPMAS/HDX, Natural Earth. Code MIT. Fonts IBM Plex (SIL OFL).</div></footer>
+<footer><div class="wrap">Field Shift · NASA Space Apps Challenge 2026 · Data: NASA POWER, NASA MODIS, NASA GPM, NASA SRTM, FAO, ESA, CAPMAS/HDX, Natural Earth. Code MIT. Fonts IBM Plex (SIL OFL).</div></footer>
 
 <script>
 (function(){
