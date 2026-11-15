@@ -248,3 +248,16 @@ ul.tight{margin:6px 0;padding-inline-start:20px}ul.tight li{margin:4px 0}
   .toolbar input{min-width:0;width:100%}
   .viewbar a{display:none}
 }
+.speakbtn.playing{background:var(--accent);color:var(--on);border-color:var(--accent)}
+
+.viewbar,.askfab,#askPanel{display:none!important}
+.cpic{display:block;border-radius:10px}
+.chip .cpic{display:inline-block;vertical-align:middle;margin-inline-end:6px;border-radius:5px}
+.bar span .cpic{display:inline-block;vertical-align:middle;margin-inline-end:8px;border-radius:5px}
+.rot .cpic{width:100%;height:auto;margin:10px 0 6px}
+.cico{vertical-align:middle;border-radius:10px;margin-inline-end:6px}
+.cropstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 8px}
+.cropstrip figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.cropstrip .cpic{width:100%;height:auto;margin:0 0 8px}
+.cropstrip figcaption{display:flex;flex-direction:column;gap:2px}
+@media (max-width:640px){.cropstrip{grid-template-columns:repeat(2,1fr)}}

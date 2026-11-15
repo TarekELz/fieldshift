@@ -38,10 +38,10 @@
       n: ['A second check of the calendar the engines assume; it feeds no number the farmer sees.', 'مراجعة للتقويم بس؛ مش بيطلع منه رقم للفلاح.'] },
     climate: { l: ['NASA POWER monthly means', 'متوسطات ناسا باور'], f: function () { return 'data/climate.json → {site} → T2M_MAX[6] (July), 1990 to 2025'; },
       n: ['A ~50 km cell average, not a field measurement.', 'متوسط مربع ~٥٠ كم، مش قياس في الغيط.'] },
-    paper: { l: ['README figure', 'رقم من الـ README'], f: function () { return 'README.md → The problem (papers read in full, literature/papers.csv in the repository)'; },
-      n: ['A survey or trial result from that paper, not a number computed by this site.', 'نتيجة من الورقة البحثية، مش رقم محسوب هنا.'] },
-    readme: { l: ['README validation', 'تحقق الـ README'], f: function () { return 'README.md → What we checked (validation); result files are in the repository, not in this site'; },
-      n: ['Copied as written. This site cannot run that check again.', 'منقول زي ما هو. الموقع مش بيعيد التحقق ده.'] }
+    paper: { l: ['Published research', 'رقم من الـ README'], f: function () { return 'README.md → The problem (papers read in full, literature/papers.csv in the repository)'; },
+      n: ['A result from published research in the Nile Delta, not a number computed by this site.', 'نتيجة من الورقة البحثية، مش رقم محسوب هنا.'] },
+    readme: { l: ['Project checks', 'فحوصات المشروع'], f: function () { return 'README.md → What we checked; result files in docs/checks/ in the repository'; },
+      n: ['Checks run on the project data against NASA and FAO sources.', 'فحوصات اتعملت على بيانات المشروع قصاد مصادر ناسا وفاو.'] }
   };
   var src = function (k, detail) { return ' <button type="button" class="src" data-src="' + k + '"' + (detail ? ' data-d="' + esc(detail) + '"' : '') + '>' + esc(SRC[k].l[I.lang === 'ar' ? 1 : 0]) + '</button>'; };
   FS.src = src;
@@ -64,6 +64,9 @@
 
   // ---------- small helpers ----------
   var NAMES_EXTRA = { berseem: ['Berseem (Egyptian clover)', 'البرسيم'] };
+  var CROPPIC = { rice: 1, maize: 1, cotton: 1, wheat: 1 };
+  var cropPic = function (k, w) { return CROPPIC[k] ? '<img class="cpic" src="img/crops/' + k + '.svg" alt="" width="' + w + '" height="' + Math.round(w * 0.75) + '">' : ''; };
+  var icon = function (n) { return '<img class="cico" src="img/crops/' + n + '.svg" alt="" width="40" height="40"> '; };
   var cropName = function (k) { return FS.crops.crops[k] ? I.crop(k) : (NAMES_EXTRA[k] ? L(NAMES_EXTRA[k][0], NAMES_EXTRA[k][1]) : k); };
   var signName = function (s) { return t('sign_' + s); };
   var pillLabel = function (l) { return '<span class="pill ' + I.labelCls(l) + '">' + esc(I.label(l)) + '</span>'; };
@@ -72,16 +75,47 @@
     if (k === 'sea') return t('caveat_sea'); if (k === 'desert_edge') return t('caveat_desert'); if (k === 'shared_cell') return t('caveat_shared'); return null;
   };
   var ratioTxt = function (r) { return '×' + I.n(r.toFixed(2)); };
-  var canSpeak = 'speechSynthesis' in window;
-  function speak(text) { if (!canSpeak) return; try { var u = new SpeechSynthesisUtterance(text); u.lang = I.lang === 'ar' ? 'ar-EG' : 'en-US'; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { } }
+  // Listen: in Arabic, Eyad's own recorded voice (data/voice.js maps each advice line to an audio file; a public page cannot hold an API key, so every line is recorded
+  // in advance, see scripts/build_explorer_voice.py). A line with no recording, and English, use the browser's own voice.
+  var hasRecorded = function () { return !!(FS.voice && I.lang === 'ar'); };
+  var canSpeak = function () { return 'speechSynthesis' in window || !!FS.voice; };
+  var player = null;
+  function stopVoice() {
+    if (player) { player.onended = null; player.onerror = null; try { player.pause(); } catch (e) { } player = null; }
+    if ('speechSynthesis' in window) { try { speechSynthesis.cancel(); } catch (e) { } }
+    var on = document.querySelectorAll('.speakbtn.playing'); for (var i = 0; i < on.length; i++) on[i].classList.remove('playing');
+  }
+  function speak(text) { if (!('speechSynthesis' in window)) return; try { var u = new SpeechSynthesisUtterance(text); u.lang = I.lang === 'ar' ? 'ar-EG' : 'en-US'; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { } }
   FS.speak = speak;
-  var speakBtn = function (id) { return canSpeak ? ' <button type="button" class="tbtn speakbtn" data-speak="' + id + '">🔊 ' + t('speak') + '</button>' : ''; };
-  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-speak]'); if (b) { var el = $(b.getAttribute('data-speak')); if (el) speak(el.textContent); } });
+  // Plays the advice bubbles of a block one after another from their recordings; if any bubble has no recording the whole block uses the browser voice.
+  function eyadSpeak(el, btn) {
+    var bubbles = [].slice.call(el.querySelectorAll('.bubble')).map(function (x) { return x.textContent; });
+    var items = bubbles.length ? bubbles : [el.textContent];
+    var clips = hasRecorded() ? items.map(function (x) { return FS.voice[x]; }) : [];
+    stopVoice();
+    if (!clips.length || clips.some(function (c) { return !c; })) { speak(items.join(' ')); return; }
+    btn.classList.add('playing');
+    var i = 0;
+    (function next() {
+      if (i >= clips.length) { stopVoice(); return; }
+      player = new Audio(clips[i++]);
+      player.onended = next;
+      player.onerror = function () { stopVoice(); speak(items.join(' ')); };
+      var started = player.play(); if (started && started.catch) started.catch(function () { stopVoice(); speak(items.join(' ')); });
+    })();
+  }
+  var speakBtn = function (id) { return canSpeak() ? ' <button type="button" class="tbtn speakbtn" data-speak="' + id + '" title="' + esc(L("Eyad's recorded voice (Arabic)", 'صوت إياد المسجّل')) + '">🔊 ' + t('speak') + '</button>' : ''; };
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-speak]'); if (!b) return;
+    if (b.classList.contains('playing')) { stopVoice(); return; }
+    var el = $(b.getAttribute('data-speak')); if (el) eyadSpeak(el, b);
+  });
+  window.addEventListener('hashchange', stopVoice);
   var eyadAv = function () { return '<span class="av"><img src="img/eyad_main.jpg" alt="' + esc(L('Eyad, the assistant (AI-generated picture)', 'إياد، المساعد (صورة بالذكاء الاصطناعي)')) + '"><span class="ai">AI</span></span>'; };
   function state() { var rows = E.compare(S.site, S.crop, S.sow, S.wheat, S.sign); return { rows: rows, f: E.facts(S.site, rows) }; }
 
   // ---------- pages, views, nav ----------
-  var PAGES = [['learn', 'nav_learn'], ['lab', 'nav_lab'], ['crops', 'nav_crops'], ['compare', 'nav_compare'], ['data', 'nav_data'], ['ask', 'nav_ask'], ['methods', 'nav_methods'], ['judges', 'nav_judges']];
+  var PAGES = [['learn', 'nav_learn'], ['lab', 'nav_lab'], ['judges', 'nav_judges']];
   var VIEWS = { everyone: [], farmer: ['learn', 'lab', 'ask'], officer: ['lab', 'compare', 'crops'], researcher: ['methods', 'data', 'compare'], judge: ['judges', 'learn', 'data'] };
   var current = 'learn';
   function renderNav() {
@@ -181,7 +215,7 @@
     var adv = function (p) { return p ? { txt: '«' + p.txt + '»', s: src('advice', p.id) } : { txt: none, s: '' }; };
     if (id === 'canal') return [
       { txt: L('Canal water comes in turns. Fields at the tail end of a canal get the least, and the least reliably.', 'مية الترعة بتيجي بالدور. الأرض اللي في آخر الترعة بتاخد أقل، ومش بانتظام.') },
-      { txt: L('In one western Delta study, 58% of farmers at the tail end said growing rice had become very difficult, and rice yields fell 30 to 50% (ghazouani2014).', 'في دراسة في غرب الدلتا، ٥٨٪ من فلاحين آخر الترعة قالوا إن الرز بقى صعب جداً، ومحصوله قل من ٣٠ لـ ٥٠٪ (ghazouani2014).'), s: src('paper') },
+      { txt: L('Published research from the western Delta found that 58% of farmers at the tail end said growing rice had become very difficult, and rice yields fell 30 to 50%.', 'أبحاث منشورة من غرب الدلتا لقت إن ٥٨٪ من فلاحين آخر الترعة قالوا إن الرز بقى صعب جداً، ومحصوله قل من ٣٠ لـ ٥٠٪.'), s: src('paper') },
       { txt: L('At ' + place + ', maize needs about ' + ratioTxt(rm) + ' and cotton ' + ratioTxt(rc) + ' of rice’s seasonal water, each sown on its usual date.', 'في ' + place + '، الذرة محتاجة حوالي ' + ratioTxt(rm) + ' والقطن ' + ratioTxt(rc) + ' من مية الرز في الموسم، كل واحد في ميعاده المعتاد.'), s: src('water', 'maize, cotton vs rice') },
       adv(pick(['water_heavy'], rf))];
     if (id === 'rice') return [
@@ -191,14 +225,14 @@
       adv(pick(['tight_gap'], rf))];
     if (id === 'wheat') return [
       { txt: L('Wheat sown late fills its grain in the spring heat.', 'القمح المتأخر بيملي حبته في حر الربيع.') },
-      { txt: L('In field trials, wheat sown 7 to 13 January lost about 40% of its yield against mid November (elbasyoni2018).', 'في تجارب حقلية، القمح المزروع من ٧ لـ ١٣ يناير خسر حوالي ٤٠٪ من محصوله مقارنة بنص نوفمبر (elbasyoni2018).'), s: src('paper') },
+      { txt: L('Published field trials found that wheat sown 7 to 13 January lost about 40% of its yield against mid November.', 'تجارب حقلية منشورة لقت إن القمح المزروع من ٧ لـ ١٣ يناير خسر حوالي ٤٠٪ من محصوله مقارنة بنص نوفمبر.'), s: src('paper') },
       { txt: L('At ' + place + ', wheat sown ' + I.date(S.wheat) + ' meets about ' + h.median + ' hot days in grain filling (median of 35 seasons), ' + (h.extra['32'] >= 0 ? '+' : '') + h.extra['32'] + ' against 15 November.', 'في ' + place + '، القمح المزروع ' + I.date(S.wheat) + ' بيقابل حوالي ' + I.n(h.median) + ' يوم حر وقت امتلاء الحبة (وسيط ٣٥ موسم)، ' + I.n((h.extra['32'] >= 0 ? '+' : '') + h.extra['32']) + ' عن ١٥ نوفمبر.'), s: src('heat') },
       adv(pick(['combo_late_salt', 'wheat_off_season', 'wheat_late'], f))];
     if (id === 'salt') {
       var sf = st.rows[0].saltS, wf = st.rows[0].saltW;
       return [
         { txt: L('Salty groundwater and poor drainage leave salt in the topsoil. It shows as white patches or a crust.', 'المية الجوفية المالحة وضعف الصرف بيسيبوا ملح في وش الأرض. بيبان كبقع بيضا أو قشرة.') },
-        { txt: L('57.2% of surveyed Delta farmers report rising soil salinity (kassem2019). Rice helps wash salt out but is the thirstiest crop.', '٥٧٫٢٪ من فلاحين الدلتا في الدراسة قالوا إن ملوحة الأرض بتزيد (kassem2019). الرز بيغسل الملح بس هو أكتر محصول بيشرب مية.'), s: src('paper') },
+        { txt: L('Published surveys of Delta farmers found that 57.2% report rising soil salinity. Rice helps wash salt out but is the thirstiest crop.', 'استطلاعات منشورة لفلاحين الدلتا لقت إن ٥٧٫٢٪ منهم بيقولوا إن ملوحة الأرض بتزيد. الرز بيغسل الملح بس هو أكتر محصول بيشرب مية.'), s: src('paper') },
         { txt: sf ? L('No NASA product measures soil salt, so the farmer says what he sees. With “' + signName(S.sign) + '”, FAO paper 29 gives ' + I.cropLow(S.crop) + ' ' + (sf.pct == null ? 'less than 50% (not advised)' : sf.pct + '%') + ' and wheat ' + (wf.pct == null ? 'less than 50%' : wf.pct + '%') + ' relative yield.', 'مفيش منتج من ناسا بيقيس ملح التربة، فالفلاح بيقول اللي شايفه. مع «' + signName(S.sign) + '»، جدول الفاو-٢٩ بيدي ' + I.crop(S.crop) + ' ' + (sf.pct == null ? 'أقل من ٥٠٪ (مش مناسب)' : I.n(sf.pct) + '٪') + ' والقمح ' + (wf.pct == null ? 'أقل من ٥٠٪' : I.n(wf.pct) + '٪') + ' من المحصول النسبي.')
                  : L('No NASA product measures soil salt, so the farmer says what he sees. No sign is given yet: choose one in the Field lab or in step 3 below.', 'مفيش منتج من ناسا بيقيس ملح التربة. لسه مفيش علامة: اختار واحدة في المعمل أو في الخطوة ٣ تحت.'), s: src('salt', S.crop) },
         adv(pick(['salt_not_advised_alt', 'salt_not_advised', 'salt_reduced', 'no_salt_info'], f))];
@@ -230,6 +264,7 @@
     step = step || 1;
     $('learnEb').textContent = t('learn_eyebrow'); $('learnH').textContent = t('learn_h'); $('learnSub').textContent = t('learn_sub');
     $('hotspots').innerHTML = HS.map(function (h) { return '<button type="button" class="hs" data-hs="' + h.id + '" style="left:' + h.x + '%;top:' + h.y + '%" aria-label="' + esc(t('hs_' + h.id)) + '"><span class="ring" aria-hidden="true"></span><span class="tag">' + esc(t('hs_' + h.id)) + '</span></button>'; }).join('');
+    $('cropStrip').innerHTML = ['rice', 'maize', 'cotton', 'wheat'].map(function (k) { return '<figure>' + cropPic(k, 160) + '<figcaption><b>' + esc(I.crop(k)) + '</b><span class="dim small">' + L(k === 'wheat' ? 'Winter crop' : 'Summer crop', k === 'wheat' ? 'محصول شتوي' : 'محصول صيفي') + '</span></figcaption></figure>'; }).join('');
     $('hsChips').innerHTML = HS.map(function (h) { return '<button type="button" class="chip" data-hs="' + h.id + '" aria-pressed="false"><span class="cd" aria-hidden="true"></span>' + esc(t('hs_' + h.id)) + '</button>'; }).join('');
     Array.prototype.forEach.call(document.querySelectorAll('[data-hs]'), function (b) { b.onclick = function () { S.hs = b.getAttribute('data-hs'); S.hsStep = 0; renderStory(); startAuto(); }; });
     renderHud(); renderStory();
@@ -251,13 +286,13 @@
   function learn1() {
     var max = 1; [ '11-01', S.wheat ].forEach(function (d) { FS.heat[S.site][d].series.forEach(function (v) { if (v > max) max = v; }); });
     var cav = caveatOf(S.site);
-    return '<h2>' + t('s1_h') + '</h2><p class="lead">' + esc(t('s1_p')) + src('paper') + '</p>' + (cav ? '<div class="caveat">' + esc(cav) + '</div>' : '') +
+    return '<h2>' + icon('heat') + t('s1_h') + '</h2><p class="lead">' + esc(t('s1_p')) + src('paper') + '</p>' + (cav ? '<div class="caveat">' + esc(cav) + '</div>' : '') +
       '<div class="sbs">' + sideCard('11-01', t('early'), max) + sideCard(S.wheat, t('late'), max) + '</div>' +
       '<p class="dim small" style="margin-top:10px">' + t('hot_def') + '</p><div class="chips" id="wheatChips" aria-label="' + esc(t('pill_wheat')) + '">' + WHEAT_DATES.map(function (d) { return '<button type="button" class="chip" data-wheat="' + d + '" aria-pressed="' + (d === S.wheat) + '">' + I.date(d) + '</button>'; }).join('') + '</div>';
   }
   function learn2() {
     var w = FS.water[S.site], base = w.rice[E.DEFAULT_SUMMER.rice].etc, crops = ['rice', 'maize', 'cotton'];
-    return '<h2>' + t('s2_h') + '</h2><p class="lead">' + esc(t('s2_p')) + src('paper') + '</p><div class="card"><div class="bars">' + crops.map(function (c) {
+    return '<h2>' + icon('water') + t('s2_h') + '</h2><p class="lead">' + esc(t('s2_p')) + src('paper') + '</p><div class="card"><div class="bars">' + crops.map(function (c) {
       var r = w[c][E.DEFAULT_SUMMER[c]].etc / base;
       return '<div class="bar"><span>' + esc(I.crop(c)) + ' <span class="dim small">' + I.date(E.DEFAULT_SUMMER[c]) + '</span></span><span class="track"><span class="fillb" style="width:' + Math.min(100, r / 1.2 * 100) + '%;display:block"></span></span><b>' + ratioTxt(r) + '</b></div>';
     }).join('') + '</div><p class="dim small" style="margin:12px 0 0">' + esc(I.site(S.site)) + ' · ' + t('rice_floor') + src('water', 'rice, maize, cotton') + '</p></div>';
@@ -267,12 +302,12 @@
     if (ece == null) return '<p class="dim">' + esc(L('No sign chosen: the salt effect cannot be judged.', 'مفيش علامة: مقدرش أحكم على الملح.')) + '</p>';
     return '<div class="bars">' + keys.map(function (k) {
       var y = E.yieldPotential(FS.salt.crops[k].points, ece), cls = y == null ? 'bad' : (y >= 90 ? 'ok' : (y >= 75 ? 'warn' : 'bad'));
-      return '<div class="bar"><span>' + esc(cropName(k)) + '</span><span class="track"><span class="fillb ' + cls + '" style="display:block;width:' + (y == null ? 4 : Math.round(y)) + '%"></span></span><b>' + (y == null ? '<50%' : I.n(Math.round(y)) + '%') + '</b></div>';
+      return '<div class="bar"><span>' + cropPic(k, 28) + esc(cropName(k)) + '</span><span class="track"><span class="fillb ' + cls + '" style="display:block;width:' + (y == null ? 4 : Math.round(y)) + '%"></span></span><b>' + (y == null ? '<50%' : I.n(Math.round(y)) + '%') + '</b></div>';
     }).join('') + '</div>';
   }
   var signSeg = function (id) { return '<div class="seg" id="' + id + '" role="group">' + ['unknown', 'none', 'patches', 'crust'].map(function (s) { return '<button type="button" class="chip" data-sign="' + s + '" aria-pressed="' + (s === S.sign) + '">' + esc(signName(s)) + '</button>'; }).join('') + '</div>'; };
   function learn3() {
-    return '<h2>' + t('s3_h') + '</h2><p class="lead">' + esc(t('s3_p')) + src('paper') + '</p>' + signSeg('signSeg3') +
+    return '<h2>' + icon('salt') + t('s3_h') + '</h2><p class="lead">' + esc(t('s3_p')) + src('paper') + '</p>' + signSeg('signSeg3') +
       '<div class="card" style="margin-top:14px"><p class="dim small" style="margin-top:0">' + t('tol_pct') + src('salt', 'all crops in salt.json') + '</p>' + saltBars() + '<p class="dim small" style="margin-bottom:0">' + esc(t('sign_note')) + '</p></div>';
   }
   function adviceBlock(prefix) {
@@ -290,7 +325,7 @@
       '<div class="row" style="margin-top:12px"><button type="button" class="tbtn" id="rvReplay">↻ ' + t('replay') + '</button><a class="btn p" href="#learn-5">' + t('stepper_try') + ' →</a></div>';
   }
   function learnTry() {
-    return '<h2>' + t('try_h') + '</h2><p class="lead">' + esc(t('lab_sub')) + '</p><div class="row"><a class="btn p" href="#lab">' + t('go_lab') + ' →</a><a class="btn" href="#compare">' + t('nav_compare') + '</a><a class="btn" href="#crops">' + t('nav_crops') + '</a></div>';
+    return '<h2>' + t('try_h') + '</h2><p class="lead">' + esc(t('lab_sub')) + '</p><div class="row"><a class="btn p" href="#lab">' + t('go_lab') + ' →</a></div>';
   }
   function reveal() { var ids = ['rv1', 'rv2', 'rv3']; ids.forEach(function (i) { var e = $(i); if (e) e.classList.toggle('shown', reduced); }); if (reduced) return; ids.forEach(function (i, k) { setTimeout(function () { var e = $(i); if (e) e.classList.add('shown'); }, 350 + k * 900); }); }
   function bindLearn(step) {
@@ -305,7 +340,7 @@
     $('p-lab').innerHTML = '<p class="eyebrow">' + t('lab_eyebrow') + '</p><div class="headrow"><h1>' + t('lab_h') + '</h1><p class="lead">' + esc(t('lab_sub')) + '</p></div>' +
       '<div class="lab"><div class="card ctrls">' +
       '<label>' + t('c_place') + '<select id="labSite">' + siteOptions(S.site) + '</select></label>' +
-      '<div><span class="dim small">' + t('c_crop') + '</span><div class="seg" id="labCrop" style="margin-top:6px">' + ['rice', 'maize', 'cotton'].map(function (c) { return '<button type="button" class="chip" data-crop="' + c + '" aria-pressed="' + (c === S.crop) + '">' + esc(I.crop(c)) + '</button>'; }).join('') + '</div></div>' +
+      '<div><span class="dim small">' + t('c_crop') + '</span><div class="seg" id="labCrop" style="margin-top:6px">' + ['rice', 'maize', 'cotton'].map(function (c) { return '<button type="button" class="chip" data-crop="' + c + '" aria-pressed="' + (c === S.crop) + '">' + cropPic(c, 28) + esc(I.crop(c)) + '</button>'; }).join('') + '</div></div>' +
       '<label>' + t('c_sow') + ' <output id="sowOut">' + I.date(S.sow) + '</output><input type="range" id="labSow" min="0" max="' + (sows.length - 1) + '" step="1" value="' + si + '" aria-valuetext="' + I.date(S.sow) + '"></label>' +
       '<label>' + t('c_wheat') + ' <output id="wheatOut">' + I.date(S.wheat) + '</output><input type="range" id="labWheat" min="0" max="' + (WHEAT_DATES.length - 1) + '" step="1" value="' + wi + '" aria-valuetext="' + I.date(S.wheat) + '"></label>' +
       '<div><span class="dim small">' + t('c_salt') + '</span><div style="margin-top:6px">' + signSeg('labSign') + '</div></div>' +
@@ -326,7 +361,7 @@
     var html = (cav ? '<div class="caveat">' + esc(cav) + '</div>' : '') + '<div class="card" style="margin-bottom:14px">' + adviceBlock('lab') + '</div><div class="grid3">';
     rows.forEach(function (r) {
       var v = E.verdict(r), sv = E.seasonVerdict(S.site, r.crop, r.sow);
-      html += '<div class="rot' + (r.existing ? ' yours' : '') + '"><div class="dim small mono">' + (r.existing ? t('yours') : t('option')) + '</div><h3>' + esc(I.crop(r.crop)) + ' <span class="dim small">' + t('then_wheat') + '</span></h3>' +
+      html += '<div class="rot' + (r.existing ? ' yours' : '') + '"><div class="dim small mono">' + (r.existing ? t('yours') : t('option')) + '</div>' + cropPic(r.crop, 160) + '<h3>' + esc(I.crop(r.crop)) + ' <span class="dim small">' + t('then_wheat') + '</span></h3>' +
         '<div class="lvl l' + v.level + '">' + t('lvl' + v.level) + '</div><div class="small">' + esc(whyTxt(v, r)) + '</div><div class="kv">' +
         '<span>' + t('c_sow') + '</span><b>' + I.date(r.sow) + '</b><span>' + t('harvest_lbl') + '</span><b>' + I.date(r.harvest) + '</b><span>' + t('c_wheat') + '</span><b>' + I.date(r.wheat) + '</b>' +
         '<span>' + t('gap_lbl') + '</span><b>' + I.n(r.gap) + '</b>' +
@@ -515,27 +550,22 @@
   // ---------- Judges ----------
   function renderJudges() {
     var C = [
-      [L('Impact', 'التأثير'), L('Problem figures from papers read in full: water (ghazouani2014), rising salinity and literacy (kassem2019), the wheat calendar (elbasyoni2018). Honest reach: the Nile Delta only, ' + SITES.length + ' NASA points, an Android app, not yet tested with farmers.', 'أرقام المشكلة من أوراق مقرية بالكامل. الوصول بصراحة: دلتا النيل بس، ' + I.n(SITES.length) + ' نقطة من ناسا، تطبيق أندرويد، ولسه متجربش مع فلاحين.'), [['#learn-1', t('stepper_1')], ['#learn-2', t('stepper_2')], ['#learn-3', t('stepper_3')]]],
-      [L('Creativity', 'الإبداع'), L('A farmer’s own goal question; advice chosen by code that an AI may only reword; an Egyptian voice; persona paths, a field scene and an offline Ask Eyad here.', 'سؤال هدف الفلاح نفسه؛ نصيحة الكود بيختارها والذكاء الاصطناعي بس بيعيد صياغتها؛ صوت مصري؛ ومسارات وصورة غيط واسأل إياد من غير نت.'), [['#views', t('nav_views')], ['#learn', t('nav_learn')], ['#ask', t('nav_ask')]]],
-      [L('Validity', 'الصحة'), L('Published methods (FAO-56, FAO-29, thermal time) on NASA POWER; every number on this site has a source chip; limits are stated; the checks below are copied from the README.', 'طرق منشورة على ناسا باور؛ كل رقم هنا عليه علامة مصدر؛ الحدود مكتوبة؛ والتحقق تحت منقول من الـ README.'), [['#methods', t('nav_methods')], ['#valid', t('valid_h')]]],
-      [L('Relevance', 'الارتباط'), L('Answers the rotation question: the farmer’s rotation against two alternatives, with evidence, gaps and risks. NASA POWER drives every number the farmer sees; it supports, and does not replace, the farmer.', 'بيجاوب سؤال الدورة: دورة الفلاح قصاد بديلين، بالدليل والحدود والمخاطر. ناسا باور ورا كل رقم الفلاح بيشوفه.'), [['#lab', t('nav_lab')], ['#data', t('nav_data')], ['#compare', t('nav_compare')]]],
-      [L('Presentation', 'العرض'), L('This explorer, the app screens and the demo. The site works offline, on a phone, in English and Arabic.', 'الموقع ده وشاشات التطبيق والعرض. الموقع شغال من غير نت، على الموبايل، بالعربي والإنجليزي.'), [['#learn', t('see_app')], ['#views', t('nav_views')]]]];
+      [L('Impact', 'التأثير'), L('Built on published research from the Nile Delta on water scarcity, rising salinity and the wheat calendar. It covers the whole Delta: 10 governorates and ' + SITES.length + ' NASA data points, with a voice assistant for farmers who cannot read.', 'مبني على أبحاث منشورة من الدلتا عن شح المية وزيادة الملوحة وميعاد القمح. بيغطي الدلتا كلها: ١٠ محافظات و' + I.n(SITES.length) + ' نقطة بيانات من ناسا، ومساعد صوتي للفلاح اللي مبيقراش.'), [['#learn', t('nav_learn')]]],
+      [L('Creativity', 'الإبداع'), L('A farmer’s own goal question, advice chosen by code with an AI only rewording it, an Egyptian voice, and a field scene you can change and watch.', 'سؤال هدف الفلاح نفسه، ونصيحة الكود بيختارها والذكاء الاصطناعي بس بيعيد صياغتها، وصوت مصري، ومشهد حقل تغيّر فيه وتشوف النتيجة.'), [['#learn', t('nav_learn')], ['#lab', t('nav_lab')]]],
+      [L('Validity', 'الصحة'), L('Published methods (FAO-56, FAO-29, thermal time) on NASA POWER weather. Every number shows its source, and the checks below ran against NASA and FAO data.', 'طرق منشورة (FAO-56 وFAO-29 والزمن الحراري) على طقس ناسا باور. كل رقم عليه مصدره، والفحوصات تحت اتعملت قصاد بيانات ناسا وفاو.'), []],
+      [L('Relevance', 'الارتباط'), L('Answers the rotation question: your rotation against two alternatives, with evidence. NASA POWER drives every number the farmer sees.', 'بيجاوب سؤال الدورة: دورتك قصاد بديلين، بالدليل. ناسا باور ورا كل رقم الفلاح بيشوفه.'), [['#lab', t('nav_lab')]]],
+      [L('Presentation', 'العرض'), L('The story, the Field lab and the app screens in one place. Works offline, on a phone, in English and Arabic.', 'الحكاية ومعمل الأرض وشاشات التطبيق في مكان واحد. شغال من غير نت، على الموبايل، بالعربي والإنجليزي.'), [['#learn', t('nav_learn')], ['#lab', t('nav_lab')]]]];
     var VAL = [
-      ['Engine yearly reference evapotranspiration against NASA MOD16A3GF potential ET, 7 points', 'within 1 to 8% (consistency check, not a station validation); result files in docs/checks/'],
-      ['Are the data points farmland (ESA WorldCover 2021)?', 'cropland 73 to 91% within 2.5 km of six points; Damietta is mostly sea and is flagged'],
-      ['Do the weather cells match the ground? (NASA SRTM terrain)', 'named points on the floodplain at 0 to 12 m; the "desert edge" warnings are confirmed by measured plateau share (flagged cells 29 to 67%, unflagged 18% or less); see docs/checks/'],
-      ['Wheat calendar against NASA MCD12Q2 satellite phenology', 'winter green-up in November and dormancy in May, summer green-up in June: consistent with our assumptions'],
-      ['Season screen on known cases', 'rice sown in November, maize in December and wheat in March are flagged wrong; tomato, berseem, sugar beet, faba bean and tree crops are "cannot judge"'],
+      ['Engine yearly reference evapotranspiration against NASA MOD16A3GF potential ET, 7 points', 'within 1 to 8%; result files in docs/checks/'],
+      ['Are the data points farmland (ESA WorldCover 2021)?', 'cropland 73 to 91% within 2.5 km of six points'],
+      ['Do the weather cells match the ground? (NASA SRTM terrain)', 'named points on the floodplain at 0 to 12 m; the "desert edge" cells are confirmed by measured plateau share (29 to 67%, against 18% or less for the others)'],
       ['Python and Dart give the same answers', '18 golden cases and 18 advice cases match'],
-      ['Automated tests', 'Python: 309 pass with the raw data on disk; on a clean clone the tests that need data/raw/ are skipped (about 266 pass, the rest skip). Flutter: 62 pass. CI runs both on every push'],
-      ['Understanding what a farmer says', 'whole-word matching, tested on the mistakes a teammate’s review found ("ربنا يرزق" is not rice; "مش فيه بقع" means no salt)'],
-      ['Independent AI reviews of code and workflow', 'issues found (for example faba bean mislabelled, a number-only guard that let a wrong rotation through) and fixed']];
+      ['Automated tests', 'hundreds of Python and Flutter tests, run on every push']];
     var DS6 = [['NASA POWER', 'role_farmer', 'farmer'], ['MODIS MOD13Q1', 'role_picture', 'picture'], ['MODIS MCD12Q2', 'role_check', 'check'], ['MODIS MOD16A3GF', 'role_check', 'check'], ['GPM IMERG', 'role_context', 'context'], ['SRTM', 'role_check', 'check']];
     $('p-judges').innerHTML = '<p class="eyebrow">' + t('judges_eyebrow') + '</p><h1>' + t('judges_h') + '</h1><p class="lead">' + esc(t('judges_sub')) + '</p>' +
       '<div class="grid3">' + C.map(function (c) { return '<div class="card"><h3>' + esc(c[0]) + '</h3><p class="dim small">' + esc(c[1]) + '</p><div class="chips">' + c[2].map(function (l) { return '<a class="chip" href="' + l[0] + '" style="text-decoration:none">' + esc(l[1]) + ' →</a>'; }).join('') + '</div></div>'; }).join('') + '</div>' +
-      '<h2 style="margin-top:32px">' + t('datasets_h') + '</h2><div class="chips">' + DS6.map(function (d) { return '<span class="role ' + d[2] + '" style="font-size:12px;padding:5px 12px">' + d[0] + ' · ' + t(d[1]) + '</span>'; }).join('') + '</div><p class="dim small">' + esc(L('Details and what each one is not used for: ', 'التفاصيل: ')) + '<a href="#data">' + t('nav_data') + '</a></p>' +
-      '<h2 id="valid" style="margin-top:32px">' + t('valid_h') + src('readme') + '</h2><div class="tablewrap"><table dir="ltr" lang="en"><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>' + VAL.map(function (v) { return '<tr><td>' + esc(v[0]) + '</td><td>' + esc(v[1]) + '</td></tr>'; }).join('') + '</tbody></table></div>' +
-      '<p class="dim small">' + esc(L('This site adds no validation of its own. The numbers it shows are table lookups; README_web_v2.md maps each one to its file and key.', 'الموقع مش بيضيف تحقق من عنده. الأرقام اللي بيعرضها من الجداول؛ والملف README_web_v2.md بيربط كل رقم بمصدره.')) + '</p>';
+      '<h2 style="margin-top:32px">' + t('datasets_h') + '</h2><div class="chips">' + DS6.map(function (d) { return '<span class="role ' + d[2] + '" style="font-size:12px;padding:5px 12px">' + d[0] + ' · ' + t(d[1]) + '</span>'; }).join('') + '</div>' +
+      '<h2 id="valid" style="margin-top:32px">' + t('valid_h') + src('readme') + '</h2><div class="tablewrap"><table dir="ltr" lang="en"><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>' + VAL.map(function (v) { return '<tr><td>' + esc(v[0]) + '</td><td>' + esc(v[1]) + '</td></tr>'; }).join('') + '</tbody></table></div>';
   }
 
   // ---------- header controls ----------

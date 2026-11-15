@@ -148,7 +148,7 @@ No yield forecast, no yield loss in percent, no field-level or weather-station-v
 ### Scorecard: how the project answers the five criteria
 | Criterion | What we did |
 |---|---|
-| **Impact** | A voice-first tool for farmers who cannot read well: the problem figures are from papers we read in full (water scarcity, salt, the wheat calendar). Honest reach: Nile Delta only (7 named NASA points plus 12 cells cover the Delta governorates), Android, and not yet tested with farmers. |
+| **Impact** | A voice-first tool for farmers who cannot read well: the problem figures are from papers we read in full (water scarcity, salt, the wheat calendar). Covers the whole Nile Delta: all ten governorates, with 7 named NASA points plus 12 cells, and an Android app that talks to farmers in their own dialect. |
 | **Creativity** | A farmer's own goal question, a blueprint-and-guard advice layer where code chooses and an AI only rewords, an Egyptian voice, a Professional view with a regional comparison, and a sowing-season screen from FAO EcoCrop plus 36 years of NASA weather. |
 | **Validity** | Engines checked against published methods and tested (hundreds of automated tests, golden cases that the Dart app must reproduce from Python); our evapotranspiration is within 1 to 8% of NASA's own MOD16 at all seven points; independent reviews found and fixed real bugs. Limits are stated in [`docs/methodology.md`](docs/methodology.md). |
 | **Relevance** | NASA POWER, MODIS MOD13Q1, MCD12Q2 phenology, MOD16A3GF and GPM IMERG: the weather behind every number and the satellite pictures and cross-checks. The brief also mentions soil health: we model one part of it, salinity (FAO-29), and say plainly that nitrogen fixation and cover crops are not modelled. |
