@@ -5,7 +5,7 @@
 // Used by voice.dart before a line is looked up or sent, and by test/spoken_lines_test.dart so the list of recorded lines is the list of spoken forms.
 
 const _units = ['صفر', 'واحد', 'اتنين', 'تلاتة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'تمانية', 'تسعة', 'عشرة'];
-const _teens = ['حداشر', 'اتناشر', 'تلتاشر', 'أربعتاشر', 'خمستاشر', 'ستاشر', 'سبعتاشر', 'تمنتاشر', 'تسعتاشر']; // 11 to 19
+const _teens = ['حداشر', 'اتناشر', 'تلاتاشر', 'أربعتاشر', 'خمستاشر', 'ستاشر', 'سبعتاشر', 'تمنتاشر', 'تسعتاشر']; // 11 to 19
 const _tens = {2: 'عشرين', 3: 'تلاتين', 4: 'أربعين', 5: 'خمسين', 6: 'ستين', 7: 'سبعين', 8: 'تمانين', 9: 'تسعين'};
 const _hundreds = {1: 'مية', 2: 'ميتين', 3: 'تلتمية', 4: 'ربعمية', 5: 'خمسمية', 6: 'ستمية', 7: 'سبعمية', 8: 'تمنمية', 9: 'تسعمية'};
 const _construct = {3: 'تلات', 4: 'أربع', 5: 'خمس', 6: 'ست', 7: 'سبع', 8: 'تمان', 9: 'تسع', 10: 'عشر'}; // the form before a plural noun: تلات أيام
@@ -52,6 +52,11 @@ String egMm(int n) {
   if (n <= 10) return '${_construct[n]} مليمترات';
   return '${egNumber(n)} مليمتر';
 }
+
+/// The text as it is SENT to the voice for a line that has no recording: the same words, with the marks Tarek chose after listening to samples (2026-11-15):
+/// "ست أيام" gets a shadda and a linking kasra so the ت does not stop dead ("sitt ayyaam", not "st ayam"), and "تلاتاشر" its marks ("talatashar"). The screen and the phone's
+/// own voice keep the plain words. Recorded clips are looked up by the plain text, so this is applied only where audio is requested from Hamsa.
+String forVoice(String text) => text.replaceAll('ست أيام', 'سِتِّ أَيَّام').replaceAll('تلاتاشر يوم', 'تَلَاتَاشَر يُوم').replaceAll('تلاتاشر', 'تَلَاتَاشَر');
 
 const _months = 'يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر';
 const _arabicIndic = '٠١٢٣٤٥٦٧٨٩';

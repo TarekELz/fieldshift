@@ -59,7 +59,7 @@ class LiveVoice {
     }
   }
 
-  static Future<Uint8List?> generate(String text, {Duration budget = const Duration(seconds: 10), List<String>? keyList}) async {
+  static Future<Uint8List?> generate(String text, {Duration budget = const Duration(seconds: 15), List<String>? keyList}) async {
     if (kIsWeb) {
       lastError = 'web build';
       return null;
@@ -86,7 +86,7 @@ class LiveVoice {
         try {
           final rt = await http
               .post(Uri.parse('$_base/v1/realtime/tts'), headers: h, body: jsonEncode({'text': text, 'speaker': _voiceId, 'dialect': 'egy'}))
-              .timeout(left() < const Duration(seconds: 8) ? left() : const Duration(seconds: 8));
+              .timeout(left() < const Duration(seconds: 10) ? left() : const Duration(seconds: 10));
           if (rt.statusCode == 200 && rt.bodyBytes.length > 44 && String.fromCharCodes(rt.bodyBytes.take(4)) == 'RIFF') return _cache[text] = rt.bodyBytes;
           lastError = 'Hamsa realtime answered ${rt.statusCode} after ${sw.elapsed.inMilliseconds} ms';
           if (rt.statusCode == 401 || rt.statusCode == 402 || rt.statusCode == 403) break; // this key is refused or out of credit: next key
@@ -302,7 +302,7 @@ class Voice {
   Future<({Source? src, String how})> _resolve(String part) async {
     final clip = await Clips.lookup(part);
     if (clip != null) return (src: AssetSource('audio/$clip') as Source?, how: 'clip');
-    final live = await LiveVoice.generate(part);
+    final live = await LiveVoice.generate(forVoice(part));
     if (live != null) return (src: BytesSource(fixWavHeader(live), mimeType: 'audio/wav') as Source?, how: 'live');
     return (src: null as Source?, how: 'no clip and live generation failed: ${LiveVoice.lastError}');
   }

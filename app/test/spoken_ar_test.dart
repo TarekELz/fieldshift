@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('numbers in Egyptian spelling', () {
     const want = {
-      0: 'صفر', 1: 'واحد', 2: 'اتنين', 3: 'تلاتة', 7: 'سبعة', 8: 'تمانية', 10: 'عشرة', 11: 'حداشر', 12: 'اتناشر', 13: 'تلتاشر', 15: 'خمستاشر', 19: 'تسعتاشر',
+      0: 'صفر', 1: 'واحد', 2: 'اتنين', 3: 'تلاتة', 7: 'سبعة', 8: 'تمانية', 10: 'عشرة', 11: 'حداشر', 12: 'اتناشر', 13: 'تلاتاشر', 15: 'خمستاشر', 19: 'تسعتاشر',
       20: 'عشرين', 21: 'واحد وعشرين', 23: 'تلاتة وعشرين', 25: 'خمسة وعشرين', 30: 'تلاتين', 48: 'تمانية وأربعين', 99: 'تسعة وتسعين', 100: 'مية', 200: 'ميتين',
       235: 'ميتين وخمسة وتلاتين', 300: 'تلتمية', 1000: 'ألف', 1500: 'ألف وخمسمية', 2000: 'ألفين', 3000: 'تلات تلاف',
     };
@@ -26,6 +26,14 @@ void main() {
     expect(egDays(23), 'تلاتة وعشرين يوم');
     expect(egMm(6), 'ست مليمترات');
     expect(egMm(15), 'خمستاشر مليمتر');
+    expect(egDays(13), 'تلاتاشر يوم'); // talatashar, not toltashar
+  });
+
+  test('voiced forms chosen by listening (sitt ayyaam, talatashar)', () {
+    expect(forVoice('فاضل ست أيام بس'), 'فاضل سِتِّ أَيَّام بس');
+    expect(forVoice('فاضل تلاتاشر يوم بس'), 'فاضل تَلَاتَاشَر يُوم بس'); // exactly sample 08
+    expect(forVoice('فاضل خمس أيام بس'), 'فاضل خمس أيام بس'); // only the two spellings Tarek flagged
+    expect(forVoice(speakable('فاضل ٦ أيام بس')), 'فاضل سِتِّ أَيَّام بس'); // digits become words first, then the voiced form
   });
 
   test('dates are said "نص" and "أول"', () {
