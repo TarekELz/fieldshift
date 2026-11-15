@@ -16,7 +16,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from fieldshift import advice, calendar_engine as cal, rotation, salt_engine as salt, season_engine as se, water_engine as wat  # noqa: E402
+from fieldshift import advice, calendar_engine as cal, economics, rotation, salt_engine as salt, season_engine as se, water_engine as wat  # noqa: E402
 
 OUT = ROOT / "app" / "assets" / "data"
 FIX = ROOT / "app" / "test" / "fixtures"
@@ -108,10 +108,14 @@ def main():
     sparams, season, stemps = se.load_params(), {}, {}
     for s in SITES:
         stemps[s] = se.SiteTemps(rotation.power_dir_for(s) / f"{s}_daily.json")
-        season[s] = {c: [[r["sowing"][0], r["sowing"][1], r["ideal_pct"], r["bad_pct"]] for r in se.scan_year(stemps[s], sparams, c)] for c in ("wheat", "rice", "maize", "cotton")}
+        season[s] = {c: [[r["sowing"][0], r["sowing"][1], r["ideal_pct"], r["bad_pct"]] for r in se.scan_year(stemps[s], sparams, c)] for c in ("wheat", "rice", "maize", "cotton", "onion", "potato", "barley", "sorghum")}
     (OUT / "season.json").write_text(json.dumps({"sites": season, "min_spread": se.MIN_SPREAD, "right_within": se.RIGHT_WITHIN, "so_so_within": se.SO_SO_WITHIN, "bad_share_wrong": se.BAD_SHARE_WRONG},
                                                 separators=(",", ":")), encoding="utf8")
     (OUT / "blueprints.json").write_bytes((ROOT / "models" / "blueprints.json").read_bytes())
+    # crop registry with FAOSTAT yield and price (decision D20), and golden economics cases for the Dart tests
+    ecrops, feddan = economics.load()
+    (OUT / "crops.json").write_text(json.dumps({"crops": ecrops, "feddan_ha": feddan, "price_year": 2022, "source": "FAOSTAT (FAO), Egypt national averages; gross before costs"}, ensure_ascii=False, separators=(",", ":")), encoding="utf8")
+    (FIX / "economics_cases.json").write_text(json.dumps([{"ece": e, "rank": {g: [[r["crop"], r["gross_egp"], r["salt_pct"]] for r in economics.rank(g, e, ecrops, feddan)] for g in ("winter", "summer", "any", "orchard")}} for e in (None, 2.0, 6.0, 12.0)]), encoding="utf8")
     # golden cases for the Dart tests
     cases = []
     for site in ("gharbia", "beheira", "kafr_el_sheikh", "dakahlia", "cell_30.500_30.625", "cell_30.500_32.500"):

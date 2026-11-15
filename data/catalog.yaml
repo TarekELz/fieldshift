@@ -226,3 +226,9 @@ mcd12q2_phenology:
   result: "median over 2015-2025 at Gharbia (day of year, 3x3-pixel median): winter cycle greenup 307 (about 3 Nov), maturity 37, peak 62, senescence 85, dormancy 131 (about 11 May); summer cycle greenup 168 (about 17 Jun), maturity 202, peak 215, senescence 229, dormancy 265 (about 22 Sep). All 7 sites show the same two-cycle shape. Kafr El-Sheikh and Beheira are mostly one-cycle in the algorithm's output. Output table: data/interim/phenology_sites.csv"
   caveat: "Satellite greenness at 500 m, mixed fields: it says WHEN the land is green, not WHICH crop. Cycles are numbered by the algorithm, not by crop. Consistent with the calendar assumptions (winter green-up in November, dormancy in May, summer green-up in June) but that is a consistency check, not a validation. Not a farmer-facing number yet"
   used_by: ["calendar cross-check (scripts/phenology_mcd12q2.py)", "planned: when farmers in an area actually sow, for the out-of-season story"]
+
+faostat_egypt_crops_prices:
+  source: "FAOSTAT (FAO), NOT NASA data: bulk files Production_Crops_Livestock_E_All_Data_(Normalized) and Prices_E_All_Data_(Normalized) from https://bulks-faostat.fao.org/production/ , downloaded 2026-11-15 to data/raw/faostat/ (gitignored, 546 MB and 214 MB unzipped)"
+  coverage: "Egypt: yield (kg/ha) 1961-2024 and producer prices (LCU per tonne, monthly or annual) 1991-2025 for 14 crops; a 14-row table with 2020-2024 mean yield and 2022 mean price is in models/crop_economics.csv (scripts/build_crop_economics.py)"
+  caveat: "National averages; gross income before any cost; FAOSTAT's Egypt prices are patchy (some years a single annual value, some monthly, a few years with obvious errors such as Orange and Grape 2023), so one common year (2022) is used. Prices have moved since 2022. Not a forecast for a field"
+  used_by: ["goal page: earn more and plan a crop (app/lib/goals.dart, src/fieldshift/economics.py)"]

@@ -16,6 +16,16 @@ import 'package:speech_to_text/speech_to_text.dart';
 
 /// Pre-generated Egyptian-voice clips of Eyad's fixed lines (assets/audio, made by scripts/hamsa_tts.py with the Hamsa voice Ibrahim; AI-generated, disclosed in
 /// docs/ai-disclosure.md). A line with a clip is played; every other line falls back to the phone's own voice.
+/// Hamsa writes a streaming-style WAV header (sizes 0xFFFFFFFF), which Android's media player can reject. Writes the real sizes before playing.
+Uint8List fixWavHeader(Uint8List b) {
+  if (b.length < 44 || b[0] != 0x52 || b[1] != 0x49 || b[2] != 0x46 || b[3] != 0x46 || b[36] != 0x64 || b[37] != 0x61 || b[38] != 0x74 || b[39] != 0x61) return b;
+  final o = Uint8List.fromList(b);
+  final d = ByteData.sublistView(o);
+  d.setUint32(4, o.length - 8, Endian.little);
+  d.setUint32(40, o.length - 44, Endian.little);
+  return o;
+}
+
 class Clips {
   static Map<String, String>? _idx;
   static Future<String?> lookup(String text) async {
@@ -24,7 +34,7 @@ class Clips {
         final j = jsonDecode(await rootBundle.loadString('assets/audio/index.json')) as Map<String, dynamic>;
         _idx = j.map((k, v) => MapEntry(k, v as String));
       } catch (_) {
-        _idx = {};
+        return null; // do not remember a failed load: try again on the next line
       }
     }
     return _idx![text.trim()];
@@ -212,6 +222,9 @@ class Voice {
   int _gen = 0; // a newer speak() or stopSpeaking() cancels the one in progress
   /// What the last line used and why: "clip", "live", or "phone" with the reason. Shown by a long press on Eyad, so a phone problem is visible.
   String lastNote = 'nothing spoken yet';
+  /// Same text, as a notifier, so test builds can show it on screen (flow.dart, kVoiceDiagnostics).
+  final ValueNotifier<String> status = ValueNotifier<String>('');
+  String _playErr = '';
 
   /// Speaks the text in Eyad's Egyptian voice: a whole-line clip if there is one, otherwise sentence by sentence (a clip, else a live line, else the phone's voice).
   Future<void> speak(String text) async {
@@ -233,9 +246,11 @@ class Voice {
       if (my != _gen) return;
       if (r.src != null && await _playSource(r.src!, my)) {
         notes.add(r.how);
+        status.value = 'Hamsa ${notes.join(', ')}';
         continue;
       }
-      notes.add('phone (${r.src == null ? r.how : 'the audio could not be played'})');
+      notes.add('phone (${r.src == null ? r.how : 'play error: $_playErr'})');
+      status.value = 'phone: ${notes.last}';
       aiVoice.value = false;
       if (ttsReady) {
         try {
@@ -254,7 +269,7 @@ class Voice {
     final clip = await Clips.lookup(part);
     if (clip != null) return (src: AssetSource('audio/$clip') as Source?, how: 'clip');
     final live = await LiveVoice.generate(part);
-    if (live != null) return (src: BytesSource(live, mimeType: 'audio/wav') as Source?, how: 'live');
+    if (live != null) return (src: BytesSource(fixWavHeader(live), mimeType: 'audio/wav') as Source?, how: 'live');
     return (src: null as Source?, how: 'no clip and live generation failed: ${LiveVoice.lastError}');
   }
 
@@ -266,7 +281,8 @@ class Voice {
       await done.timeout(const Duration(seconds: 90));
       return true;
     } catch (e) {
-      lastNote = 'play error: $e';
+      _playErr = e.toString().replaceAll(RegExp(r'\s+'), ' ');
+      lastNote = 'play error: $_playErr';
       return false;
     }
   }

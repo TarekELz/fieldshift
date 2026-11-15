@@ -1,0 +1,20 @@
+# Crop registry for the goal flows (decision D20): names, spoken aliases (Arabic, matched after normalising), season group, and which table each engine uses.
+# salt_key: row in models/salt_tolerance.csv (FAO paper 29); null = no salt data. season: true = the temperature season screen can judge this crop
+# (src/fieldshift/season_engine.py UNRELIABLE / PERENNIAL crops are not judged). water: true = the FAO-56 water engine covers it (rice, maize, cotton).
+# group: winter, summer, any (grown in several seasons) or orchard (a tree or vine: yearly income, no sowing season).
+crops:
+  rice:       {en: Rice,       ar: الرز,           group: summer,  salt_key: rice,       season: true,  water: true,  aliases: [رز, ارز, rice]}
+  maize:      {en: Maize,      ar: الذرة,          group: summer,  salt_key: maize,      season: true,  water: true,  aliases: [ذره, دره, شامي, ذره شاميه, maize, corn]}
+  cotton:     {en: Cotton,     ar: القطن,          group: summer,  salt_key: cotton,     season: true,  water: true,  aliases: [قطن, cotton]}
+  sorghum:    {en: Sorghum,    ar: الذرة الرفيعة,  group: summer,  salt_key: null,       season: true,  water: false, aliases: [ذره رفيعه, دره رفيعه, سورجم, sorghum]}
+  wheat:      {en: Wheat,      ar: القمح,          group: winter,  salt_key: wheat,      season: true,  water: false, aliases: [قمح, wheat]}
+  barley:     {en: Barley,     ar: الشعير,         group: winter,  salt_key: barley,     season: true,  water: false, aliases: [شعير, barley]}
+  faba_bean:  {en: Faba bean,  ar: الفول,          group: winter,  salt_key: faba_bean,  season: false, water: false, aliases: [فول, فول بلدي, فول حراتي, faba, broad bean]}
+  sugar_beet: {en: Sugar beet, ar: بنجر السكر,     group: winter,  salt_key: sugar_beet, season: false, water: false, aliases: [بنجر, بنجر سكر, بنجر السكر, sugar beet, beet]}
+  onion:      {en: Onion,      ar: البصل,          group: winter,  salt_key: onion,      season: true,  water: false, aliases: [بصل, onion]}
+  potato:     {en: Potato,     ar: البطاطس,        group: any,     salt_key: potato,     season: true,  water: false, aliases: [بطاطس, بطاطا, بطاطه, potato]}
+  tomato:     {en: Tomato,     ar: الطماطم,        group: any,     salt_key: tomato,     season: false, water: false, aliases: [طماطم, بندوره, tomato]}
+  orange:     {en: Citrus,     ar: الموالح,        group: orchard, salt_key: orange,     season: false, water: false, aliases: [برتقال, موالح, يوسفي, ليمون, citrus, orange]}
+  grape:      {en: Grapes,     ar: العنب,          group: orchard, salt_key: grape,      season: false, water: false, aliases: [عنب, grape]}
+  date_palm:  {en: Dates,      ar: البلح,          group: orchard, salt_key: date_palm,  season: false, water: false, aliases: [بلح, نخيل, تمر, date]}
+feddan_ha: 0.42   # 1 feddan = 4,200 square metres

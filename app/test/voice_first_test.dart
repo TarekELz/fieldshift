@@ -15,7 +15,7 @@ void main() {
   setUpAll(() async => data = await EngineData.load(_FileBundle()));
 
   test('an Arabic sentence with place, crop and both dates fills four answers and asks the next question', () {
-    final d = Dialogue(data);
+    final d = Dialogue(data, askGoal: false);
     final out = d.handle('أنا في الغربية وبزرع رز في نص يونيو وقمح أول ديسمبر');
     expect(d.site, 'gharbia');
     expect(d.crop, 'rice');
@@ -28,7 +28,7 @@ void main() {
   });
 
   test('an English sentence with everything gives the comparison straight away', () {
-    final d = Dialogue(data);
+    final d = Dialogue(data, askGoal: false);
     final out = d.handle('I am in Gharbia, I grow rice in mid June and wheat in early December, water every 10 days, and there are salty patches');
     expect(d.step, Step.done);
     expect(out.last.result, isNotNull);
@@ -38,7 +38,7 @@ void main() {
   });
 
   test('two answers in the middle of the conversation are both kept', () {
-    final d = Dialogue(data);
+    final d = Dialogue(data, askGoal: false);
     d.handle('الغربية');
     expect(d.step, Step.crop);
     d.handle('بزرع رز في مايو');
@@ -48,14 +48,14 @@ void main() {
   });
 
   test('a single answer still goes through the normal step', () {
-    final d = Dialogue(data);
+    final d = Dialogue(data, askGoal: false);
     final out = d.handle('رز');
     expect(d.step, Step.site); // one answer, not enough place: asked again
     expect(out.first.retry, isTrue);
   });
 
   test('Mansoura plus a crop uses the Gharbia data and says why', () {
-    final d = Dialogue(data);
+    final d = Dialogue(data, askGoal: false);
     final out = d.handle('أنا في المنصورة وبزرع رز');
     expect(d.site, 'gharbia');
     expect(d.crop, 'rice');
@@ -63,7 +63,7 @@ void main() {
   });
 
   test('wheat month with no crop word is understood from the season, and numbers in dates are not read as days', () {
-    final d = Dialogue(data);
+    final d = Dialogue(data, askGoal: false);
     d.handle('الغربية رز');
     expect(d.step, Step.summerWhen);
     d.handle('نص مايو');

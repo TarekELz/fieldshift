@@ -19,13 +19,16 @@ int roundHalfEven(double x) {
 }
 
 class EngineData {
-  EngineData(this.heat, this.water, this.salt, this.meta, this.climate, this.egyptMap);
+  EngineData(this.heat, this.water, this.salt, this.meta, this.climate, this.egyptMap, {this.cropBook = const {}, this.season = const {}});
   final Map<String, dynamic> heat, water, salt, meta, climate, egyptMap;
+  /// The crop book with FAOSTAT yield and price (crops.json) and the season scores for the temperature screen (season.json).
+  final Map<String, dynamic> cropBook, season;
 
   static Future<EngineData> load([AssetBundleLike? bundle]) async {
     Future<Map<String, dynamic>> read(String n) async =>
         jsonDecode(await (bundle?.loadString('assets/data/$n.json') ?? rootBundle.loadString('assets/data/$n.json'))) as Map<String, dynamic>;
-    return EngineData(await read('heat'), await read('water'), await read('salt'), await read('meta'), await read('climate'), await read('egypt_map'));
+    return EngineData(await read('heat'), await read('water'), await read('salt'), await read('meta'), await read('climate'), await read('egypt_map'),
+        cropBook: await read('crops'), season: await read('season'));
   }
 
   /// The named places (the extra NASA cells are data points, not places a farmer would pick from a list).

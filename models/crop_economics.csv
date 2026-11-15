@@ -1,0 +1,16 @@
+crop,faostat_item,yield_kg_ha,yield_years,price_egp_per_t,price_year,price_values_averaged
+rice,Rice,9189,2020-2024,14955,2022,1
+wheat,Wheat,6694,2020-2024,10125,2022,13
+maize,Maize (corn),7664,2020-2024,6602,2022,13
+cotton,"Seed cotton, unginned",2806,2020-2024,25000,2022,1
+sugar_beet,Sugar beet,55081,2020-2024,795,2022,1
+onion,"Onions and shallots, dry (excluding dehydrated)",35611,2020-2024,3542,2022,1
+potato,Potatoes,29041,2020-2024,6658,2022,13
+tomato,Tomatoes,41887,2020-2024,6595,2022,13
+orange,Oranges,22900,2020-2024,6819,2022,8
+faba_bean,"Broad beans and horse beans, dry",4038,2020-2024,16419,2022,1
+grape,Grapes,19990,2020-2024,11892,2022,5
+date_palm,Dates,25936,2020-2024,7234,2022,1
+barley,Barley,4010,2020-2024,9550,2022,1
+sorghum,Sorghum,5117,2020-2024,2750,2022,1
+# Source: FAOSTAT (FAO), Egypt: crops and livestock products (yield) and producer prices (LCU per tonne). National averages, gross before costs. Not NASA data.
