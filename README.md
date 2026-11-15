@@ -2,7 +2,7 @@
 
 NASA Space Apps Challenge 2026, challenge **"Field Shift: Adapting Farms with NASA Data"** (hackathon 14-15 November 2026). Team based in Egypt.
 
-> **Status (15 Nov, morning):** problem and method chosen. Three engines built and tested (wheat calendar, water, salt) plus a rotation comparison that joins them. Voice assistant, picture card and web page are not built yet. Run the tests: `pip install -r requirements.txt` then `python -m pytest tests`; try the comparison: `python -m src.fieldshift.rotation --site gharbia --signs patches --interval-days 10` (needs the NASA POWER files, see `src/fieldshift/ingest/fetch_power_sites.py`).
+> **Status (15 Nov, morning):** problem and method chosen (D1-D8). Three engines built and tested in Python (wheat calendar, water, salt) plus a rotation comparison; a **Flutter Android app** with an Arabic voice-and-chat assistant reads the engines' results from lookup tables. Nothing has been tested on a real phone yet. See `docs/status.md`.
 > Live status: [`docs/status.md`](docs/status.md). Every decision: [`docs/decisions.md`](docs/decisions.md).
 
 ## What we agreed so far
@@ -45,7 +45,11 @@ Egypt is the headline. The NASA products are global, so the engines can cover th
 | [`docs/data_plan.md`](docs/data_plan.md), [`data/catalog.yaml`](data/catalog.yaml) | Data needed per engine, what we have, what is blocked |
 | [`docs/status.md`](docs/status.md) | Current step, what is done, blockers |
 | [`literature/`](literature/) | `papers.csv` (paper table) and `search_log.csv` (every search run) |
-| [`src/fieldshift/ingest/`](src/fieldshift/ingest/) | Scripts that downloaded the first open datasets |
+| [`app/`](app/) | The Flutter Android app: chat and voice in Arabic, engine in Dart, lookup tables in `app/assets/data/` |
+| [`src/fieldshift/`](src/fieldshift/) | The Python engines (calendar, water, salt, rotation) and the data download scripts |
+| [`scripts/`](scripts/) | `export_app_data.py` regenerates the app's lookup tables from the engines; `build_methodology.py` regenerates the result tables in the methodology |
+| [`server/`](server/) | Optional small server for a future AI mode (not used by the app yet) |
+| [`tests/`](tests/) | Python tests for the engines (`python -m pytest tests`) |
 
 Raw data (`data/raw/`), paper PDFs (`literature/pdfs/`) and `.env` are not in the repo.
 
@@ -65,3 +69,9 @@ NASA Space Apps 2026 team, Egypt.
 | **Eyad** (EyadM0hamed) | Salt engine and integration |
 
 **What each person does, step by step:** [`docs/tasks.md`](docs/tasks.md).
+
+## Build and run the app (Windows, Flutter)
+1. Python side (only if you change an engine or the weather files): `pip install -r requirements.txt`, then `python scripts/export_app_data.py` regenerates `app/assets/data/` and the golden test cases.
+2. Flutter side: Flutter 3.47 and the Android SDK are needed. In `app/`: `flutter pub get`, `flutter test` (the Dart engine must reproduce the Python results), `flutter build apk --debug`, then install `app/build/app/outputs/flutter-apk/app-debug.apk` on a phone.
+3. Memory: the build needs a few GB of free memory; `app/android/gradle.properties` is set low (2 GB) because the default crashed a 16 GB laptop with many apps open.
+4. Voice uses the phone's own Arabic speech recognition and text-to-speech (free, no key). If the phone has no Arabic voice or recognition, type or tap the answer buttons.

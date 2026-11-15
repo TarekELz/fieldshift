@@ -27,3 +27,7 @@ Thumbs.db
 .vscode/
 .idea/
 .claude/
+
+# build logs
+build_apk.log
+*.log
