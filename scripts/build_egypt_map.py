@@ -1,29 +1,45 @@
 """Build app/assets/data/egypt_map.json: a small, simplified map of Egypt for the app's location picker.
 
-Source: Natural Earth (public domain), https://www.naturalearthdata.com/, from the nvkelso/natural-earth-vector repo:
-  ne_10m_admin_1_states_provinces  the 27 governorates, with their Arabic names (name_ar)
-  ne_10m_rivers_lake_centerlines   the Nile, the Rosetta and Damietta branches, the Suez Canal
-  ne_10m_lakes                     Lake Nasser
-Natural Earth is a generalized cartographic dataset, NOT a survey, and it draws disputed areas as they are administered
-today. Output coordinates are [longitude, latitude], rounded to 3 decimals and simplified (Douglas-Peucker, ~0.5 km).
+Sources:
+  HDX "Egypt - Subnational Administrative Boundaries" (COD-AB, CAPMAS via OCHA, CC BY-IGO, modified 2026-01-26),
+    admin 1: the 27 governorates with their Arabic names. Downloaded to data/raw/hdx_egy/ (gitignored) if missing.
+  Natural Earth (public domain), https://www.naturalearthdata.com/, nvkelso/natural-earth-vector repo:
+    ne_10m_rivers_lake_centerlines   the Nile, the Rosetta and Damietta branches, the Suez Canal
+    ne_10m_lakes                     Lake Nasser
+Natural Earth rivers/lakes are generalized cartographic data, NOT a survey. Output coordinates are [longitude, latitude],
+rounded to 3 decimals and simplified (Douglas-Peucker, ~0.5 km).
 
 Checked 2026-11-15 against OpenStreetMap: the western, southern and Sinai land borders coincide with OSM's; river lines
 lie within 0.4-2 km of Mansoura, Zifta, Mit Ghamr, Desouk, Rashid, Damietta, Aswan, Luxor, Asyut and Giza.
 
 Run: .venv/Scripts/python scripts/build_egypt_map.py
 """
+import io
 import json
 import pathlib
+import zipfile
 
 import requests
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 BASE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/"
+HDX_ZIP = "https://data.humdata.org/dataset/b90d81ba-7c7a-4283-9899-827480d80a79/resource/2080e95f-51c7-45b6-b5ab-613ff1cfc041/download/egy_admin_boundaries.geojson.zip"
+HDX_DIR = ROOT / "data" / "raw" / "hdx_egy"
 EGYPT_BOX = (24.0, 21.5, 37.0, 32.2)  # lon_min, lat_min, lon_max, lat_max
 
 # Governorates the app covers (the Nile Delta and its edges) and the NASA data point each one owns, if any.
-DELTA = ["Al Iskandariyah", "Al Buhayrah", "Kafr ash Shaykh", "Al Gharbiyah", "Ad Daqahliyah", "Dumyat", "Al Minufiyah", "Ash Sharqiyah", "Al Qalyubiyah", "Bur Sa`id"]
-OWN_SITE = {"Al Buhayrah": "beheira", "Kafr ash Shaykh": "kafr_el_sheikh", "Al Gharbiyah": "gharbia", "Al Minufiyah": "menoufia", "Ash Sharqiyah": "sharqia", "Dumyat": "damietta"}
+DELTA = ["Alexandria", "Behera", "Kafr El-Shikh", "Gharbia", "Dakahlia", "Damietta", "Menoufia", "Sharkia", "Kalyoubia", "Port Said"]
+OWN_SITE = {"Behera": "beheira", "Kafr El-Shikh": "kafr_el_sheikh", "Gharbia": "gharbia", "Menoufia": "menoufia", "Sharkia": "sharqia", "Damietta": "damietta"}
+
+
+def hdx_admin1():
+    f = HDX_DIR / "egy_admin1.geojson"
+    if not f.exists():
+        HDX_DIR.mkdir(parents=True, exist_ok=True)
+        r = requests.get(HDX_ZIP, timeout=600)
+        r.raise_for_status()
+        zipfile.ZipFile(io.BytesIO(r.content)).extractall(HDX_DIR)
+    return json.loads(f.read_text(encoding="utf8"))["features"]
 
 
 def get(name):
@@ -88,20 +104,18 @@ def area_centroid(ring):
 
 def main():
     governorates = []
-    for f in get("ne_10m_admin_1_states_provinces.geojson")["features"]:
+    for f in hdx_admin1():
         p = f["properties"]
-        if p.get("iso_a2") != "EG":
-            continue
         g = f["geometry"]
         polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
-        rings = [simplify_ring([tuple(q) for q in poly[0]], 0.006) for poly in polys]
+        rings = [simplify_ring([tuple(q) for q in poly[0]], 0.006) for poly in polys]  # outer rings only
         rings = [r for r in rings if len(r) >= 4]
         big = max(rings, key=lambda r: abs(area_centroid(r)[0]))
         area, cx, cy = area_centroid(big)
         total = sum(abs(area_centroid(r)[0]) for r in rings)
-        name = p["name"]
+        name = p["adm1_name"]
         governorates.append({
-            "id": name, "ar": (p.get("name_ar") or name).replace("محافظة ", ""), "delta": name in DELTA, "site": OWN_SITE.get(name),
+            "id": name, "ar": p["adm1_name1"].replace("مدينة ", ""), "delta": name in DELTA, "site": OWN_SITE.get(name),
             "label": [round(cx, 3), round(cy, 3)], "size": round(total ** 0.5, 3), "rings": [rnd(r) for r in rings],
         })
     governorates.sort(key=lambda g: g["id"])
@@ -126,7 +140,7 @@ def main():
                 lake_polys.append({"name": f["properties"]["name"], "pts": rnd(simplify_ring([tuple(q) for q in p[0]], 0.01))})
 
     out = {
-        "source": "Natural Earth (public domain), simplified. Generalized cartographic data, not a survey.",
+        "source": "Governorates: HDX COD-AB Egypt (CAPMAS via OCHA, CC BY-IGO), simplified to about 0.6 km. Rivers and lakes: Natural Earth (public domain), generalized.",
         "bbox": [24.5, 21.8, 36.95, 31.9], "governorates": governorates, "water": water, "lakes": lake_polys,
     }
     dest = ROOT / "app" / "assets" / "data" / "egypt_map.json"

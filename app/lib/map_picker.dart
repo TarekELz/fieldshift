@@ -1,7 +1,7 @@
-// Map of Egypt drawn in code from simplified Natural Earth data (public domain): the 27 governorates with
-// their Arabic names, the Nile and its two Delta branches, Lake Nasser. The borders are generalized and
-// approximate, not an official survey. The farmer taps a governorate of the Nile Delta (green) to zoom in,
-// then taps his governorate. Each Delta governorate is matched to a NASA data point.
+// Map of Egypt drawn in code: the 27 governorates from the official CAPMAS boundaries (HDX COD-AB, CC BY-IGO, simplified
+// to about 0.6 km) with their Arabic names; the Nile, its two Delta branches and Lake Nasser from Natural Earth
+// (generalized). The farmer taps a governorate of the Nile Delta (green) to zoom in, then taps his governorate.
+// Each Delta governorate is matched to a NASA data point.
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -110,7 +110,7 @@ class _MapPickerState extends State<MapPicker> with SingleTickerProviderStateMix
           TextButton.icon(onPressed: () => _zoomDelta(w, h), icon: const Icon(Icons.zoom_in_map_rounded, size: 18), label: const Text('الدلتا')),
           TextButton.icon(onPressed: () => _animateTo(Matrix4.identity()), icon: const Icon(Icons.public_rounded, size: 18), label: const Text('مصر')),
         ]),
-        const Text('الحدود تقريبية ومبسّطة (Natural Earth)، مش خريطة رسمية.', style: TextStyle(fontSize: 10, color: Fs.dim)),
+        const Text('حدود المحافظات من بيانات CAPMAS الرسمية عبر HDX (مبسّطة)، والأنهار تقريبية.', style: TextStyle(fontSize: 10, color: Fs.dim)),
       ]);
     });
   }
