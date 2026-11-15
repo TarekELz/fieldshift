@@ -2,15 +2,15 @@
 
 AUDIT 2026-11-14 ~19:00: team-downloaded NASA data added: IMERG daily rain (Delta area mean 2015-2025), MODIS NDVI area statistics for the Delta box (rasters still to come from Hussain), SRTM 30 m tiles for the whole Delta. First push to GitHub on Tarek's instruction: merged so main shows only our files; Youssef Nada's and Hussain's earlier commits stay in the history (also backed up locally as branch backup/youssef-remote).
 
-**Current step: 4/10 (data plan), waiting for Tarek at gate G2 (region, points, accounts).** G1 decided (D1-D3 in docs/decisions.md).
+**Current step: building (Step 7 started early). Updated 2026-11-15 ~10:00.** Deadline Sunday 15 Nov 23:59, Local Event time (still UNVERIFIED which event; Tarek to confirm).
 
-AUDIT 2026-11-14 evening: Mead MODIS NDVI now on disk (506 rows; someone re-ran fetch_retry.py with longer retries; that edit is uncommitted and not mine). Egypt MODIS via ORNL failed (503). Teammate's AppEEARS MODIS extract for 3 Damietta farm points (2000-2026) added to data/raw/appeears_damietta/. The Egypt pilot point 30.79N 31.00E appears to be in Tanta city (SoilGrids masked). Local server 192.168.4.110:8000 not reachable from this machine.
+Done: problem and region (D1, D5), grounded engines (D2), voice kept (D3), methods (D7, after two independent reviews). Built and tested (43 tests): wheat calendar, water (FAO-56), salt (FAO paper 29), rotation comparison. NASA POWER 1990-2025 for six Delta points; IMERG and MODIS statistics for the Delta; SRTM tiles; MODIS rasters downloading (about 70 of 254 dates, slow).
 
-AUDIT 2026-11-14 about 15:20: Steps 2 and 3 outputs written (docs/brief.md, docs/submission-rules.md, literature/search_log.csv, literature/papers.csv, docs/problem_statement_options.md). No new data on disk. MODIS retry (PID 27152) still running after about 3 hours with no output folder; probably hung, left alone pending Tarek's word. Still no `.env`. Three other public Field Shift repos found on GitHub (huiliijiang/spaceapp26, Zul-Qarnain/field-shift, chhra/field-shift).
+Not done: voice layer, picture card and web page; Arabic conversation text (Tarek); voice tests (Youssef); input checks (POWER Tmax and ET0 against ground data); AI disclosure (on hold); LICENSE; demo (30-second video or 7 slides); submission page.
 
-Rule changes found in Step 2 that affect later steps: demo is a 30-second video or 7 slides; AI may not be used to come up with the solution idea; AI-generated code must be acknowledged in the project; final project link must be public.
+Known problems: Damietta weather cell is mostly sea; Menoufia and Sharqia share a cell; ET0 looks high, so use ratios not millimetres; several wheat parameters have no full-text source (marked low confidence); the repo is private and the final link must be public.
 
-Open for Tarek: G1 choice; four paywalled papers (see G1 message); AI-disclosure wording vs AGENTS.md; Youssefnada-Engineer repo access; teammate roles; which Local Event (sets the deadline clock).
+Open for Tarek: confirm the Local Event deadline; make the repo public before submitting (G6); AI disclosure wording; whether to accept git commit emails being public.
 
 ---
 Step 1 audit follows (2026-11-14 12:50).

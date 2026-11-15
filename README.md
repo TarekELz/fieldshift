@@ -2,7 +2,7 @@
 
 NASA Space Apps Challenge 2026, challenge **"Field Shift: Adapting Farms with NASA Data"** (hackathon 14-15 November 2026). Team based in Egypt.
 
-> **Status (14 Nov, evening):** problem chosen, data being planned. No product code yet.
+> **Status (15 Nov, morning):** problem and method chosen. Three engines built and tested (wheat calendar, water, salt) plus a rotation comparison that joins them. Voice assistant, picture card and web page are not built yet. Run the tests: `pip install -r requirements.txt` then `python -m pytest tests`; try the comparison: `python -m src.fieldshift.rotation --site gharbia --signs patches --interval-days 10` (needs the NASA POWER files, see `src/fieldshift/ingest/fetch_power_sites.py`).
 > Live status: [`docs/status.md`](docs/status.md). Every decision: [`docs/decisions.md`](docs/decisions.md).
 
 ## What we agreed so far
