@@ -31,3 +31,6 @@ Thumbs.db
 # build logs
 build_apk.log
 *.log
+
+# copied from app/assets/fonts by scripts/make_text_review.py
+docs/text_review/fonts/
