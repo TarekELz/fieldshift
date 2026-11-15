@@ -114,7 +114,7 @@ It **supports, and does not replace,** the farmer's judgement and local agricult
 | Wheat calendar against NASA MCD12Q2 satellite phenology | winter green-up in November and dormancy in May, summer green-up in June: consistent with our assumptions |
 | Season screen on known cases | rice sown in November, maize in December and wheat in March are flagged wrong; tomato, berseem, sugar beet, faba bean and tree crops are "cannot judge" |
 | Python and Dart give the same answers | 18 golden cases and 18 advice cases match |
-| Automated tests | Python: 306 pass with the raw data on disk; on a clean clone the tests that need `data/raw/` are skipped (263 pass, the rest skip). Flutter: 62 pass. CI runs both on every push |
+| Automated tests | Python: 309 pass with the raw data on disk; on a clean clone the tests that need `data/raw/` are skipped (about 266 pass, the rest skip). Flutter: 62 pass. CI runs both on every push |
 | Understanding what a farmer says | whole-word matching, tested on the mistakes a teammate's review found ("ربنا يرزق" is not rice; "مش فيه بقع" means no salt) |
 | Independent AI reviews of code and workflow | issues found (for example faba bean mislabelled, a number-only guard that let a wrong rotation through) and fixed |
 
