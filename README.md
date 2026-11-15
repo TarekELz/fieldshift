@@ -9,7 +9,6 @@
 <img alt="Flutter" src="https://img.shields.io/badge/app-Flutter%20Android-02569B">
 <img alt="Licence" src="https://img.shields.io/badge/licence-MIT-green">
 <a href="https://github.com/TarekELz/fieldshift/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/TarekELz/fieldshift/actions/workflows/ci.yml/badge.svg"></a>
-<img alt="Tests" src="https://img.shields.io/badge/tests-306%20Python%20%2B%2062%20Flutter-brightgreen">
 </p>
 <p align="center"><a href="docs/index.html">Project page</a> · <a href="docs/status.md">Status</a> · <a href="docs/decisions.md">Decisions</a> · <a href="docs/methodology.md">Method and limits</a> · <a href="docs/references.md">References</a></p>
 
@@ -109,11 +108,12 @@ It **supports, and does not replace,** the farmer's judgement and local agricult
 ## What we checked (validation)
 | Check | Result |
 |---|---|
-| Engine yearly reference evapotranspiration against NASA MOD16A3GF potential ET, 7 points | within 1 to 8% (consistency check, not a station validation) |
+| Engine yearly reference evapotranspiration against NASA MOD16A3GF potential ET, 7 points | within 1 to 8% (consistency check, not a station validation); result files in [`docs/checks/`](docs/checks/) |
 | Are the data points farmland (ESA WorldCover 2021)? | cropland 73 to 91% within 2.5 km of six points; Damietta is mostly sea and is flagged |
 | Wheat calendar against NASA MCD12Q2 satellite phenology | winter green-up in November and dormancy in May, summer green-up in June: consistent with our assumptions |
 | Season screen on known cases | rice sown in November, maize in December and wheat in March are flagged wrong; tomato, berseem, sugar beet, faba bean and tree crops are "cannot judge" |
 | Python and Dart give the same answers | 18 golden cases and 18 advice cases match |
+| Automated tests | Python: 306 pass with the raw data on disk; on a clean clone the tests that need `data/raw/` are skipped (263 pass, the rest skip). Flutter: 62 pass. CI runs both on every push |
 | Understanding what a farmer says | whole-word matching, tested on the mistakes a teammate's review found ("ربنا يرزق" is not rice; "مش فيه بقع" means no salt) |
 | Independent AI reviews of code and workflow | issues found (for example faba bean mislabelled, a number-only guard that let a wrong rotation through) and fixed |
 
@@ -135,7 +135,7 @@ No yield forecast, no yield loss in percent, no field-level or weather-station-v
 | | Requirement | Where |
 |---|---|---|
 | Yes | One official 2026 challenge | Field Shift: Adapting Farms with NASA Data |
-| Yes | NASA data is a core component | NASA POWER drives every farmer-facing number; MODIS gives the pictures and a phenology cross-check; five NASA datasets, listed in [`data/catalog.yaml`](data/catalog.yaml) |
+| Yes | NASA data is a core component | NASA POWER drives every farmer-facing number; MODIS gives the pictures and a phenology cross-check; five NASA datasets used (POWER, MOD13Q1, MCD12Q2, MOD16A3GF, IMERG), listed in [`data/catalog.yaml`](data/catalog.yaml) |
 | Yes | Open source | MIT licence, [`LICENSE`](LICENSE) |
 | Yes | External resources listed | [`docs/references.md`](docs/references.md) |
 | Yes | Decisions and sources logged | [`docs/decisions.md`](docs/decisions.md), [`literature/papers.csv`](literature/papers.csv) |
@@ -146,10 +146,10 @@ No yield forecast, no yield loss in percent, no field-level or weather-station-v
 ### Scorecard: how the project answers the five criteria
 | Criterion | What we did |
 |---|---|
-| **Impact** | A voice-first tool for farmers who cannot read well: the problem figures are from papers we read in full (water scarcity, salt, the wheat calendar). |
+| **Impact** | A voice-first tool for farmers who cannot read well: the problem figures are from papers we read in full (water scarcity, salt, the wheat calendar). Honest reach: Nile Delta only (7 named NASA points plus 12 cells cover the Delta governorates), Android, and not yet tested with farmers. |
 | **Creativity** | A farmer's own goal question, a blueprint-and-guard advice layer where code chooses and an AI only rewords, an Egyptian voice, a Professional view with a regional comparison, and a sowing-season screen from FAO EcoCrop plus 36 years of NASA weather. |
 | **Validity** | Engines checked against published methods and tested (hundreds of automated tests, golden cases that the Dart app must reproduce from Python); our evapotranspiration is within 1 to 8% of NASA's own MOD16 at all seven points; independent reviews found and fixed real bugs. Limits are stated in [`docs/methodology.md`](docs/methodology.md). |
-| **Relevance** | NASA POWER, MODIS MOD13Q1, MCD12Q2 phenology, MOD16A3GF and GPM IMERG: the weather behind every number and the satellite pictures and cross-checks. |
+| **Relevance** | NASA POWER, MODIS MOD13Q1, MCD12Q2 phenology, MOD16A3GF and GPM IMERG: the weather behind every number and the satellite pictures and cross-checks. The brief also mentions soil health: we model one part of it, salinity (FAO-29), and say plainly that nitrogen fixation and cover crops are not modelled. |
 | **Presentation** | [`docs/index.html`](docs/index.html): a project page with a "Try Eyad" playground running the same tables and rules as the app, and a season lab. |
 
 ## NASA data we hold (see [`data/catalog.yaml`](data/catalog.yaml))
@@ -160,7 +160,7 @@ No yield forecast, no yield loss in percent, no field-level or weather-station-v
 | MODIS MCD12Q2 phenology | A cross-check of the wheat and summer crop calendar. No farmer-facing number |
 | GPM IMERG daily rainfall | Context only: summer rain is almost zero, so summer crops depend on irrigation |
 | MODIS MOD16A3GF yearly evapotranspiration, 7 points, 2015-2024 | An input check: the engine's yearly ET0 is within 1 to 8% of NASA's own potential ET. No farmer-facing number |
-| SRTM 30 m terrain | On disk, not yet used in any result |
+| SRTM 30 m terrain | On disk only, not used in any result and not counted among the five |
 
 Other data: FAOSTAT (Egypt yield and price), ESA WorldCover 2021 (not NASA) to confirm the points are farmland; administrative boundaries from CAPMAS via HDX (CC BY-IGO); Natural Earth for rivers, lakes and the Halayeb Triangle and Bir Tawil outlines (public domain); FAO tables for crop water and salt tolerance; FAO EcoCrop for crop temperature ranges; IBM Plex fonts (SIL Open Font License, in `app/assets/fonts/`).
 

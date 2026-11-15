@@ -1,0 +1,51 @@
+{
+ "gharbia": {
+  "engine_et0_mm": 1871,
+  "mod16_pet_mm": 1962,
+  "ratio": 0.95,
+  "mod16_et_mm": 420,
+  "years": 9
+ },
+ "kafr_el_sheikh": {
+  "engine_et0_mm": 1832,
+  "mod16_pet_mm": 1934,
+  "ratio": 0.95,
+  "mod16_et_mm": 385,
+  "years": 9
+ },
+ "beheira": {
+  "engine_et0_mm": 1761,
+  "mod16_pet_mm": 1880,
+  "ratio": 0.94,
+  "mod16_et_mm": 454,
+  "years": 9
+ },
+ "menoufia": {
+  "engine_et0_mm": 1980,
+  "mod16_pet_mm": 2011,
+  "ratio": 0.98,
+  "mod16_et_mm": 397,
+  "years": 9
+ },
+ "sharqia": {
+  "engine_et0_mm": 1961,
+  "mod16_pet_mm": 1991,
+  "ratio": 0.99,
+  "mod16_et_mm": 433,
+  "years": 9
+ },
+ "damietta": {
+  "engine_et0_mm": 1637,
+  "mod16_pet_mm": 1787,
+  "ratio": 0.92,
+  "mod16_et_mm": 677,
+  "years": 9
+ },
+ "dakahlia": {
+  "engine_et0_mm": 1875,
+  "mod16_pet_mm": 1918,
+  "ratio": 0.98,
+  "mod16_et_mm": 511,
+  "years": 9
+ }
+}

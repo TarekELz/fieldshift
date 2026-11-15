@@ -1,0 +1,97 @@
+{
+ "mod16": {
+  "kafr_el_sheikh": {
+   "years": 10,
+   "ET_median_mm": 382,
+   "PET_median_mm": 1933
+  },
+  "damietta": {
+   "years": 10,
+   "ET_median_mm": 675,
+   "PET_median_mm": 1787
+  },
+  "beheira": {
+   "years": 10,
+   "ET_median_mm": 452,
+   "PET_median_mm": 1879
+  },
+  "gharbia": {
+   "years": 10,
+   "ET_median_mm": 414,
+   "PET_median_mm": 1967
+  },
+  "menoufia": {
+   "years": 10,
+   "ET_median_mm": 397,
+   "PET_median_mm": 2010
+  },
+  "sharqia": {
+   "years": 10,
+   "ET_median_mm": 424,
+   "PET_median_mm": 1995
+  },
+  "dakahlia": {
+   "years": 10,
+   "ET_median_mm": 515,
+   "PET_median_mm": 1916
+  }
+ },
+ "worldcover_2021": {
+  "kafr_el_sheikh": {
+   "cropland": 0.816,
+   "built_up": 0.142,
+   "water": 0.0,
+   "trees": 0.005,
+   "grass_shrub": 0.012,
+   "bare": 0.005
+  },
+  "damietta": {
+   "cropland": 0.5,
+   "built_up": 0.13,
+   "water": 0.0,
+   "trees": 0.016,
+   "grass_shrub": 0.007,
+   "bare": 0.001
+  },
+  "beheira": {
+   "cropland": 0.842,
+   "built_up": 0.105,
+   "water": 0.002,
+   "trees": 0.025,
+   "grass_shrub": 0.017,
+   "bare": 0.006
+  },
+  "gharbia": {
+   "cropland": 0.845,
+   "built_up": 0.139,
+   "water": 0.0,
+   "trees": 0.007,
+   "grass_shrub": 0.006,
+   "bare": 0.001
+  },
+  "menoufia": {
+   "cropland": 0.725,
+   "built_up": 0.101,
+   "water": 0.001,
+   "trees": 0.163,
+   "grass_shrub": 0.005,
+   "bare": 0.001
+  },
+  "sharqia": {
+   "cropland": 0.806,
+   "built_up": 0.16,
+   "water": 0.0,
+   "trees": 0.02,
+   "grass_shrub": 0.001,
+   "bare": 0.003
+  },
+  "dakahlia": {
+   "cropland": 0.91,
+   "built_up": 0.04,
+   "water": 0.0,
+   "trees": 0.002,
+   "grass_shrub": 0.005,
+   "bare": 0.0
+  }
+ }
+}
