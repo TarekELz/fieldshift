@@ -5,5 +5,4 @@ show a stylized cartoon character. NASA Space Apps rules require AI-generated im
 watermark: the app draws an "AI" mark on every avatar. Do not remove the mark, and keep it wherever the
 pictures are used (slides, video, README). The pictures are acknowledged in the project's acknowledgements.
 The character is a stylized likeness of a person. Tarek stated on 2026-11-15 that this person is 22 (the competition does
-not allow likenesses of people under 18). That person's consent to being the face of the app: Tarek to confirm explicitly
-before the repo is made public.
+not allow likenesses of people under 18). Tarek also stated on 2026-11-15 that this person consents; they are a member of the team.
