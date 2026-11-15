@@ -61,6 +61,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final voice = Voice();
   final input = TextEditingController();
+  final inputFocus = FocusNode();
   final scroll = ScrollController();
   final items = <ChatItem>[];
   Dialogue? dialogue;
@@ -172,7 +173,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _topBar() => Padding(
         padding: const EdgeInsets.fromLTRB(14, 8, 14, 4),
         child: Row(children: [
-          RoundButton(icon: Icons.arrow_forward_rounded, onTap: widget.onHome, tooltip: 'رجوع'),
+          RoundButton(icon: Icons.arrow_back_rounded, onTap: widget.onHome, tooltip: 'رجوع'),
           const Expanded(child: Center(child: Text('فيلد شيفت', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)))),
           RoundButton(icon: Icons.refresh_rounded, onTap: _restart, tooltip: 'ابدأ من جديد'),
         ]),
@@ -272,7 +273,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: TextField(
                   controller: input,
                   textInputAction: TextInputAction.send,
-                  onSubmitted: send,
+                  focusNode: inputFocus,
+                  onSubmitted: (v) {
+                    send(v);
+                    inputFocus.requestFocus(); // keep the keyboard open for typed answers
+                  },
                   decoration: const InputDecoration(hintText: 'اكتب ردك هنا', border: InputBorder.none),
                 ),
               ),
@@ -419,7 +424,7 @@ class ResultCard extends StatelessWidget {
           Expanded(child: Text('$crop ثم قمح', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800))),
         ]),
         const SizedBox(height: 4),
-        Text('$crop: زراعة ${arDate(r.input.summerSowing)}، حصاد تقريباً ${r.harvest}.  القمح: ${arDate(r.input.wheatSowing)}${r.isExisting ? '' : ' (افتراض)'}', style: const TextStyle(fontSize: 13, color: Fs.dim, height: 1.4)),
+        Text('$crop: زراعة ${arDate(r.input.summerSowing)}، حصاد تقريباً ${arHarvest(r.harvest)}.  القمح: ${arDate(r.input.wheatSowing)}${r.isExisting ? '' : ' (افتراض)'}', style: const TextStyle(fontSize: 13, color: Fs.dim, height: 1.4)),
         const SizedBox(height: 12),
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Expanded(
@@ -427,7 +432,7 @@ class ResultCard extends StatelessWidget {
               icon: Icons.water_drop_rounded,
               label: 'مية $crop مقارنة بدورتك',
               value: '${arNum(r.ratio, dec: 2)}×',
-              note: '~${arDigits(r.etc)} مم (غير مؤكد)',
+              note: 'حوالي ${arDigits(r.etc)} مم (غير مؤكد)',
               accent: Fs.teal,
               barFraction: r.ratio / maxRatio,
             ),
@@ -436,9 +441,9 @@ class ResultCard extends StatelessWidget {
           Expanded(
             child: StatTile(
               icon: Icons.thermostat_rounded,
-              label: 'أيام حر وقت امتلاء حبوب القمح',
+              label: 'أيام فوق ٣٢ درجة وقت امتلاء حبوب القمح',
               value: '${arDigits(r.heatMedian.round())} يوم',
-              note: 'من ${arDigits(r.heatP10.round())} لـ ${arDigits(r.heatP90.round())} · ٣٢°+',
+              note: 'في أغلب السنين من ${arDigits(r.heatP10.round())} لـ ${arDigits(r.heatP90.round())}',
               accent: Fs.orange,
               spark: r.series.isEmpty ? null : r.series,
             ),
@@ -458,7 +463,9 @@ class ResultCard extends StatelessWidget {
               size: 64,
               stroke: 6,
               color: Fs.status(r.saltSummer!.status),
-              child: Text(r.saltSummer!.yieldPct == null ? '<٥٠' : '${arDigits(r.saltSummer!.yieldPct!)}٪', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+              child: r.saltSummer!.yieldPct == null
+                  ? const Text('أقل من\n٥٠٪', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, height: 1.1, fontWeight: FontWeight.w800))
+                  : Text('${arDigits(r.saltSummer!.yieldPct!)}٪', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
             ),
             const SizedBox(width: 12),
             Expanded(

@@ -34,7 +34,7 @@ class WelcomeScreen extends StatelessWidget {
                     width: 66,
                     height: 66,
                     decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 1.6)),
-                    child: const Icon(Icons.arrow_back_rounded, size: 30), // forward points left in right-to-left layouts
+                    child: const Icon(Icons.arrow_forward_rounded, size: 30), // this icon flips itself: it points left in right-to-left layouts
                   ),
                   const SizedBox(width: 16),
                   const Text('يلا بينا!', style: TextStyle(fontSize: 17, letterSpacing: 0.5, color: Fs.dim)),

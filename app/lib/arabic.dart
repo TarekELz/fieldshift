@@ -44,3 +44,12 @@ String arRatio(double ratio) {
 
 /// Number in Arabic digits with an Arabic decimal mark: 1.12 -> "١٫١٢".
 String arNum(num v, {int dec = 0}) => arDigits(v.toStringAsFixed(dec)).replaceAll('.', '٫');
+
+const _enMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/// Engine harvest text "13 Oct" -> "١٣ أكتوبر".
+String arHarvest(String s) {
+  final p = s.split(' ');
+  final i = _enMonths.indexOf(p.length > 1 ? p[1] : '');
+  return i < 0 ? s : '${arDigits(int.parse(p[0]))} ${arMonth[i]}';
+}
