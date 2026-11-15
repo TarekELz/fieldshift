@@ -240,6 +240,7 @@ class _FlowScreenState extends State<FlowScreen> {
         valueListenable: voice.speaking,
         builder: (context, speaking, _) => GestureDetector(
           onTap: _readAgain, // tap Eyad to hear the question again
+          onLongPress: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${tr('آخر صوت', 'Last voice')}: ${voice.lastNote}'), duration: const Duration(seconds: 6))),
           child: EyadAvatar(mood: _mood, size: compact ? 84 : 148, progress: done / 6, active: speaking || listening),
         ),
       ),

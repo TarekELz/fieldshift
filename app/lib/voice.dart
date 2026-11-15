@@ -9,6 +9,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
+
+import 'sentences.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -35,6 +37,7 @@ class LiveVoice {
   static const _voiceId = '8f329168-6604-4f13-9572-994984f894c4';
   static const _base = 'https://api.tryhamsa.com';
   static final Map<String, Uint8List> _cache = {};
+  static String lastError = 'not tried';
 
   static Future<List<String>> keys() async {
     try {
@@ -46,16 +49,30 @@ class LiveVoice {
   }
 
   static Future<Uint8List?> generate(String text, {Duration budget = const Duration(seconds: 6), List<String>? keyList}) async {
-    if (kIsWeb || text.length > 300) return null; // long summaries go to the phone's voice
+    if (kIsWeb) {
+      lastError = 'web build';
+      return null;
+    }
+    if (text.length > 300) {
+      lastError = 'sentence too long';
+      return null;
+    }
     final hit = _cache[text];
     if (hit != null) return hit;
     final ks = keyList ?? await keys();
+    if (ks.isEmpty) {
+      lastError = 'no Hamsa key in this build';
+      return null;
+    }
     final sw = Stopwatch()..start();
     for (final k in ks) {
       try {
         final h = {'Authorization': 'Token $k', 'Content-Type': 'application/json'};
         final r = await http.post(Uri.parse('$_base/v1/jobs/text-to-speech'), headers: h, body: jsonEncode({'voiceId': _voiceId, 'text': text})).timeout(budget - sw.elapsed);
-        if (r.statusCode != 200 && r.statusCode != 201) continue;
+        if (r.statusCode != 200 && r.statusCode != 201) {
+          lastError = 'Hamsa answered ${r.statusCode}';
+          continue;
+        }
         var job = (jsonDecode(r.body) as Map)['data'] as Map;
         while (sw.elapsed < budget) {
           final url = ((job['jobResponse'] as Map?)?['ttsMediaFile'] ?? job['mediaUrl']) as String?;
@@ -69,10 +86,12 @@ class LiveVoice {
           final g = await http.get(Uri.parse('$_base/v1/jobs?jobId=${job['id']}'), headers: h).timeout(budget - sw.elapsed);
           if (g.statusCode == 200) job = (jsonDecode(g.body) as Map)['data'] as Map;
         }
-      } catch (_) {
-        continue; // offline, quota or too slow: next key, then the phone's voice
+      } catch (e) {
+        lastError = e.runtimeType.toString(); // offline, quota or too slow
+        continue; // next key, then the phone's voice
       }
     }
+    if (lastError == 'not tried') lastError = 'no audio returned in time';
     return null;
   }
 }
@@ -190,45 +209,70 @@ class Voice {
     await _stt.stop();
   }
 
+  int _gen = 0; // a newer speak() or stopSpeaking() cancels the one in progress
+  /// What the last line used and why: "clip", "live", or "phone" with the reason. Shown by a long press on Eyad, so a phone problem is visible.
+  String lastNote = 'nothing spoken yet';
+
+  /// Speaks the text in Eyad's Egyptian voice: a whole-line clip if there is one, otherwise sentence by sentence (a clip, else a live line, else the phone's voice).
   Future<void> speak(String text) async {
     if (muted) return;
-    final clip = await Clips.lookup(text);
-    if (clip != null) {
-      if (await _playAi(AssetSource('audio/$clip'))) return;
-    } else {
-      final live = await LiveVoice.generate(text);
-      if (live != null && await _playAi(BytesSource(live))) return;
-    }
-    if (!ttsReady) return;
-    await _tts.stop();
-    speaking.value = true;
+    final my = ++_gen;
     try {
-      await _tts.speak(text);
-    } finally {
+      await _player.stop();
+    } catch (_) {}
+    if (ttsReady) await _tts.stop();
+    final whole = await Clips.lookup(text);
+    final parts = whole != null ? [text.trim()] : splitSentences(text);
+    // start every part's audio at once (clips are instant, live lines take about a second each), then play them in order
+    final ready = [for (final p in parts) _resolve(p)];
+    speaking.value = true;
+    final notes = <String>[];
+    for (var i = 0; i < parts.length; i++) {
+      if (my != _gen) return;
+      final r = await ready[i];
+      if (my != _gen) return;
+      if (r.src != null && await _playSource(r.src!, my)) {
+        notes.add(r.how);
+        continue;
+      }
+      notes.add('phone (${r.src == null ? r.how : 'the audio could not be played'})');
+      aiVoice.value = false;
+      if (ttsReady) {
+        try {
+          await _tts.speak(parts[i]);
+        } catch (_) {}
+      }
+    }
+    if (my == _gen) {
       speaking.value = false;
+      aiVoice.value = false;
+      lastNote = notes.join(', ');
     }
   }
 
-  Future<bool> _playAi(Source src) async {
+  Future<({Source? src, String how})> _resolve(String part) async {
+    final clip = await Clips.lookup(part);
+    if (clip != null) return (src: AssetSource('audio/$clip') as Source?, how: 'clip');
+    final live = await LiveVoice.generate(part);
+    if (live != null) return (src: BytesSource(live, mimeType: 'audio/wav') as Source?, how: 'live');
+    return (src: null as Source?, how: 'no clip and live generation failed: ${LiveVoice.lastError}');
+  }
+
+  Future<bool> _playSource(Source src, int my) async {
     try {
-      await _player.stop();
-      if (ttsReady) await _tts.stop();
-      speaking.value = true;
       aiVoice.value = true;
-      _player.onPlayerComplete.first.then((_) {
-        speaking.value = false;
-        aiVoice.value = false;
-      });
+      final done = _player.onPlayerComplete.first;
       await _player.play(src);
+      await done.timeout(const Duration(seconds: 90));
       return true;
-    } catch (_) {
-      speaking.value = false; // the audio could not be played: use the phone's voice
-      aiVoice.value = false;
+    } catch (e) {
+      lastNote = 'play error: $e';
       return false;
     }
   }
 
   Future<void> stopSpeaking() async {
+    _gen++;
     speaking.value = false;
     aiVoice.value = false;
     try {
