@@ -37,11 +37,17 @@ class _Root extends StatefulWidget {
 }
 
 class _RootState extends State<_Root> {
-  bool welcome = true;
+  bool setup = true;
+  bool speak = true;
   @override
   Widget build(BuildContext context) => AnimatedSwitcher(
         duration: const Duration(milliseconds: 350),
-        child: welcome ? WelcomeScreen(key: const ValueKey('w'), onStart: () => setState(() => welcome = false)) : ChatScreen(key: const ValueKey('c'), onHome: () => setState(() => welcome = true)),
+        child: setup
+            ? Onboarding(key: const ValueKey('w'), onDone: (speakReplies) => setState(() {
+                  speak = speakReplies;
+                  setup = false;
+                }))
+            : ChatScreen(key: const ValueKey('c'), speakReplies: speak, onHome: () => setState(() => setup = true)),
       );
 }
 
@@ -54,8 +60,9 @@ class ChatItem {
 }
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.onHome});
+  const ChatScreen({super.key, required this.onHome, this.speakReplies = true});
   final VoidCallback onHome;
+  final bool speakReplies; // from the setup screens: should Eyad read his replies aloud?
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
@@ -74,6 +81,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    voice.muted = !widget.speakReplies;
     _start();
   }
 

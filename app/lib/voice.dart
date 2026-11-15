@@ -9,6 +9,7 @@ class Voice {
   final SpeechToText _stt = SpeechToText();
   final FlutterTts _tts = FlutterTts();
   bool sttReady = false, ttsReady = false, listening = false;
+  bool muted = false; // set by the setup choice "I'll type": replies are written, not spoken
   String? sttLocale, ttsLang, lastError;
 
   Future<void> init() async {
@@ -81,7 +82,7 @@ class Voice {
   }
 
   Future<void> speak(String text) async {
-    if (!ttsReady) return;
+    if (!ttsReady || muted) return;
     await _tts.stop();
     await _tts.speak(text);
   }

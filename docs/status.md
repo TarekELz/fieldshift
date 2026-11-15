@@ -64,3 +64,8 @@ Last audit: 2026-11-14 12:50 local (Step 1, full audit). Files were opened and c
 - Earthdata token in `.env` (never in chat).
 - Confirm whether Youssefnada-Engineer should have repo access.
 - Teammate ownership areas.
+
+## 2026-11-15 update: official borders and setup flow
+- Map: governorate borders now come from the official CAPMAS boundaries (HDX COD-AB, CC BY-IGO) instead of Natural Earth; the Rosetta and Damietta lines lie within 0.4 km of them. Rivers and lakes are still Natural Earth. Canals not added. Arabic spellings follow HDX (Alexandria without the hamza).
+- Setup flow: three screens laid out like the team's reference (welcome with Skip / Get started, what Eyad does, voice or typing choice). The voice-or-typing choice is a real setting (mutes spoken replies). Arabic text is a draft and needs a native-speaker review.
+- Not done: APK not rebuilt since these changes (the MODIS download is still using memory); not tested on a phone; nothing pushed.
