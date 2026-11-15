@@ -268,7 +268,8 @@ class _FlowScreenState extends State<FlowScreen> {
     final d = dialogue!, m = current!;
     final done = [d.site, d.crop, d.summerSowing, d.wheatSowing, d.interval, d.salt].where((e) => e != null).length;
     final chips = _answered();
-    final compact = m.showMap; // the map needs the room
+    final kb = MediaQuery.viewInsetsOf(context).bottom > 0; // the keyboard is open: everything above the typing row shrinks so it never overflows
+    final compact = m.showMap || kb; // the map needs the room
     return Column(children: [
       SizedBox(height: compact ? 2 : 10),
       ValueListenableBuilder<bool>(
@@ -276,7 +277,7 @@ class _FlowScreenState extends State<FlowScreen> {
         builder: (context, speaking, _) => GestureDetector(
           onTap: _readAgain, // tap Eyad to hear the question again
           onLongPress: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${tr('آخر صوت', 'Last voice')}: ${voice.lastNote}'), duration: const Duration(seconds: 6))),
-          child: EyadAvatar(mood: _mood, size: compact ? 84 : 148, progress: done / 6, active: speaking || listening),
+          child: EyadAvatar(mood: _mood, size: kb ? 56 : (compact ? 84 : 148), progress: done / 6, active: speaking || listening),
         ),
       ),
       const SizedBox(height: 2),
@@ -287,9 +288,9 @@ class _FlowScreenState extends State<FlowScreen> {
           builder: (context, s, _) => s.isEmpty ? const SizedBox.shrink() : Padding(padding: const EdgeInsets.only(top: 2, left: 16, right: 16), child: Text(s, textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: Fs.dim))),
         ),
       const SizedBox(height: 8),
-      _bubble(msgText(m), compact),
-      if (note != null) Padding(padding: const EdgeInsets.fromLTRB(28, 6, 28, 0), child: Text(msgText(note!), textAlign: TextAlign.center, style: TextStyle(fontSize: 13, height: 1.4, color: Fs.dim))),
-      if (chips.isNotEmpty)
+      kb ? ConstrainedBox(constraints: const BoxConstraints(maxHeight: 110), child: SingleChildScrollView(child: _bubble(msgText(m), true))) : _bubble(msgText(m), compact),
+      if (note != null && !kb) Padding(padding: const EdgeInsets.fromLTRB(28, 6, 28, 0), child: Text(msgText(note!), textAlign: TextAlign.center, style: TextStyle(fontSize: 13, height: 1.4, color: Fs.dim))),
+      if (chips.isNotEmpty && !kb)
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
           child: Wrap(

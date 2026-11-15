@@ -120,7 +120,8 @@ class LiveVoice {
           final url = ((job['jobResponse'] as Map?)?['ttsMediaFile'] ?? job['mediaUrl']) as String?;
           if (job['status'] == 'COMPLETED' && url != null) {
             final a = await http.get(Uri.parse(url)).timeout(left());
-            if (a.statusCode == 200 && a.bodyBytes.isNotEmpty) return _cache[text] = a.bodyBytes;
+            if (a.statusCode == 200 && a.bodyBytes.length > 44 && String.fromCharCodes(a.bodyBytes.take(4)) == 'RIFF') return _cache[text] = a.bodyBytes;
+            lastError = 'jobs audio is not a WAV';
             break;
           }
           if (job['status'] == 'FAILED') break;
@@ -284,7 +285,10 @@ class Voice {
     final whole = await Clips.lookup(text);
     final parts = whole != null ? [text.trim()] : splitSentences(text);
     // start every part's audio at once (clips are instant, live lines take about a second each), then play them in order
-    final ready = [for (final p in parts) _resolve(p)];
+    final ready = <Future<({Source? src, String how})>>[];
+    for (var i = 0; i < parts.length; i++) {
+      ready.add(i < 2 ? _resolve(parts[i]) : ready[i - 2].then((_) => _resolve(parts[i]))); // at most two requests in flight
+    }
     speaking.value = true;
     final notes = <String>[];
     for (var i = 0; i < parts.length; i++) {
@@ -296,6 +300,7 @@ class Voice {
         status.value = 'Hamsa ${notes.join(', ')}';
         continue;
       }
+      if (my != _gen) return; // cancelled while playing (a newer line, the mic): never fall back to the phone voice for an old line
       notes.add('phone (${r.src == null ? r.how : 'play error: $_playErr'})');
       status.value = 'phone: ${notes.last}';
       aiVoice.value = false;
@@ -325,8 +330,13 @@ class Voice {
       aiVoice.value = true;
       final done = _player.onPlayerComplete.first;
       await _player.play(src);
-      await done.timeout(const Duration(seconds: 90));
-      return true;
+      final started = Stopwatch()..start();
+      while (true) {
+        final finished = await Future.any<bool>([done.then((_) => true), Future<bool>.delayed(const Duration(milliseconds: 300), () => false)]);
+        if (finished) return true;
+        if (my != _gen) return true; // stopped or replaced: the caller sees the cancel and ends; no 90 second wait for a "finished" signal that never comes
+        if (started.elapsed > const Duration(seconds: 90)) throw TimeoutException('clip did not finish');
+      }
     } catch (e) {
       _playErr = e.toString().replaceAll(RegExp(r'\s+'), ' ');
       lastNote = 'play error: $_playErr';
