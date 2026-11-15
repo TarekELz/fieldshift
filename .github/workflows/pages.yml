@@ -1,5 +1,5 @@
 name: Pages
-# Builds the project page (docs/) and a web version of the app (Flutter web, no API keys: app/assets/secrets/secrets.json is gitignored) and publishes both on GitHub Pages.
+# Publishes the project page and the explorer website (docs/) on GitHub Pages. Static files only: no build step, no API keys.
 # Turn on in the repository: Settings > Pages > Source: GitHub Actions. Needs the repository to be public (or a plan that allows Pages on private repositories).
 on:
   workflow_dispatch:
@@ -20,23 +20,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 3.47.1
-          channel: stable
-      - name: Build the web app
-        working-directory: app
-        run: |
-          flutter pub get
-          flutter build web --release --base-href /${{ github.event.repository.name }}/app/
       - name: Assemble the site
         run: |
           mkdir -p _site
           cp -r docs/* _site/
-          mkdir -p _site/app
-          cp -r app/build/web/* _site/app/
+          mkdir -p _site/assets
+          cp -r assets/readme _site/assets/
           # a key file must never be published
-          test ! -e _site/app/assets/assets/secrets/secrets.json
+          test -z "$(find _site -name 'secrets.json' -o -name '.env' | head -1)"
+          ! grep -rIl 'AIza[0-9A-Za-z_-]\{20,\}' _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
