@@ -118,9 +118,6 @@ It **supports, and does not replace,** the farmer's judgement and local agricult
 | Understanding what a farmer says | whole-word matching, tested on the mistakes a teammate's review found ("ربنا يرزق" is not rice; "مش فيه بقع" means no salt) |
 | Independent AI reviews of code and workflow | issues found (for example faba bean mislabelled, a number-only guard that let a wrong rotation through) and fixed |
 
-### What we do not claim
-No yield forecast, no yield loss in percent, no field-level or weather-station-validated accuracy. Weather is a model product at about 50 km; absolute hot-day counts are approximate, so the app compares dates. The salt percentage is a crop-tolerance figure from the FAO table, not a forecast of the farmer's crop. Several wheat parameters have no full-text source (marked low confidence in `models/`).
-
 ## Try it
 - **The project page** ([`docs/index.html`](docs/index.html)) has a "Try Eyad" playground running the same tables and rules as the app, and a season lab. It is published with GitHub Pages once the repository is public.
 - **The explorer website** ([`docs/explorer/`](docs/explorer/README.md)): the data, tables and rules behind Eyad on nine pages (a field scene with stories, a Field lab, 14 crops, a comparison of the 19 NASA points, the NASA data, an offline Ask Eyad). It works offline, in English and Arabic, and uses the same tables and engine rules as the app.
