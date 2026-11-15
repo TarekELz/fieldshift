@@ -168,3 +168,10 @@ modis_delta_rasters:
   check: for 2014-12-19 the NDVI mean inside the box is 0.4882 (AppEEARS statistics file 0.4879), median 0.5597 (0.5596)
   citation: Didan, K. (2021). MODIS/Terra Vegetation Indices 16-Day L3 Global 250m SIN Grid V061. NASA EOSDIS LP DAAC
   used_by: [calendar]
+
+egypt_map:
+  source: Natural Earth (public domain): admin-1 governorates (with Arabic names), rivers, lakes; built by scripts/build_egypt_map.py
+  access: open, no account
+  resolution: generalized cartographic data (about 0.5 km simplification), NOT a survey; disputed areas are drawn as administered today
+  status: in the app at app/assets/data/egypt_map.json (50 KB). Checked 2026-11-15 against OpenStreetMap: western, southern and Sinai land borders coincide; river lines lie within 0.4-2 km of Mansoura, Zifta, Mit Ghamr, Desouk, Rashid, Damietta, Aswan, Luxor, Asyut, Giza. A test checks each NASA data point lies inside its labelled governorate
+  used_by: [app location picker]

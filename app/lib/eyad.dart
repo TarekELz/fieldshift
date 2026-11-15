@@ -1,7 +1,7 @@
 // Eyad: the assistant's name and avatar.
 // The avatar pictures were supplied by the team and appear to be AI-generated. The competition rules
-// require a VISIBLE watermark on AI-generated images, so every avatar carries an "AI" mark, and the
-// larger ones carry the full words. They must also be listed in docs/ai-disclosure.md.
+// require a VISIBLE watermark on AI-generated images, so every avatar carries an "AI" mark. They are also
+// acknowledged in the project's acknowledgements and in docs/ai-disclosure.md.
 import 'package:flutter/material.dart';
 
 import 'ui_kit.dart';
@@ -56,21 +56,14 @@ class EyadAvatar extends StatelessWidget {
             decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Fs.teal, width: 2.4), boxShadow: glow ? [BoxShadow(color: Fs.teal.withValues(alpha: 0.4), blurRadius: 18)] : null),
           ),
         image,
-        // The visible AI watermark: a small "AI" on small avatars, the full words (two lines) on large ones.
+        // The visible AI mark on the avatar (the pictures are AI-generated; the team acknowledges this in the
+        // project's acknowledgements and AI-use disclosure). Larger on the big avatar so it stays clearly visible.
         Positioned(
           bottom: size * 0.05,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: size * 0.92),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: wide ? 8 : 5, vertical: wide ? 2 : 1),
-              decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.75), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white54, width: 0.6)),
-              child: wide
-                  ? const Column(mainAxisSize: MainAxisSize.min, children: [
-                      Text('AI-generated', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700, height: 1.1)),
-                      Text('مولّدة بالذكاء الاصطناعي', style: TextStyle(fontSize: 8.5, color: Colors.white, height: 1.1)),
-                    ])
-                  : const Text('AI', style: TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w700)),
-            ),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: wide ? 10 : 6, vertical: wide ? 2 : 1),
+            decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.75), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white54, width: 0.6)),
+            child: Text('AI', style: TextStyle(fontSize: wide ? 13 : 9, color: Colors.white, fontWeight: FontWeight.w800)),
           ),
         ),
       ]),

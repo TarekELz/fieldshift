@@ -193,7 +193,14 @@ class Dialogue {
     switch (step) {
       case Step.site:
         final s = parseSite(n);
-        if (s == null) return [_retry('مفهمتش. قول اسم المحافظة تاني من فضلك.', 'I did not understand. Please say the governorate again.')];
+        if (s == null) {
+          final g = _governorateByName(n);
+          if (g != null) {
+            final lbl = g['label'] as List;
+            return _useGovernorate(g, (lbl[1] as num).toDouble(), (lbl[0] as num).toDouble());
+          }
+          return [_retry('مفهمتش. قول اسم المحافظة تاني من فضلك.', 'I did not understand. Please say the governorate again.')];
+        }
         site = s;
         step = Step.crop;
         return [BotMessage('تمام، ${arSite[s]}.', en: data.siteName(s)), prompt()];
@@ -239,27 +246,54 @@ class Dialogue {
     }
   }
 
-  /// The farmer tapped the map. Finds the nearest NASA data point, or says the place is outside the Delta.
+  List<BotMessage> _outside(String? govAr) => [
+        BotMessage(
+          '${govAr != null ? 'محافظة $govAr' : 'المكان ده'} برا دلتا النيل. أنا دلوقتي بشتغل على الدلتا بس: الإسكندرية، البحيرة، كفر الشيخ، الغربية، الدقهلية، دمياط، المنوفية، القليوبية، الشرقية، وبورسعيد. اضغط على واحدة منهم.',
+          en: 'That place is outside the Nile Delta, which is all I cover for now.',
+          choices: prompt().choices,
+          retry: true,
+          showMap: true,
+        ),
+      ];
+
+  /// A Delta governorate was chosen (by tapping the map or by name). It uses its own NASA data point if it has
+  /// one, otherwise the nearest one, and says which.
+  List<BotMessage> _useGovernorate(Map<String, dynamic> g, double lat, double lon) {
+    final ar = g['ar'] as String;
+    if (g['delta'] != true) return _outside(ar);
+    final own = g['site'] as String?;
+    final key = own ?? nearestSite(data, lat, lon).key;
+    final p = data.siteLatLon(key);
+    final km = haversineKm(lat, lon, p.lat, p.lon);
+    final far = km > 60;
+    site = key;
+    step = Step.crop;
+    final approx = far ? ' المسافة بعيدة شوية، فالأرقام تقريبية.' : '';
+    final text = own != null
+        ? 'تمام. محافظة $ar، وهستخدم بيانات ناسا لنقطة ${arSite[key]}.$approx'
+        : 'تمام. محافظة $ar مفيهاش نقطة بيانات خاصة بيها، فهستخدم أقرب نقطة من ناسا: ${arSite[key]} (حوالي ${arDigits(km.round())} كم).$approx';
+    final en = own != null
+        ? 'Governorate ${g['id']}: using the NASA data point ${data.siteName(key)}${far ? '; far from where you tapped, so numbers are approximate' : ''}.'
+        : 'Governorate ${g['id']} has no data point of its own: using the nearest, ${data.siteName(key)}, about ${km.round()} km away.';
+    return [BotMessage(text, en: en), prompt()];
+  }
+
+  /// The farmer tapped the map.
   List<BotMessage> handleLocation(double lat, double lon) {
     if (step != Step.site) {
       return [BotMessage('عشان تغير المكان، اضغط على "ابدأ من جديد".', en: 'To change the place, tap Start again.')];
     }
-    if (!insideDelta(data, lat, lon)) {
-      return [
-        BotMessage('المكان ده برا دلتا النيل. أنا دلوقتي بشتغل على الدلتا بس، من الإسكندرية لحد بورسعيد ولحد القاهرة. اضغط على الدلتا من فضلك.',
-            en: 'That place is outside the Nile Delta, which is all I cover for now.', choices: prompt().choices, retry: true, showMap: true),
-      ];
+    final g = governorateAt(data, lat, lon);
+    if (g == null) return _outside(null);
+    return _useGovernorate(g, lat, lon);
+  }
+
+  Map<String, dynamic>? _governorateByName(String n) {
+    for (final g in data.governorates) {
+      final core = normalizeAr(g['ar'] as String).replaceFirst(RegExp('^ال'), '');
+      if (core.length >= 4 && n.contains(core)) return g as Map<String, dynamic>;
     }
-    final n = nearestSite(data, lat, lon);
-    site = n.key;
-    step = Step.crop;
-    final km = n.km.round();
-    final far = n.km > 60;
-    return [
-      BotMessage('تمام. أقرب نقطة بيانات من ناسا لمكانك هي ${arSite[n.key]}، على بعد حوالي ${arDigits(km)} كم.${far ? ' المسافة بعيدة شوية، فالأرقام تقريبية.' : ''}',
-          en: 'Nearest NASA data point: ${data.siteName(n.key)}, about $km km away${far ? '; that is far, so the numbers are approximate' : ''}.'),
-      prompt(),
-    ];
+    return null;
   }
 
   Comparison run() {

@@ -39,6 +39,7 @@ class EngineData {
   /// [lon_min, lat_min, lon_max, lat_max] of the Nile Delta, where the six data points apply.
   List<double> get deltaBox => (meta['delta_bbox'] as List).map<double>((e) => (e as num).toDouble()).toList();
   ({double lat, double lon}) siteLatLon(String k) => (lat: (meta['sites'][k]['lat'] as num).toDouble(), lon: (meta['sites'][k]['lon'] as num).toDouble());
+  List get governorates => egyptMap['governorates'] as List;
   List<String> get crops => (meta['crops'] as Map<String, dynamic>).keys.toList();
 }
 
@@ -195,7 +196,25 @@ NearestSite nearestSite(EngineData d, double lat, double lon) {
   return NearestSite(best!, bestKm);
 }
 
-bool insideDelta(EngineData d, double lat, double lon) {
-  final b = d.deltaBox;
-  return lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3];
+bool _inRing(List ring, double x, double y) {
+  var inside = false;
+  for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    final xi = (ring[i][0] as num).toDouble(), yi = (ring[i][1] as num).toDouble();
+    final xj = (ring[j][0] as num).toDouble(), yj = (ring[j][1] as num).toDouble();
+    if (((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside;
+  }
+  return inside;
 }
+
+/// The governorate containing a place, or null (sea, or outside Egypt). Borders are Natural Earth, generalized.
+Map<String, dynamic>? governorateAt(EngineData d, double lat, double lon) {
+  for (final g in d.governorates) {
+    for (final ring in g['rings'] as List) {
+      if (_inRing(ring as List, lon, lat)) return g as Map<String, dynamic>;
+    }
+  }
+  return null;
+}
+
+/// True when the place lies in one of the Nile Delta governorates the app covers.
+bool insideDelta(EngineData d, double lat, double lon) => governorateAt(d, lat, lon)?['delta'] == true;

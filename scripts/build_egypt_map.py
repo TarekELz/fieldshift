@@ -1,9 +1,14 @@
 """Build app/assets/data/egypt_map.json: a small, simplified map of Egypt for the app's location picker.
 
-Source: Natural Earth (public domain), https://www.naturalearthdata.com/
-  ne_50m_admin_0_countries  (Egypt outline), ne_10m_rivers_lake_centerlines (Nile, Rosetta and Damietta
-  branches, Suez Canal), ne_10m_lakes (Lake Nasser). Downloaded from the nvkelso/natural-earth-vector repository.
-Output coordinates are [longitude, latitude], rounded to 3 decimals and simplified (Douglas-Peucker).
+Source: Natural Earth (public domain), https://www.naturalearthdata.com/, from the nvkelso/natural-earth-vector repo:
+  ne_10m_admin_1_states_provinces  the 27 governorates, with their Arabic names (name_ar)
+  ne_10m_rivers_lake_centerlines   the Nile, the Rosetta and Damietta branches, the Suez Canal
+  ne_10m_lakes                     Lake Nasser
+Natural Earth is a generalized cartographic dataset, NOT a survey, and it draws disputed areas as they are administered
+today. Output coordinates are [longitude, latitude], rounded to 3 decimals and simplified (Douglas-Peucker, ~0.5 km).
+
+Checked 2026-11-15 against OpenStreetMap: the western, southern and Sinai land borders coincide with OSM's; river lines
+lie within 0.4-2 km of Mansoura, Zifta, Mit Ghamr, Desouk, Rashid, Damietta, Aswan, Luxor, Asyut and Giza.
 
 Run: .venv/Scripts/python scripts/build_egypt_map.py
 """
@@ -16,9 +21,13 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 BASE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/"
 EGYPT_BOX = (24.0, 21.5, 37.0, 32.2)  # lon_min, lat_min, lon_max, lat_max
 
+# Governorates the app covers (the Nile Delta and its edges) and the NASA data point each one owns, if any.
+DELTA = ["Al Iskandariyah", "Al Buhayrah", "Kafr ash Shaykh", "Al Gharbiyah", "Ad Daqahliyah", "Dumyat", "Al Minufiyah", "Ash Sharqiyah", "Al Qalyubiyah", "Bur Sa`id"]
+OWN_SITE = {"Al Buhayrah": "beheira", "Kafr ash Shaykh": "kafr_el_sheikh", "Al Gharbiyah": "gharbia", "Al Minufiyah": "menoufia", "Ash Sharqiyah": "sharqia", "Dumyat": "damietta"}
+
 
 def get(name):
-    r = requests.get(BASE + name, timeout=180)
+    r = requests.get(BASE + name, timeout=300)
     r.raise_for_status()
     return r.json()
 
@@ -61,12 +70,41 @@ def lines(g):
     return g["coordinates"] if g["type"] == "MultiLineString" else [g["coordinates"]]
 
 
+def area_centroid(ring):
+    """Signed area and centroid of a ring (shoelace), in degrees."""
+    a = cx = cy = 0.0
+    for i in range(len(ring) - 1):
+        x0, y0 = ring[i]
+        x1, y1 = ring[i + 1]
+        cr = x0 * y1 - x1 * y0
+        a += cr
+        cx += (x0 + x1) * cr
+        cy += (y0 + y1) * cr
+    a /= 2
+    if abs(a) < 1e-12:
+        return 0.0, ring[0][0], ring[0][1]
+    return a, cx / (6 * a), cy / (6 * a)
+
+
 def main():
-    countries = get("ne_50m_admin_0_countries.geojson")
-    egypt = next(f for f in countries["features"] if f["properties"].get("ADM0_A3") == "EGY")
-    geom = egypt["geometry"]
-    rings = [p[0] for p in geom["coordinates"]] if geom["type"] == "MultiPolygon" else [geom["coordinates"][0]]
-    outline = [rnd(simplify_ring([tuple(p) for p in r], 0.004)) for r in rings]
+    governorates = []
+    for f in get("ne_10m_admin_1_states_provinces.geojson")["features"]:
+        p = f["properties"]
+        if p.get("iso_a2") != "EG":
+            continue
+        g = f["geometry"]
+        polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
+        rings = [simplify_ring([tuple(q) for q in poly[0]], 0.006) for poly in polys]
+        rings = [r for r in rings if len(r) >= 4]
+        big = max(rings, key=lambda r: abs(area_centroid(r)[0]))
+        area, cx, cy = area_centroid(big)
+        total = sum(abs(area_centroid(r)[0]) for r in rings)
+        name = p["name"]
+        governorates.append({
+            "id": name, "ar": (p.get("name_ar") or name).replace("محافظة ", ""), "delta": name in DELTA, "site": OWN_SITE.get(name),
+            "label": [round(cx, 3), round(cy, 3)], "size": round(total ** 0.5, 3), "rings": [rnd(r) for r in rings],
+        })
+    governorates.sort(key=lambda g: g["id"])
 
     rivers = get("ne_10m_rivers_lake_centerlines.geojson")
     keep = {"Nile", "Rosetta Branch", "Damietta Branch", "Suez Canal", "Ismailiya Canal"}
@@ -79,19 +117,23 @@ def main():
                 if in_box(seg):
                     water.append({"name": n, "pts": rnd(simplify(seg, 0.002))})
 
-    lakes = get("ne_10m_lakes.geojson")
     lake_polys = []
-    for f in lakes["features"]:
+    for f in get("ne_10m_lakes.geojson")["features"]:
         if f["properties"].get("name") in ("Lake Nasser", "Great Bitter Lake"):
             g = f["geometry"]
             polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
             for p in polys:
                 lake_polys.append({"name": f["properties"]["name"], "pts": rnd(simplify_ring([tuple(q) for q in p[0]], 0.01))})
 
-    out = {"source": "Natural Earth (public domain), simplified", "bbox": [24.5, 21.8, 36.95, 31.9], "outline": outline, "water": water, "lakes": lake_polys}
+    out = {
+        "source": "Natural Earth (public domain), simplified. Generalized cartographic data, not a survey.",
+        "bbox": [24.5, 21.8, 36.95, 31.9], "governorates": governorates, "water": water, "lakes": lake_polys,
+    }
     dest = ROOT / "app" / "assets" / "data" / "egypt_map.json"
-    dest.write_text(json.dumps(out, separators=(",", ":")), encoding="utf8")
-    print("wrote", dest.stat().st_size, "bytes;", "outline pts", sum(len(r) for r in outline), "| water lines", len(water), "| lakes", len(lake_polys))
+    dest.write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False), encoding="utf8")
+    print("wrote", dest.stat().st_size, "bytes;", len(governorates), "governorates,", sum(len(r) for g in governorates for r in g["rings"]), "points |",
+          "water lines", len(water), "| lakes", len(lake_polys))
+    print("delta:", [g["ar"] for g in governorates if g["delta"]])
 
 
 if __name__ == "__main__":

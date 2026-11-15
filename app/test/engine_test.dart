@@ -83,7 +83,44 @@ void main() {
       expect(d.site, 'gharbia');
       expect(d.step, Step.crop);
       expect(msgs.first.ar, contains('الغربية'));
-      expect(msgs.first.ar, contains('كم'));
+    });
+
+    test('each NASA data point lies inside the governorate it is labelled for', () {
+      for (final k in data.siteKeys) {
+        final p = data.siteLatLon(k);
+        final g = governorateAt(data, p.lat, p.lon);
+        expect(g, isNotNull, reason: '$k is outside every governorate');
+        expect(g!['site'], k, reason: '$k lies in ${g['id']}, which owns ${g['site']}');
+      }
+    });
+
+    test('a governorate without its own data point uses the nearest one and says so', () {
+      final d = Dialogue(data);
+      final msgs = d.handleLocation(31.04, 31.36); // Mansoura, Dakahlia
+      expect(d.step, Step.crop);
+      expect(d.site, isNotNull);
+      expect(msgs.first.ar, contains('الدقهلية'));
+      expect(msgs.first.ar, contains('مفيهاش'));
+    });
+
+    test('a governorate can also be named by voice or typing', () {
+      final d = Dialogue(data);
+      d.handle('الدقهلية');
+      expect(d.step, Step.crop);
+      final e = Dialogue(data);
+      expect(e.handle('أنا في القليوبية').first.ar, contains('القليوبية'));
+    });
+
+    test('a tap in the sea or in another country is refused', () {
+      final d = Dialogue(data);
+      final msgs = d.handleLocation(32.6, 30.0); // Mediterranean, off the coast
+      expect(d.step, Step.site);
+      expect(msgs.first.retry, isTrue);
+    });
+
+    test('a governorate outside the Delta is named in the refusal', () {
+      final d = Dialogue(data);
+      expect(d.handleLocation(25.70, 32.65).first.ar, contains('الأقصر'));
     });
 
     test('a tap outside the Delta is refused and the map stays', () {
@@ -111,10 +148,12 @@ void main() {
       expect(m.showMap, isTrue);
     });
 
-    test('the map file has Egypt, the Nile and both Delta branches', () {
+    test('the map file has the 27 governorates, ten of them in the Delta, and both Delta branches', () {
       final names = (data.egyptMap['water'] as List).map((w) => w['name']).toSet();
       expect(names, containsAll(['Nile', 'Rosetta Branch', 'Damietta Branch']));
-      expect((data.egyptMap['outline'] as List).first.length, greaterThan(100));
+      expect(data.governorates.length, 27);
+      expect(data.governorates.where((g) => g['delta'] == true).length, 10);
+      expect(data.governorates.every((g) => (g['ar'] as String).isNotEmpty && (g['rings'] as List).isNotEmpty), isTrue);
     });
   });
 
