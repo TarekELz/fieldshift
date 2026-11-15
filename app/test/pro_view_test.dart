@@ -39,4 +39,20 @@ void main() {
       lang.value = 'ar';
     });
   }
+
+  test('the place list and the ranking are the ten Delta governorates, each on a data point', () async {
+    final data = await EngineData.load(_FileBundle());
+    final govs = deltaGovernorates(data);
+    expect(govs.length, 10);
+    final bySite = {for (final g in govs) g.en: g.site};
+    expect(bySite['Gharbia'], 'gharbia');
+    expect(bySite['Beheira'], 'beheira'); // own point first, not the desert cell under its label
+    expect(bySite['Sharqia'], 'sharqia');
+    expect(bySite['Qalyubia'], 'menoufia'); // no point of its own: the point in the same weather cell
+    for (final g in govs) {
+      expect(data.siteKeys, contains(g.site));
+      expect(g.ar.contains('خلية'), isFalse);
+      expect(RegExp(r'\d').hasMatch(g.en), isFalse, reason: 'no cell coordinates in ${g.en}');
+    }
+  });
 }

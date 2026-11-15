@@ -22,7 +22,19 @@ class ProView extends StatefulWidget {
 
 class _ProViewState extends State<ProView> {
   EngineData? d;
-  String site = 'gharbia', crop = 'rice', sd = '06-15', wd = '12-01';
+  String gov = 'Gharbia', site = 'gharbia', crop = 'rice', sd = '06-15', wd = '12-01'; // site: the data point the chosen governorate uses
+  List<({String id, String ar, String en, String site})> govs = const [];
+  String govName(String id) {
+    final g = govs.where((x) => x.id == id);
+    return g.isEmpty ? id : tr(g.first.ar, g.first.en);
+  }
+
+  void _setData(EngineData v) {
+    registerSiteNames(v);
+    govs = deltaGovernorates(v);
+    final g = govs.where((x) => x.id == gov);
+    if (g.isNotEmpty) site = g.first.site;
+  }
   double ece = 4.0;
   int metric = 0;
 
@@ -31,11 +43,11 @@ class _ProViewState extends State<ProView> {
     super.initState();
     if (widget.preloaded != null) {
       d = widget.preloaded;
-      registerSiteNames(d!);
+      _setData(d!);
       return;
     }
     EngineData.load().then((v) {
-      registerSiteNames(v);
+      _setData(v);
       if (mounted) setState(() => d = v);
     });
   }
@@ -69,8 +81,9 @@ class _ProViewState extends State<ProView> {
   // ---------- controls ----------
   Widget _controls(EngineData d) => SoftCard(
         child: Wrap(spacing: 12, runSpacing: 10, crossAxisAlignment: WrapCrossAlignment.end, children: [
-          _drop<String>(tr('المكان', 'Place'), site, d.siteKeys, (v) => siteN(v), (v) => setState(() {
-                site = v;
+          _drop<String>(tr('المحافظة', 'Governorate'), gov, [for (final g in govs) g.id], govName, (v) => setState(() {
+                gov = v;
+                site = govs.firstWhere((g) => g.id == v).site;
                 if (!d.summerDates(site, crop).contains(sd)) sd = d.summerDates(site, crop).first;
               }), width: 250),
           _drop<String>(tr('المحصول الصيفي', 'Summer crop'), crop, const ['rice', 'maize', 'cotton'], (v) => cropN(v), (v) => setState(() {
@@ -157,7 +170,7 @@ class _ProViewState extends State<ProView> {
     final saltCols = [Fs.water, Fs.warning, Fs.ok, Fs.accent];
     return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 28), children: [
       _controls(d),
-      if (d.siteCaveat(site) != null) Padding(padding: const EdgeInsets.only(top: 10), child: _note('${tr('تنبيه', 'Caution')}: ${d.siteCaveat(site)}')),
+      if (d.siteCaveat(site) != null) Padding(padding: const EdgeInsets.only(top: 10), child: _note(caveatTextN(d.siteCaveatKind(site), d.siteSharesCellWith(site)))),
       _card(tr('مناخ ناسا شهرياً (متوسط ١٩٩٠ إلى ٢٠٢٥)', 'NASA POWER climate by month (mean 1990 to 2025)'), tr('أعلى وأقل حرارة يومية، °م', 'Daily maximum and minimum temperature, °C'),
           CustomPaint(painter: _LinePainter(ys: [cv('T2M_MAX'), cv('T2M_MIN')], colors: [Fs.heat, Fs.water], labels: _mon, grid: line, text: dim)),
           notes: [_note('${tr('المطر بالمم في الشهر', 'Rain, mm per month')}: ${cv('RAIN_MM_MONTH').map((e) => e.round()).join(' · ')}')],
@@ -237,7 +250,6 @@ class _ProViewState extends State<ProView> {
 
   // ---------- tab 2: compare ----------
   Widget _compare(EngineData d) {
-    final keys = d.siteKeys;
     final labels = [tr('أيام حر القمح (≥٣٢°)', 'Wheat hot days (>=32 C)'), tr('احتياج المية ETc (مم)', 'Water need ETc (mm)'), tr('ملاءمة الميعاد (٪ أمثل)', 'Season fit (% ideal)')];
     final better = [tr('الأقل أحسن', 'lower is better'), tr('الأقل أحسن', 'lower is better'), tr('الأعلى أحسن', 'higher is better')];
     double? val(String k) {
@@ -263,7 +275,14 @@ class _ProViewState extends State<ProView> {
       }
     }
 
-    final rows = [for (final k in keys) if (val(k) != null) (k, val(k)!)];
+    // one row per governorate (two governorates in one NASA cell show the same value)
+    final rows = [for (final g in govs) if (val(g.site) != null) (g.id, val(g.site)!)];
+    ({double lat, double lon}) govAt(String id) {
+      final lbl = d.governorates.firstWhere((g) => g['id'] == id)['label'] as List;
+      return (lat: (lbl[1] as num).toDouble(), lon: (lbl[0] as num).toDouble());
+    }
+
+    final cautioned = [for (final g in govs) if (d.siteCaveatKind(g.site) == 'sea' || d.siteCaveatKind(g.site) == 'desert_edge') g];
     rows.sort((a, b) => metric == 2 ? b.$2.compareTo(a.$2) : a.$2.compareTo(b.$2));
     final mx = rows.map((r) => r.$2).reduce(math.max), mn = rows.map((r) => r.$2).reduce(math.min);
     Color colorOf(double v) {
@@ -275,9 +294,9 @@ class _ProViewState extends State<ProView> {
     return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 28), children: [
       SoftCard(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(tr('قارن كل نقاط بيانات ناسا في الدلتا', 'Compare every NASA data point in the Delta'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+          Text(tr('قارن محافظات الدلتا', 'Compare the Delta governorates'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          _note(tr('سؤال شات بوت مبيقدرش يجاوبه: فين في الدلتا الأنسب لـ… ؟ نفس المحركات على ${nd(keys.length)} نقطة.', 'A question a chatbot cannot answer: where in the Delta is the best place for...? The same engines on ${keys.length} points.')),
+          _note(tr('سؤال شات بوت مبيقدرش يجاوبه: فين في الدلتا الأنسب لـ… ؟ نفس المحركات على محافظات الدلتا كلها.', 'A question a chatbot cannot answer: where in the Delta is the best place for...? The same engines on every Delta governorate.')),
           const SizedBox(height: 10),
           Wrap(spacing: 8, children: [
             for (var i = 0; i < 3; i++) ChoiceChip(label: Text(labels[i]), selected: metric == i, onSelected: (_) => setState(() => metric = i)),
@@ -301,7 +320,7 @@ class _ProViewState extends State<ProView> {
         child: SoftCard(
           child: Directionality(
             textDirection: TextDirection.ltr,
-            child: SizedBox(height: 230, width: double.infinity, child: CustomPaint(painter: _MapPainter(points: [for (final r in rows) (d.siteLatLon(r.$1), colorOf(r.$2), r.$1.startsWith('cell_'))], dim: Fs.dim, grid: Fs.line))),
+            child: SizedBox(height: 230, width: double.infinity, child: CustomPaint(painter: _MapPainter(points: [for (final r in rows) (govAt(r.$1), colorOf(r.$2), false)], dim: Fs.dim, grid: Fs.line))),
           ),
         ),
       ),
@@ -318,13 +337,13 @@ class _ProViewState extends State<ProView> {
                 padding: const EdgeInsets.symmetric(vertical: 3),
                 child: Row(children: [
                   SizedBox(width: 22, child: Text('${i + 1}', style: TextStyle(fontSize: 12, color: Fs.dim))),
-                  Expanded(flex: 4, child: Text(siteN(rows[i].$1), style: const TextStyle(fontSize: 13.5))),
+                  Expanded(flex: 4, child: Text(govName(rows[i].$1), style: const TextStyle(fontSize: 13.5))),
                   Expanded(flex: 4, child: ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: mx == 0 ? 0 : rows[i].$2 / mx, minHeight: 8, color: colorOf(rows[i].$2), backgroundColor: Fs.card2))),
                   SizedBox(width: 56, child: Text(nn(rows[i].$2, dec: metric == 0 ? 1 : 0), textAlign: TextAlign.end, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600))),
                 ]),
               ),
             const SizedBox(height: 6),
-            _note(tr('النقاط الرمادية الصغيرة على الخريطة خلايا ناسا الإضافية. خلايا الصحرا والبحر ليها تنبيه.', 'Small points on the map are the extra NASA cells. Desert and sea cells carry a caution.')),
+            for (final g in cautioned) Padding(padding: const EdgeInsets.only(top: 4), child: _note('${tr(g.ar, g.en)}: ${caveatTextN(d.siteCaveatKind(g.site), d.siteSharesCellWith(g.site))}')),
           ]),
         ),
       ),

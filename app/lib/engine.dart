@@ -254,3 +254,22 @@ Map<String, dynamic>? areaAt(EngineData d, double lat, double lon) {
 }
 
 bool insideDelta(EngineData d, double lat, double lon) => governorateAt(d, lat, lon)?['delta'] == true;
+
+
+/// English display names for the Delta governorates (the map file keeps its own ids).
+const govEn = {'Alexandria': 'Alexandria', 'Behera': 'Beheira', 'Dakahlia': 'Dakahlia', 'Damietta': 'Damietta', 'Gharbia': 'Gharbia', 'Kafr El-Shikh': 'Kafr El-Sheikh', 'Kalyoubia': 'Qalyubia', 'Menoufia': 'Menoufia', 'Port Said': 'Port Said', 'Sharkia': 'Sharqia'};
+
+/// The Delta governorates, each with the NASA data point it uses: its own named point, else a point in the same weather cell as the
+/// governorate's label, else the nearest point (the same order a farmer gets when he says the governorate's name).
+List<({String id, String ar, String en, String site})> deltaGovernorates(EngineData d) => [
+      for (final g in d.governorates)
+        if (g['delta'] == true)
+          () {
+            final lbl = g['label'] as List;
+            final lat = (lbl[1] as num).toDouble(), lon = (lbl[0] as num).toDouble();
+            final own = g['site'] as String?;
+            final key = own ?? siteInSameCell(d, lat, lon) ?? nearestSite(d, lat, lon).key;
+            final id = g['id'] as String;
+            return (id: id, ar: g['ar'] as String, en: govEn[id] ?? id, site: key);
+          }(),
+    ];

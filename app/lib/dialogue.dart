@@ -829,11 +829,13 @@ String warningAr(RotationRow r, String w) {
 
 /// Arabic note about the weather data of the chosen place, or null. 'sea': the NASA cell is mostly sea, so heat
 /// numbers are not trustworthy. 'shared_cell': two governorates fall in one 50 km NASA cell, so they get identical results.
-String? caveatAr(Comparison c) {
-  if (c.caveat == null) return null;
-  if (c.caveatKind == 'sea') return 'تنبيه: بيانات الطقس للمنطقة دي مش دقيقة لأنها قريبة من البحر. ما تعتمدش على أرقام الحر هنا.';
-  if (c.caveatKind == 'desert_edge') return 'ملحوظة: خلية بيانات ناسا هنا أغلبها صحرا مرتفعة. الأرض الزراعية على النيل بتبقى أخضر وأبرد بالليل من اللي الخلية بتقول، فاعتبر الأرقام تقريبية.';
-  final other = arSite[c.sharesCellWith] ?? '';
+String? caveatAr(Comparison c) => c.caveat == null ? null : caveatArText(c.caveatKind, c.sharesCellWith);
+
+/// The same Arabic sentences by kind, for a data point without a Comparison (Professional view).
+String caveatArText(String? kind, String? sharesCellWith) {
+  if (kind == 'sea') return 'تنبيه: بيانات الطقس للمنطقة دي مش دقيقة لأنها قريبة من البحر. ما تعتمدش على أرقام الحر هنا.';
+  if (kind == 'desert_edge') return 'ملحوظة: خلية بيانات ناسا هنا أغلبها صحرا مرتفعة. الأرض الزراعية على النيل بتبقى أخضر وأبرد بالليل من اللي الخلية بتقول، فاعتبر الأرقام تقريبية.';
+  final other = arSite[sharesCellWith] ?? '';
   return 'ملحوظة: درجات الحرارة من ناسا للمنطقة دي هي نفسها بتاعة $other، فنتايج الحر هتطلع زي بعض.';
 }
 

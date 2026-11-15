@@ -123,12 +123,15 @@ String noticeN() => isAr ? arNotice : _noticeEn;
 String sourcesN() => isAr ? arSources : _sourcesEn;
 String notModelledN() => isAr ? arNotModelled : _notModelledEn;
 
-String? caveatN(Comparison c) {
-  if (isAr) return caveatAr(c);
-  if (c.caveat == null) return null;
-  if (c.caveatKind == 'sea') return 'Warning: weather data here is unreliable because the area is mostly sea. Do not rely on the heat numbers.';
-  if (c.caveatKind == 'desert_edge') return 'Note: this NASA cell is mostly desert plateau. Farmland along the Nile is usually greener and cooler at night than the cell suggests, so treat the numbers as rough.';
-  return 'Note: the NASA temperatures for this area are the same as for ${enSite[c.sharesCellWith] ?? ''}, so the heat results will be the same.';
+String? caveatN(Comparison c) => c.caveat == null ? null : caveatTextN(c.caveatKind, c.sharesCellWith);
+
+/// The caution for a data point, in the current language, by kind ('sea', 'desert_edge', 'shared_cell'): the approved sentences, no coordinates.
+String caveatTextN(String? kind, String? sharesCellWith) => isAr ? caveatArText(kind, sharesCellWith) : _caveatEn(kind, sharesCellWith);
+
+String _caveatEn(String? kind, String? sharesCellWith) {
+  if (kind == 'sea') return 'Warning: weather data here is unreliable because the area is mostly sea. Do not rely on the heat numbers.';
+  if (kind == 'desert_edge') return 'Note: this NASA cell is mostly desert plateau. Farmland along the Nile is usually greener and cooler at night than the cell suggests, so treat the numbers as rough.';
+  return 'Note: the NASA temperatures for this area are the same as for ${enSite[sharesCellWith] ?? ''}, so the heat results will be the same.';
 }
 
 String warningN(RotationRow r) {
