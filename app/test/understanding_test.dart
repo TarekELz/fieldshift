@@ -121,4 +121,21 @@ void main() {
     expect(parseSalt(_n('الأرض مالحة'))?.signs, 'patches');
     expect(parseSalt(_n('قشرة بيضا'))?.signs, 'crust');
   });
+
+  test('Back replays the answers without the last one and lands on the previous question', () {
+    const moves = ['الغربية', 'improve', 'rice', '06-15', '12-01', '10', 'patches']; // the last answer shows the result
+    Dialogue replay(List<String> m) {
+      final d = Dialogue(data)..opening();
+      for (final x in m) {
+        d.handle(x);
+      }
+      return d;
+    }
+
+    expect(replay(moves).step, Step.done);
+    expect(replay(moves.sublist(0, 6)).step, Step.salt); // one back from the result: the salt question
+    expect(replay(moves.sublist(0, 3)).step, Step.summerWhen);
+    expect(replay(moves.sublist(0, 1)).step, Step.goal);
+    expect(replay(const []).step, Step.site);
+  });
 }
