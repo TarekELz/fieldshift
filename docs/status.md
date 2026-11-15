@@ -2,7 +2,7 @@
 
 AUDIT 2026-11-14 ~19:00: team-downloaded NASA data added: IMERG daily rain (Delta area mean 2015-2025), MODIS NDVI area statistics for the Delta box (rasters still to come from Hussain), SRTM 30 m tiles for the whole Delta. First push to GitHub on Tarek's instruction: merged so main shows only our files; Youssef Nada's and Hussain's earlier commits stay in the history (also backed up locally as branch backup/youssef-remote).
 
-**Current step: building (Step 7 started early). Updated 2026-11-15 ~10:00.** Deadline Sunday 15 Nov 23:59, Local Event time (still UNVERIFIED which event; Tarek to confirm).
+**Current step: building (Step 7 started early). Updated 2026-11-15 ~08:10.** Deadline Sunday 15 Nov 23:59, Local Event time (still UNVERIFIED which event; Tarek to confirm).
 
 Done: problem and region (D1, D5), grounded engines (D2), voice kept (D3), methods (D7, after two independent reviews). Built and tested (43 tests): wheat calendar, water (FAO-56), salt (FAO paper 29), rotation comparison. NASA POWER 1990-2025 for six Delta points; IMERG and MODIS statistics for the Delta; SRTM tiles; MODIS rasters downloading (about 70 of 254 dates, slow).
 
