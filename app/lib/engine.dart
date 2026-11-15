@@ -221,6 +221,20 @@ Map<String, dynamic>? governorateAt(EngineData d, double lat, double lon) {
 }
 
 /// True when the place lies in one of the Nile Delta governorates the app covers.
+/// The NASA POWER grid cell (0.5 degrees of latitude by 0.625 of longitude, MERRA-2) that a place falls in. Two places in
+/// the same cell get identical weather from POWER, whatever the distance between them (Mansoura and Gharbia, for example).
+(int, int) powerCell(double lat, double lon) => (((lat + 90) / 0.5).round(), ((lon + 180) / 0.625).round());
+
+/// A data point that lies in the same POWER cell as the place, or null.
+String? siteInSameCell(EngineData d, double lat, double lon) {
+  final c = powerCell(lat, lon);
+  for (final k in d.siteKeys) {
+    final p = d.siteLatLon(k);
+    if (powerCell(p.lat, p.lon) == c) return k;
+  }
+  return null;
+}
+
 Map<String, dynamic>? areaAt(EngineData d, double lat, double lon) {
   for (final a in d.areas) {
     for (final ring in a['rings'] as List) {

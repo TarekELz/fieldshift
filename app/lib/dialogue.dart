@@ -209,6 +209,11 @@ class Dialogue {
     if (n == 'repeat' && last != null) return [resultMessage(last!)];
     switch (step) {
       case Step.site:
+        if (n.contains('منصور') || n.contains('mansoura')) {
+          // Mansoura city: it sits in the same NASA cell as Gharbia, so it gets Gharbia's data (stated to the farmer)
+          final dk = data.governorates.cast<Map<String, dynamic>>().firstWhere((g) => g['id'] == 'Dakahlia');
+          return _useGovernorate(dk, 31.04, 31.38);
+        }
         final s = parseSite(n);
         if (s == null) {
           final g = _governorateByName(n);
@@ -283,17 +288,22 @@ class Dialogue {
     final ar = g['ar'] as String;
     if (g['delta'] != true) return _outside(ar);
     final own = g['site'] as String?;
-    final key = own ?? nearestSite(data, lat, lon).key;
+    final cellSite = siteInSameCell(data, lat, lon); // same NASA cell: identical weather, whatever the distance
+    final key = cellSite ?? own ?? nearestSite(data, lat, lon).key;
     final p = data.siteLatLon(key);
     final km = haversineKm(lat, lon, p.lat, p.lon);
     final far = km > 60;
     site = key;
     step = Step.crop;
     final approx = far ? ' المسافة بعيدة شوية، فالأرقام تقريبية.' : '';
-    final text = own != null
+    final text = (cellSite != null && cellSite != own)
+        ? 'تمام. محافظة $ar. مكانك في نفس خلية بيانات ناسا (حوالي ٥٠ كم) بتاعة ${arSite[key]}، فهستخدم بياناتها.'
+        : own != null
         ? 'تمام. محافظة $ar، وهستخدم بيانات ناسا لنقطة ${arSite[key]}.$approx'
         : 'تمام. محافظة $ar مفيهاش نقطة بيانات خاصة بيها، فهستخدم أقرب نقطة من ناسا: ${arSite[key]} (حوالي ${arDigits(km.round())} كم).$approx';
-    final en = own != null
+    final en = (cellSite != null && cellSite != own)
+        ? 'Governorate ${g['id']}: your spot is in the same NASA data cell (about 50 km) as ${data.siteName(key)}, so I use its data.'
+        : own != null
         ? 'Governorate ${g['id']}: using the NASA data point ${data.siteName(key)}${far ? '; far from where you tapped, so numbers are approximate' : ''}.'
         : 'Governorate ${g['id']} has no data point of its own: using the nearest, ${data.siteName(key)}, about ${km.round()} km away.';
     return [BotMessage(text, en: en, note: true), prompt()];

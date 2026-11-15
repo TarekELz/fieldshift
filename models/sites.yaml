@@ -47,3 +47,9 @@ sites:
     shares_cell_with: menoufia
     weather_caveat: same NASA POWER cell as Menoufia, so weather and results are identical; show as one area in the demo.
     evidence: [ayyad2024]
+  dakahlia:
+    name_en: Dakahlia (east Delta, Dikirnis area)
+    lat: 31.05
+    lon: 31.70
+    why: "added 2026-11-15 so Dakahlia has its own NASA POWER cell. The governorate's west side, including Mansoura city (31.04N 31.38E), lies in the SAME POWER cell as Gharbia (checked: all 366 daily Tmax values of 2020 identical), so Mansoura uses the Gharbia data; this point is in the next cell east (365 of 366 days differ from Gharbia)"
+    evidence: []

@@ -29,6 +29,7 @@ const enSite = {
   'gharbia': 'Gharbia (Tanta)',
   'menoufia': 'Menoufia',
   'sharqia': 'Sharqia',
+  'dakahlia': 'Dakahlia (east)',
 };
 const enCrop = {'rice': 'Rice', 'maize': 'Maize', 'cotton': 'Cotton', 'wheat': 'Wheat'};
 const enMonthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];

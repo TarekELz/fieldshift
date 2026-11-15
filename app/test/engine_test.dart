@@ -94,13 +94,31 @@ void main() {
       }
     });
 
-    test('a governorate without its own data point uses the nearest one and says so', () {
+    test('a governorate without its own data point and outside every data cell uses the nearest one and says so', () {
       final d = Dialogue(data);
-      final msgs = d.handleLocation(31.04, 31.36); // Mansoura, Dakahlia
+      final msgs = d.handleLocation(31.26, 32.30); // Port Said
       expect(d.step, Step.crop);
       expect(d.site, isNotNull);
-      expect(msgs.first.ar, contains('الدقهلية'));
+      expect(msgs.first.ar, contains('بورسعيد'));
       expect(msgs.first.ar, contains('مفيهاش'));
+    });
+
+    test('Mansoura uses the Gharbia data, because both lie in the same NASA cell, and says so', () {
+      expect(powerCell(31.04, 31.38), powerCell(30.86, 31.05));
+      final d = Dialogue(data);
+      final msgs = d.handleLocation(31.04, 31.38);
+      expect(d.site, 'gharbia');
+      expect(msgs.first.ar, contains('نفس خلية'));
+      final typed = Dialogue(data)..handle('المنصورة');
+      expect(typed.site, 'gharbia');
+    });
+
+    test('east Dakahlia has its own data point in a different cell', () {
+      expect(powerCell(31.05, 31.70), isNot(powerCell(30.86, 31.05)));
+      final d = Dialogue(data);
+      final msgs = d.handleLocation(31.06, 31.68);
+      expect(d.site, 'dakahlia');
+      expect(msgs.first.ar, contains('الدقهلية'));
     });
 
     test('a governorate can also be named by voice or typing', () {

@@ -673,5 +673,230 @@
     "salt_wheat": "not advised"
    }
   ]
+ },
+ {
+  "site": "dakahlia",
+  "signs": null,
+  "interval_days": null,
+  "sequences": [
+   {
+    "summer_crop": "rice",
+    "summer_sowing": [
+     6,
+     15
+    ],
+    "wheat_sowing": [
+     12,
+     1
+    ]
+   },
+   {
+    "summer_crop": "maize",
+    "summer_sowing": [
+     5,
+     1
+    ],
+    "wheat_sowing": [
+     11,
+     15
+    ]
+   },
+   {
+    "summer_crop": "cotton",
+    "summer_sowing": [
+     4,
+     1
+    ],
+    "wheat_sowing": [
+     11,
+     15
+    ]
+   }
+  ],
+  "expected": [
+   {
+    "etc": 1073,
+    "ratio": 1.0,
+    "heat_median": 10,
+    "extra32": 4,
+    "gap": 19,
+    "harvest": "12 Nov",
+    "turn_mm": null,
+    "salt_summer": null,
+    "salt_wheat": null
+   },
+   {
+    "etc": 913,
+    "ratio": 0.85,
+    "heat_median": 6,
+    "extra32": 0,
+    "gap": 48,
+    "harvest": "28 Sep",
+    "turn_mm": null,
+    "salt_summer": null,
+    "salt_wheat": null
+   },
+   {
+    "etc": 1198,
+    "ratio": 1.12,
+    "heat_median": 6,
+    "extra32": 0,
+    "gap": 33,
+    "harvest": "13 Oct",
+    "turn_mm": null,
+    "salt_summer": null,
+    "salt_wheat": null
+   }
+  ]
+ },
+ {
+  "site": "dakahlia",
+  "signs": "patches",
+  "interval_days": 10,
+  "sequences": [
+   {
+    "summer_crop": "rice",
+    "summer_sowing": [
+     6,
+     15
+    ],
+    "wheat_sowing": [
+     12,
+     1
+    ]
+   },
+   {
+    "summer_crop": "maize",
+    "summer_sowing": [
+     5,
+     1
+    ],
+    "wheat_sowing": [
+     11,
+     15
+    ]
+   },
+   {
+    "summer_crop": "cotton",
+    "summer_sowing": [
+     4,
+     1
+    ],
+    "wheat_sowing": [
+     11,
+     15
+    ]
+   }
+  ],
+  "expected": [
+   {
+    "etc": 1073,
+    "ratio": 1.0,
+    "heat_median": 10,
+    "extra32": 4,
+    "gap": 19,
+    "harvest": "12 Nov",
+    "turn_mm": 102,
+    "salt_summer": "not advised",
+    "salt_wheat": "fine"
+   },
+   {
+    "etc": 913,
+    "ratio": 0.85,
+    "heat_median": 6,
+    "extra32": 0,
+    "gap": 48,
+    "harvest": "28 Sep",
+    "turn_mm": 108,
+    "salt_summer": "not advised",
+    "salt_wheat": "fine"
+   },
+   {
+    "etc": 1198,
+    "ratio": 1.12,
+    "heat_median": 6,
+    "extra32": 0,
+    "gap": 33,
+    "harvest": "13 Oct",
+    "turn_mm": 108,
+    "salt_summer": "fine",
+    "salt_wheat": "fine"
+   }
+  ]
+ },
+ {
+  "site": "dakahlia",
+  "signs": "crust",
+  "interval_days": 14,
+  "sequences": [
+   {
+    "summer_crop": "rice",
+    "summer_sowing": [
+     6,
+     15
+    ],
+    "wheat_sowing": [
+     12,
+     1
+    ]
+   },
+   {
+    "summer_crop": "maize",
+    "summer_sowing": [
+     5,
+     1
+    ],
+    "wheat_sowing": [
+     11,
+     15
+    ]
+   },
+   {
+    "summer_crop": "cotton",
+    "summer_sowing": [
+     4,
+     1
+    ],
+    "wheat_sowing": [
+     11,
+     15
+    ]
+   }
+  ],
+  "expected": [
+   {
+    "etc": 1073,
+    "ratio": 1.0,
+    "heat_median": 10,
+    "extra32": 4,
+    "gap": 19,
+    "harvest": "12 Nov",
+    "turn_mm": 143,
+    "salt_summer": "not advised",
+    "salt_wheat": "not advised"
+   },
+   {
+    "etc": 913,
+    "ratio": 0.85,
+    "heat_median": 6,
+    "extra32": 0,
+    "gap": 48,
+    "harvest": "28 Sep",
+    "turn_mm": 151,
+    "salt_summer": "not advised",
+    "salt_wheat": "not advised"
+   },
+   {
+    "etc": 1198,
+    "ratio": 1.12,
+    "heat_median": 6,
+    "extra32": 0,
+    "gap": 33,
+    "harvest": "13 Oct",
+    "turn_mm": 151,
+    "salt_summer": "reduced",
+    "salt_wheat": "not advised"
+   }
+  ]
  }
 ]

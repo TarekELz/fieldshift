@@ -90,3 +90,7 @@ Last audit: 2026-11-14 12:50 local (Step 1, full audit). Files were opened and c
 - Bug found and fixed: the answer buttons for 1 November and 1 December were read as 12 January / 10 January (the typed-date parser read "12-01" as day 12 of month 1). Buttons now keep their exact date; a test covers every date button. Earlier previews and any earlier APK have this bug.
 - Preview-only URL switches for the web build: ?theme=light, ?lang=en, ?skip=1, ?demo=1 (ignored on phones).
 - Still only seen in a browser preview: no phone, no voice test, APK not rebuilt.
+
+## 2026-11-15 update: Dakahlia / Mansoura weather
+- Tarek asked where Dakahlia and Mansoura get their data: before, from the nearest point (Gharbia at 37 km for Mansoura, Damietta for the governorate's middle). Checked and fixed (D11): Mansoura lies in the same NASA POWER cell as Gharbia (identical weather), so it now uses Gharbia's data and the app says so; a seventh point, east Dakahlia, was downloaded (1990-2025, no gaps) and the app picks by weather cell first. Mean Tmax differs from Gharbia by about 0.8 C. Not checked: whether the east Dakahlia point is cropland (task 2 in tasks.md now covers seven points); POWER temperatures still not checked against stations.
+- Tests: 27 Flutter, 43 Python.

@@ -29,7 +29,7 @@ EGYPT_BOX = (24.0, 21.5, 37.0, 32.2)  # lon_min, lat_min, lon_max, lat_max
 
 # Governorates the app covers (the Nile Delta and its edges) and the NASA data point each one owns, if any.
 DELTA = ["Alexandria", "Behera", "Kafr El-Shikh", "Gharbia", "Dakahlia", "Damietta", "Menoufia", "Sharkia", "Kalyoubia", "Port Said"]
-OWN_SITE = {"Behera": "beheira", "Kafr El-Shikh": "kafr_el_sheikh", "Gharbia": "gharbia", "Menoufia": "menoufia", "Sharkia": "sharqia", "Damietta": "damietta"}
+OWN_SITE = {"Behera": "beheira", "Kafr El-Shikh": "kafr_el_sheikh", "Gharbia": "gharbia", "Menoufia": "menoufia", "Sharkia": "sharqia", "Dakahlia": "dakahlia", "Damietta": "damietta"}
 
 
 AREAS = {"Halayib": "Halayeb", "Shallatin": "Shalateen"}  # HDX admin-2 names -> ids shown in the app (both are in the Red Sea governorate)

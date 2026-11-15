@@ -20,7 +20,7 @@ from fieldshift import calendar_engine as cal, rotation, salt_engine as salt, wa
 
 OUT = ROOT / "app" / "assets" / "data"
 FIX = ROOT / "app" / "test" / "fixtures"
-SITES = ["gharbia", "kafr_el_sheikh", "beheira", "menoufia", "sharqia", "damietta"]
+SITES = ["gharbia", "kafr_el_sheikh", "beheira", "menoufia", "sharqia", "damietta", "dakahlia"]
 SOWING_WINDOWS = {"rice": ((5, 1), (6, 30)), "maize": ((4, 15), (5, 31)), "cotton": ((3, 15), (5, 15))}
 
 
@@ -94,7 +94,7 @@ def main():
         (OUT / f"{name}.json").write_text(json.dumps(obj, ensure_ascii=False, indent=None, separators=(",", ":")), encoding="utf8")
     # golden cases for the Dart tests
     cases = []
-    for site in ("gharbia", "beheira", "kafr_el_sheikh"):
+    for site in ("gharbia", "beheira", "kafr_el_sheikh", "dakahlia"):
         for signs, interval in ((None, None), ("patches", 10), ("crust", 14)):
             res = rotation.compare_rotations(site, rotation.DEMO, signs=signs, interval_days=interval)
             cases.append({"site": site, "signs": signs, "interval_days": interval,

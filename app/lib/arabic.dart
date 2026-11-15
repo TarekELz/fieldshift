@@ -17,6 +17,7 @@ const arSite = {
   'gharbia': 'الغربية (طنطا)',
   'menoufia': 'المنوفية',
   'sharqia': 'الشرقية',
+  'dakahlia': 'الدقهلية (شرق)',
 };
 
 const arCrop = {'rice': 'الرز', 'maize': 'الذرة', 'cotton': 'القطن', 'wheat': 'القمح'};

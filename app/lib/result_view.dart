@@ -20,6 +20,7 @@ const _sitePixel = <String, Offset>{
   'gharbia': Offset(0.5, 0.554),
   'menoufia': Offset(0.501, 0.773),
   'sharqia': Offset(0.651, 0.807),
+  'dakahlia': Offset(0.676, 0.423),
 };
 
 

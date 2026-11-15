@@ -6,7 +6,7 @@ nasa_power_daily:
   access: open, no account
   variables: [T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, ALLSKY_SFC_SW_DWN, RH2M, WS2M, GWETTOP, GWETROOT, GWETPROF, EVPTRNS]
   resolution: ~0.5 x 0.625 deg, daily
-  coverage: 1990-01-01..2025-12-31 at Mead and at 30.79N 31.00E (Tanta city point, an early test; the six Delta points of models/sites.yaml are in data/raw/power_sites)
+  coverage: 1990-01-01..2025-12-31 at Mead and at 30.79N 31.00E (Tanta city point, an early test; the seven Delta points of models/sites.yaml are in data/raw/power, one file each, 1990-2025 daily, no missing values; the seventh, east Dakahlia, was added 2026-11-15)
   license: NASA open data
   citation: NASA Langley Research Center POWER Project
   status: on disk, verified (13,149 days, no missing values)

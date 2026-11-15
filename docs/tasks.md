@@ -25,8 +25,8 @@ Confirmed by Tarek on 2026-11-14. The main build (engines, documents, review) is
 
 ## Hussain: data
 1. **Share the big files** (about 20 minutes). Upload the MODIS GeoTIFFs and SRTM tiles you have to a shared drive folder, and write the link in `data/NOTES.md`. Do not put them in git.
-2. **Check our six points are farmland** (about 20 minutes). Open each coordinate from `models/sites.yaml` in Google Maps satellite view. For each one write: fields / town / water / desert, and a better nearby coordinate if it is not fields. *Put it in:* `data/NOTES.md`, a small table.
-3. **Request water-use data from AppEEARS** (about 30 minutes, you already know the tool). New *point* request, the six coordinates from `models/sites.yaml`, product **MOD16A2GF.061**, layers `ET_500m` and `PET_500m`, dates 2015-01-01 to 2025-12-31, CSV output. *Put the results CSV in:* `data/MODIS_nile/` (it is small). Leave out the request JSON.
+2. **Check our seven points are farmland** (about 20 minutes). Open each coordinate from `models/sites.yaml` in Google Maps satellite view. For each one write: fields / town / water / desert, and a better nearby coordinate if it is not fields. *Put it in:* `data/NOTES.md`, a small table.
+3. **Request water-use data from AppEEARS** (about 30 minutes, you already know the tool). New *point* request, the seven coordinates from `models/sites.yaml`, product **MOD16A2GF.061**, layers `ET_500m` and `PET_500m`, dates 2015-01-01 to 2025-12-31, CSV output. *Put the results CSV in:* `data/MODIS_nile/` (it is small). Leave out the request JSON.
 4. If time remains: the same kind of request for **MCD12Q2.061** (layers `Greenup`, `Maturity`, `Senescence`, `Dormancy`, `NumCycles`), 2015 to 2023.
 
 ## Al-Ashmawy: tester for the wheat calendar engine
