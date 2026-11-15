@@ -75,9 +75,14 @@ function tooMany(ip, limit, now = Date.now()) {
 async function dailyCap(env, name, cap) {
   if (!env.STATS) return false; // no KV binding: only the per address limit applies
   const key = `${new Date().toISOString().slice(0, 10)}:${name}`;
-  const n = parseInt((await env.STATS.get(key)) || '0', 10) + 1;
-  await env.STATS.put(key, String(n), { expirationTtl: 172800 });
-  return n > cap;
+  try {
+    const n = parseInt((await env.STATS.get(key)) || '0', 10) + 1;
+    if (n > cap) return true; // over the cap: no further write (KV writes are limited per day)
+    await env.STATS.put(key, String(n), { expirationTtl: 172800 });
+    return false;
+  } catch {
+    return false; // KV unavailable or out of daily writes: do not turn every request into an error; the per address limit still applies
+  }
 }
 
 async function sha256(text) {
@@ -86,8 +91,10 @@ async function sha256(text) {
 }
 
 async function handleTts(request, env, cors) {
+  const raw = await request.text();
+  if (raw.length > 4 * MAX_TEXT) return json({ error: 'bad_request' }, 400, cors);
   let body;
-  try { body = await request.json(); } catch { return json({ error: 'bad_request' }, 400, cors); }
+  try { body = JSON.parse(raw); } catch { return json({ error: 'bad_request' }, 400, cors); }
   const text = body && typeof body.text === 'string' ? body.text.trim() : '';
   if (!text || text.length > MAX_TEXT) return json({ error: 'bad_request' }, 400, cors);
   const cache = globalThis.caches && globalThis.caches.default;
@@ -119,7 +126,8 @@ async function handleGemini(request, env, cors) {
   const clean = {};
   for (const k of Object.keys(body)) if (ALLOWED_GEMINI_FIELDS.has(k)) clean[k] = body[k]; // no tools, no safety overrides, nothing else
   const gc = clean.generationConfig && typeof clean.generationConfig === 'object' ? clean.generationConfig : {};
-  clean.generationConfig = { temperature: Math.min(Number(gc.temperature ?? 0.3) || 0.3, 1), maxOutputTokens: Math.min(Number(gc.maxOutputTokens ?? MAX_TOKENS) || MAX_TOKENS, MAX_TOKENS) };
+  const t = Number(gc.temperature ?? 0.3), m = Math.floor(Number(gc.maxOutputTokens ?? MAX_TOKENS));
+  clean.generationConfig = { temperature: Number.isFinite(t) ? Math.min(Math.max(t, 0), 1) : 0.3, maxOutputTokens: Number.isFinite(m) && m >= 1 ? Math.min(m, MAX_TOKENS) : MAX_TOKENS };
   if (await dailyCap(env, 'gemini', parseInt(env.DAILY_GEMINI_CAP || '3000', 10))) return json({ error: 'limit' }, 429, cors);
   const res = await withKeys('gemini', pool(env.GEMINI_KEYS), (key) => fetch(GEMINI_URL, {
     method: 'POST',

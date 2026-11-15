@@ -139,3 +139,27 @@ test('health reports counts and resting keys but never a key', async () => {
   assert.deepEqual(JSON.parse(text).hamsa, { keys: 2, resting: [0] });
   for (const k of ['h1', 'h2', 'g1', 'g2']) assert.ok(!text.includes(`"${k}"`));
 });
+
+test('daily cap: no KV write once over the cap, and a failing KV does not break requests', async () => {
+  const store = new Map();
+  let writes = 0;
+  const STATS = { get: async (k) => store.get(k), put: async (k, v) => { writes++; store.set(k, v); } };
+  const e = env({ STATS, DAILY_TTS_CAP: '1', RATE_PER_MIN: '100' });
+  for (let i = 0; i < 4; i++) await worker.fetch(post('/tts', { text: `w${i}` }), e);
+  assert.equal(writes, 1);
+  const broken = { get: async () => { throw new Error('kv'); }, put: async () => { throw new Error('kv write limit'); } };
+  assert.equal((await worker.fetch(post('/tts', { text: 'k' }), env({ STATS: broken }))).status, 200);
+});
+
+test('tts: an oversized body is refused before parsing or any key is used', async () => {
+  assert.equal((await worker.fetch(post('/tts', JSON.stringify({ text: 'a', pad: 'x'.repeat(5000) })), env())).status, 400);
+  assert.equal(calls.length, 0);
+});
+
+test('gemini: temperature 0 is kept and negative values are clamped', async () => {
+  const contents = [{ role: 'user', parts: [{ text: 'hi' }] }];
+  await worker.fetch(post('/gemini', { contents, generationConfig: { temperature: 0, maxOutputTokens: -5 } }), env());
+  assert.deepEqual(calls.at(-1).body.generationConfig, { temperature: 0, maxOutputTokens: 400 });
+  await worker.fetch(post('/gemini', { contents, generationConfig: { temperature: -2, maxOutputTokens: 50 } }), env());
+  assert.deepEqual(calls.at(-1).body.generationConfig, { temperature: 0, maxOutputTokens: 50 });
+});
