@@ -136,6 +136,14 @@ class _FlowScreenState extends State<FlowScreen> {
     voice.speak(m.result != null ? spokenN(m.result!) : msgText(m));
   }
 
+  Future<void> _holdStart() async {
+    if (!listening) await _toggleMic();
+  }
+
+  Future<void> _holdEnd() async {
+    if (listening) await _toggleMic();
+  }
+
   Future<void> _toggleMic() async {
     if (listening) {
       await voice.stopListening();
@@ -207,6 +215,7 @@ class _FlowScreenState extends State<FlowScreen> {
         mood: _mood,
         onRestart: _restart,
         onReadAloud: _readAgain,
+        onSpeak: (s) => voice.speak(s),
       );
 
   List<String> _answered() {
@@ -223,47 +232,64 @@ class _FlowScreenState extends State<FlowScreen> {
     final d = dialogue!, m = current!;
     final done = [d.site, d.crop, d.summerSowing, d.wheatSowing, d.interval, d.salt].where((e) => e != null).length;
     final chips = _answered();
+    final compact = m.showMap; // the map needs the room
     return Column(children: [
-      const SizedBox(height: 6),
+      SizedBox(height: compact ? 2 : 10),
       ValueListenableBuilder<bool>(
         valueListenable: voice.speaking,
         builder: (context, speaking, _) => GestureDetector(
           onTap: _readAgain, // tap Eyad to hear the question again
-          child: EyadAvatar(mood: _mood, size: 108, progress: done / 6, active: speaking || listening),
+          child: EyadAvatar(mood: _mood, size: compact ? 84 : 148, progress: done / 6, active: speaking || listening),
         ),
       ),
-      const SizedBox(height: 4),
-      Text(tr('إياد', 'Eyad'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Fs.dim)),
-      const SizedBox(height: 6),
+      const SizedBox(height: 2),
+      Text(tr('إياد', 'Eyad'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Fs.dim)),
+      const SizedBox(height: 8),
+      _bubble(msgText(m), compact),
+      if (note != null) Padding(padding: const EdgeInsets.fromLTRB(28, 6, 28, 0), child: Text(msgText(note!), textAlign: TextAlign.center, style: TextStyle(fontSize: 13, height: 1.4, color: Fs.dim))),
       if (chips.isNotEmpty)
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
           child: Wrap(
             alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 6,
             runSpacing: 6,
             children: [
+              Icon(Icons.check_circle_rounded, size: 16, color: Fs.ok),
               for (final c in chips)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: Fs.card2, borderRadius: BorderRadius.circular(20)),
-                  child: Text(c, style: TextStyle(fontSize: 12, color: Fs.dim, fontWeight: FontWeight.w500)),
+                  child: Text(c, style: TextStyle(fontSize: 12, color: Fs.text, fontWeight: FontWeight.w500)),
                 ),
             ],
           ),
         ),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(24, 14, 24, 4),
-        child: Text(msgText(m), textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, height: 1.3, fontWeight: FontWeight.w700)),
-      ),
-      if (note != null) Padding(padding: const EdgeInsets.fromLTRB(28, 0, 28, 4), child: Text(msgText(note!), textAlign: TextAlign.center, style: TextStyle(fontSize: 13, height: 1.4, color: Fs.dim))),
       const SizedBox(height: 8),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), child: _answers(m, d))),
       if (listening || partial.isNotEmpty)
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4), child: Text(partial.isEmpty ? tr('بسمعك... اتكلم دلوقتي', 'Listening... speak now') : partial, style: TextStyle(fontSize: 15, color: Fs.accent))),
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4), child: Text(partial.isEmpty ? tr('بسمعك... اتكلم دلوقتي', 'Listening... speak now') : partial, textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: Fs.accent))),
       _bottom(),
     ]);
   }
+
+  /// Eyad's words in a speech bubble with a small tail pointing up at him.
+  Widget _bubble(String text, bool compact) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        child: Stack(clipBehavior: Clip.none, alignment: Alignment.topCenter, children: [
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 18, vertical: compact ? 10 : 16),
+            decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard), boxShadow: Fs.lift),
+            child: Text(text, textAlign: TextAlign.center, style: TextStyle(fontSize: compact ? 18 : 22, height: 1.35, fontWeight: FontWeight.w700)),
+          ),
+          Positioned(
+            top: -6,
+            child: Transform.rotate(angle: 0.785398, child: Container(width: 14, height: 14, color: Fs.card)),
+          ),
+        ]),
+      );
 
   IconData? _iconFor(Choice c, Step s) {
     if (s != Step.crop) return null;
@@ -338,8 +364,10 @@ class _FlowScreenState extends State<FlowScreen> {
         ]),
       );
     }
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+    return Stack(alignment: Alignment.bottomCenter, children: [
+      Positioned.fill(child: CustomPaint(painter: _FieldPainter())),
+      Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
         Column(mainAxisSize: MainAxisSize.min, children: [
           RoundButton(icon: Icons.keyboard_alt_rounded, onTap: () => setState(() => typing = true), tooltip: tr('اكتب', 'Type')),
@@ -348,7 +376,9 @@ class _FlowScreenState extends State<FlowScreen> {
         ]),
         GestureDetector(
           onTap: _toggleMic,
-          child: AnimatedContainer(
+          onLongPressStart: (_) => _holdStart(),
+          onLongPressEnd: (_) => _holdEnd(),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             width: 80,
             height: 80,
@@ -359,6 +389,9 @@ class _FlowScreenState extends State<FlowScreen> {
             ),
             child: Icon(listening ? Icons.stop_rounded : Icons.mic_rounded, size: 36, color: listening ? Fs.onAccent : Fs.accent),
           ),
+          const SizedBox(height: 4),
+          Text(listening ? tr('سيب لما تخلص', 'Release when done') : tr('اضغط وكلّم', 'Press and talk'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Fs.text)),
+          ]),
         ),
         Column(mainAxisSize: MainAxisSize.min, children: [
           RoundButton(icon: Icons.volume_up_rounded, onTap: _readAgain, tooltip: tr('اسمع تاني', 'Hear again')),
@@ -366,6 +399,22 @@ class _FlowScreenState extends State<FlowScreen> {
           Text(tr('اسمع', 'Listen'), style: TextStyle(fontSize: 11, color: Fs.dim)),
         ]),
       ]),
-    );
+    ),
+    ]);
   }
+}
+
+/// Two soft green hills along the bottom: a calm field behind the mic (decoration only).
+class _FieldPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size s) {
+    final dark = Fs.dark;
+    final a = Paint()..color = dark ? const Color(0xFF14402B) : const Color(0xFFCFE8D5);
+    final b = Paint()..color = dark ? const Color(0xFF1B5337) : const Color(0xFFB5DBBF);
+    canvas.drawOval(Rect.fromLTWH(-s.width * 0.25, s.height * 0.55, s.width * 0.9, s.height * 1.2), a);
+    canvas.drawOval(Rect.fromLTWH(s.width * 0.3, s.height * 0.7, s.width * 1.0, s.height * 1.2), b);
+  }
+
+  @override
+  bool shouldRepaint(covariant _FieldPainter old) => false;
 }

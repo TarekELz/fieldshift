@@ -1,4 +1,17 @@
-# Field Shift: Egypt
+<p align="center"><img src="docs/site/assets/delta_winter.jpg" alt="Nile Delta greenness from NASA MODIS" width="720"></p>
+
+<h1 align="center">Field Shift: Egypt</h1>
+<p align="center"><b>The right crop at the right time.</b> A voice assistant for Nile Delta farmers, built on NASA POWER weather, NASA MODIS satellite data and FAO tables.</p>
+<p align="center">
+<img alt="NASA Space Apps 2026" src="https://img.shields.io/badge/NASA%20Space%20Apps-2026-0b3d91">
+<img alt="Flutter" src="https://img.shields.io/badge/app-Flutter%20Android-02569B">
+<img alt="Licence" src="https://img.shields.io/badge/licence-MIT-green">
+<img alt="Tests" src="https://img.shields.io/badge/tests-394%20Python%20%2B%2035%20Flutter-brightgreen">
+</p>
+<p align="center"><a href="docs/index.html">Project page (open docs/index.html, or GitHub Pages once enabled)</a> · <a href="docs/status.md">Status</a> · <a href="docs/decisions.md">Decisions</a> · <a href="docs/methodology.md">Method and limits</a></p>
+
+---
+
 
 NASA Space Apps Challenge 2026, challenge **"Field Shift: Adapting Farms with NASA Data"** (hackathon 14-15 November 2026). Team based in Egypt.
 

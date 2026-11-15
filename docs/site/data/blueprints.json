@@ -1,0 +1,360 @@
+{
+  "_note": "Blueprint advices (decision D16/D18). Written by the AI assistant as drafts for the team to review; Egyptian Arabic NOT yet checked by a native speaker. Code (never the language model) selects the blueprint from the engines' facts. Slots in braces are filled from the engines. Conditions: f = fact name; in = value in list; lt, lte, gt, gte = numeric tests; truthy = fact is true. 'must' conditions all have to hold; 'bonus' conditions only raise the closeness figure. 'priority' orders the blueprints when several apply (highest first). 'keep' lists Arabic word stems the tailored text must still contain.",
+  "blueprints": [
+    {
+      "id": "sea_cell",
+      "priority": 100,
+      "must": [
+        {
+          "f": "sea",
+          "truthy": true
+        }
+      ],
+      "bonus": [],
+      "ar": "مكانك قريب من البحر، وبيانات الحرارة هنا مش دقيقة. خد النتائج بحذر، واسأل مهندس زراعي.",
+      "en": "Your place is near the sea and the temperature data here is not reliable. Take the results with care and ask an agricultural engineer.",
+      "keep": [
+        "حذر"
+      ]
+    },
+    {
+      "id": "combo_late_salt",
+      "priority": 95,
+      "must": [
+        {
+          "f": "heat_extra",
+          "gte": 4
+        },
+        {
+          "f": "salt_summer",
+          "in": [
+            "not advised",
+            "reduced"
+          ]
+        }
+      ],
+      "bonus": [
+        {
+          "f": "wheat_label",
+          "in": [
+            "so-so",
+            "wrong season"
+          ]
+        }
+      ],
+      "ar": "فيه حاجتين: القمح في {wheat_date} متأخر، وهيقابل حوالي {heat_extra} يوم حر زيادة، والملوحة عالية على {crop}. ابدأ بتقديم القمح، واعمل تحليل تربة.",
+      "en": "Two things: wheat on {wheat_date} is late and meets about {heat_extra} more hot days, and the salt is high for {crop}. Start by sowing wheat earlier, and test the soil.",
+      "keep": [
+        "ملوحة",
+        "تحليل"
+      ]
+    },
+    {
+      "id": "salt_not_advised_alt",
+      "priority": 90,
+      "must": [
+        {
+          "f": "salt_summer",
+          "in": [
+            "not advised"
+          ]
+        },
+        {
+          "f": "alt_salt_ok",
+          "truthy": true
+        }
+      ],
+      "bonus": [
+        {
+          "f": "heat_extra",
+          "lte": 3
+        }
+      ],
+      "ar": "الملوحة اللي وصفتها عالية على {crop} حسب جداول الفاو. {alt_crop} بيستحمل أكتر في نفس الملوحة. اعمل تحليل تربة قبل ما تقرر.",
+      "en": "The salt you described is high for {crop} according to the FAO tables. {alt_crop} tolerates the same salt better. Test the soil before you decide.",
+      "keep": [
+        "ملوحة",
+        "تحليل"
+      ]
+    },
+    {
+      "id": "salt_not_advised",
+      "priority": 85,
+      "must": [
+        {
+          "f": "salt_summer",
+          "in": [
+            "not advised"
+          ]
+        }
+      ],
+      "bonus": [],
+      "ar": "الملوحة اللي وصفتها عالية على {crop} حسب جداول الفاو. اعمل تحليل تربة قبل ما تقرر، واسأل مهندس زراعي عن محصول بيستحمل أكتر.",
+      "en": "The salt you described is high for {crop} according to the FAO tables. Test the soil before you decide, and ask an agricultural engineer about a crop that tolerates more.",
+      "keep": [
+        "ملوحة",
+        "تحليل"
+      ]
+    },
+    {
+      "id": "summer_off_season",
+      "priority": 80,
+      "must": [
+        {
+          "f": "summer_label",
+          "in": [
+            "wrong season",
+            "so-so"
+          ]
+        },
+        {
+          "f": "summer_best",
+          "truthy": true
+        }
+      ],
+      "bonus": [
+        {
+          "f": "summer_label",
+          "in": [
+            "wrong season"
+          ]
+        }
+      ],
+      "ar": "ميعاد {crop} في {summer_date} مش أنسب ميعاد من ناحية الحرارة. في السنين اللي فاتت كان الأنسب حوالي {summer_best}.",
+      "en": "Sowing {crop} on {summer_date} is not the best date for temperature. In past years the best date was around {summer_best}.",
+      "keep": [
+        "حرارة"
+      ]
+    },
+    {
+      "id": "wheat_off_season",
+      "priority": 70,
+      "must": [
+        {
+          "f": "wheat_label",
+          "in": [
+            "wrong season"
+          ]
+        },
+        {
+          "f": "wheat_best",
+          "truthy": true
+        }
+      ],
+      "bonus": [],
+      "ar": "ميعاد القمح {wheat_date} بعيد عن الميعاد الأنسب للحرارة. الأنسب كان حوالي {wheat_best}.",
+      "en": "Wheat on {wheat_date} is far from the best date for temperature. The best date was around {wheat_best}.",
+      "keep": [
+        "حرارة"
+      ]
+    },
+    {
+      "id": "wheat_late",
+      "priority": 65,
+      "must": [
+        {
+          "f": "heat_extra",
+          "gte": 4
+        }
+      ],
+      "bonus": [
+        {
+          "f": "wheat_label",
+          "in": [
+            "so-so",
+            "wrong season"
+          ]
+        }
+      ],
+      "ar": "القمح في {wheat_date} متأخر شوية: هيقابل حوالي {heat_extra} يوم حر زيادة وقت امتلاء الحبوب عن زراعته في ١٥ نوفمبر. لو قدرت تقدّمه يبقى أحسن للحرارة.",
+      "en": "Wheat on {wheat_date} is on the late side: it meets about {heat_extra} more hot days in grain filling than a 15 November sowing. If you can sow earlier, it is better for heat.",
+      "keep": [
+        "حر"
+      ]
+    },
+    {
+      "id": "tight_gap",
+      "priority": 60,
+      "must": [
+        {
+          "f": "gap",
+          "lt": 14
+        }
+      ],
+      "bonus": [],
+      "ar": "الفرق بين حصاد {crop} وزراعة القمح {gap} يوم بس، وده ضيق. فكّر في ميعاد أبكر للمحصول الصيفي أو محصول أقصر.",
+      "en": "Only {gap} days between harvesting {crop} and sowing wheat, which is tight. Think about an earlier summer sowing or a shorter crop.",
+      "keep": [
+        "يوم"
+      ]
+    },
+    {
+      "id": "salt_reduced",
+      "priority": 55,
+      "must": [
+        {
+          "f": "salt_summer",
+          "in": [
+            "reduced"
+          ]
+        }
+      ],
+      "bonus": [],
+      "ar": "الملوحة هتقلل قدرة {crop} شوية حسب جداول الفاو. راقب الأرض، واعمل تحليل تربة للتأكد.",
+      "en": "The salt will reduce what {crop} can tolerate a little, according to the FAO tables. Watch the field and test the soil to be sure.",
+      "keep": [
+        "ملوحة"
+      ]
+    },
+    {
+      "id": "water_heavy",
+      "priority": 50,
+      "must": [
+        {
+          "f": "summer_crop",
+          "in": [
+            "rice"
+          ]
+        },
+        {
+          "f": "alt_water_pct",
+          "lte": 90
+        }
+      ],
+      "bonus": [
+        {
+          "f": "alt_salt_ok",
+          "truthy": true
+        }
+      ],
+      "ar": "الرز بياخد مية كتير. {alt_crop} محتاج حوالي {alt_pct}٪ بس من احتياج {crop} للمية في موسمه، من غير فقد الري. ده يفيد لو المية ناقصة عندك.",
+      "en": "Rice needs a lot of water. {alt_crop} needs only about {alt_pct}% of what {crop} needs in its season, not counting irrigation losses. That helps if water is short on your land.",
+      "keep": [
+        "مية"
+      ]
+    },
+    {
+      "id": "no_salt_info",
+      "priority": 20,
+      "must": [
+        {
+          "f": "salt_known",
+          "truthy": false
+        }
+      ],
+      "bonus": [],
+      "ar": "مفيش معلومة عن الملوحة، فمقدرش أحكم عليها. لو في بقع أو قشرة بيضا في الأرض قولّي.",
+      "en": "I have no information about salt, so I cannot judge it. If there are patches or a white crust on your land, tell me.",
+      "keep": [
+        "ملوحة"
+      ]
+    },
+    {
+      "id": "on_track",
+      "priority": 25,
+      "must": [
+        {
+          "f": "summer_label",
+          "in": [
+            "right season",
+            "cannot judge"
+          ]
+        },
+        {
+          "f": "wheat_label",
+          "in": [
+            "right season",
+            "cannot judge"
+          ]
+        },
+        {
+          "f": "salt_summer",
+          "in": [
+            "fine",
+            null
+          ]
+        },
+        {
+          "f": "gap",
+          "gte": 14
+        },
+        {
+          "f": "heat_extra",
+          "lte": 3
+        }
+      ],
+      "bonus": [
+        {
+          "f": "salt_known",
+          "truthy": true
+        }
+      ],
+      "ar": "دورتك ماشية كويس: {crop} في {summer_date} وقمح في {wheat_date}. المواعيد مناسبة للحرارة، والملوحة مش مشكلة حسب اللي قلته.",
+      "en": "Your rotation looks fine: {crop} on {summer_date} and wheat on {wheat_date}. The dates suit the temperature and salt is not a problem from what you told me.",
+      "keep": [
+        "مناسبة"
+      ]
+    },
+    {
+      "id": "generic",
+      "priority": 0,
+      "must": [],
+      "bonus": [],
+      "ar": "دي مقارنة بسيطة من بيانات ناسا. قارن دورتك بالبدائل في الأرقام اللي تحت.",
+      "en": "This is a simple comparison from NASA data. Compare your rotation with the alternatives in the numbers below.",
+      "keep": []
+    }
+  ],
+  "forbidden_ar": [
+    "إنتاج",
+    "ربح",
+    "جنيه",
+    "فلوس",
+    "مكسب",
+    "هتكسب",
+    "ضمان"
+  ],
+  "forbidden_en": [
+    "yield",
+    "profit",
+    "income",
+    "guarantee",
+    "money",
+    "earn"
+  ],
+  "families": {
+    "combo_late_salt": [
+      "wheat_date",
+      "salt_reduced",
+      "salt_general"
+    ],
+    "salt_not_advised_alt": [
+      "salt_alt"
+    ],
+    "salt_not_advised": [
+      "salt_general",
+      "salt_alt"
+    ],
+    "salt_reduced": [
+      "salt_reduced",
+      "salt_general"
+    ],
+    "no_salt_info": [
+      "salt_general"
+    ],
+    "wheat_late": [
+      "wheat_date"
+    ],
+    "wheat_off_season": [
+      "wheat_date"
+    ],
+    "summer_off_season": [
+      "summer_date"
+    ],
+    "tight_gap": [
+      "summer_date",
+      "wheat_date"
+    ]
+  },
+  "_families_note": "Topics a blueprint speaks about. A second advice must be on a different topic; 'generic' and 'on_track' are never a second advice."
+}

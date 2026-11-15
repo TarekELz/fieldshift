@@ -16,7 +16,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from fieldshift import calendar_engine as cal, rotation, salt_engine as salt, water_engine as wat  # noqa: E402
+from fieldshift import advice, calendar_engine as cal, rotation, salt_engine as salt, season_engine as se, water_engine as wat  # noqa: E402
 
 OUT = ROOT / "app" / "assets" / "data"
 FIX = ROOT / "app" / "test" / "fixtures"
@@ -39,6 +39,16 @@ def days(start, end, _step=None):
 
 def key(m, d):
     return f"{m:02d}-{d:02d}"
+
+
+def _advice_ids(res, w, sparams):
+    """Which blueprints the Python advice layer selects (the Dart code must select the same ones)."""
+    ex = res["rotations"][0]
+    sm, sd = (int(x) for x in reversed(ex["summer_sowing"].split("/")))
+    wm, wd = (int(x) for x in reversed(ex["wheat_sowing"].split("/")))
+    f = advice.facts_from(res, se.verdict(w, sparams, ex["summer_crop"], sm, sd), se.verdict(w, sparams, "wheat", wm, wd))
+    sel = advice.select(f)
+    return {"primary": sel[0]["id"], "closeness": sel[0]["closeness"], "also": [s["id"] for s in sel[1:]]}
 
 
 def main():
@@ -92,6 +102,14 @@ def main():
     meta["climate_note"] = "Monthly means of NASA POWER daily values, 1990-2025 (reanalysis, about 50 km cell)"
     for name, obj in (("heat", heat), ("water", water), ("salt", saltj), ("meta", meta), ("climate", climate)):
         (OUT / f"{name}.json").write_text(json.dumps(obj, ensure_ascii=False, indent=None, separators=(",", ":")), encoding="utf8")
+    # season scores (temperature screen, decision D17) and the blueprint advices (D16/D18)
+    sparams, season, stemps = se.load_params(), {}, {}
+    for s in SITES:
+        stemps[s] = se.SiteTemps(ROOT / "data/raw/power" / f"{s}_daily.json")
+        season[s] = {c: [[r["sowing"][0], r["sowing"][1], r["ideal_pct"], r["bad_pct"]] for r in se.scan_year(stemps[s], sparams, c)] for c in ("wheat", "rice", "maize", "cotton")}
+    (OUT / "season.json").write_text(json.dumps({"sites": season, "min_spread": se.MIN_SPREAD, "right_within": se.RIGHT_WITHIN, "so_so_within": se.SO_SO_WITHIN, "bad_share_wrong": se.BAD_SHARE_WRONG},
+                                                separators=(",", ":")), encoding="utf8")
+    (OUT / "blueprints.json").write_bytes((ROOT / "models" / "blueprints.json").read_bytes())
     # golden cases for the Dart tests
     cases = []
     for site in ("gharbia", "beheira", "kafr_el_sheikh", "dakahlia"):
@@ -102,7 +120,8 @@ def main():
                           "expected": [{"etc": r["water"]["etc_mm_median"], "ratio": r["water"]["ratio_to_existing"], "heat_median": r["wheat_heat"]["heat_days_median_at_32c"],
                                         "extra32": r["wheat_heat"]["extra_heat_days_vs_15_nov"][32.0], "gap": r["days_between_harvest_and_wheat"], "harvest": r["summer_harvest_estimate"],
                                         "turn_mm": r["water"].get("turn_check", {}).get("mm_needed_per_turn_at_peak"),
-                                        "salt_summer": (r["salt"] or {}).get("summer", {}).get("status"), "salt_wheat": (r["salt"] or {}).get("wheat", {}).get("status")} for r in res["rotations"]]})
+                                        "salt_summer": (r["salt"] or {}).get("summer", {}).get("status"), "salt_wheat": (r["salt"] or {}).get("wheat", {}).get("status")} for r in res["rotations"]],
+                          "advice": _advice_ids(res, stemps[site], sparams)})
     (FIX / "rotation_cases.json").write_text(json.dumps(cases, indent=1), encoding="utf8")
     sizes = {n: (OUT / f"{n}.json").stat().st_size for n in ("heat", "water", "salt", "meta", "climate")}
     print("wrote", sizes, "and", len(cases), "golden cases")

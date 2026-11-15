@@ -1,0 +1,18 @@
+crop,ecocrop_name,tmin,topmn,topmx,tmax,ktmp,gmin,gmax
+wheat,Triticum aestivum,5,15,23,27,0,90,250
+rice,Oryza sativa,10,20,30,36,NA,80,180
+maize,Zea mays,10,18,33,47,NA,65,365
+cotton,Gossypium barbadense,15,22,32,38,NA,180,210
+berseem,Trifolium alexandrinum,3,16,27,35,-2,90,270
+sugar_beet,Beta vulgaris,4,15,25,35,0,160,240
+faba_bean,Vicia faba,5,18,28,32,NA,100,150
+potato,Solanum tuberosum,7,15,25,30,0,90,160
+tomato,Lycopersicon esculentum,7,20,27,35,NA,70,150
+onion,Allium cepa,4,12,25,30,NA,85,175
+orange,Citrus sinensis,13,20,30,38,0,180,365
+grape,Vitis vinifera,10,18,30,38,-3,160,270
+date_palm,Phoenix dactylifera,10,26,45,52,-4,365,365
+barley,Hordeum vulgare,2,15,20,40,0,90,240
+sorghum,Sorghum bicolor,8,22,35,40,NA,90,300
+# Cotton is Gossypium barbadense (Egyptian long-staple), not the generic upland G. hirsutum. Sugar beet is the generic Beta vulgaris row (the sugar-beet variety row has an implausible 60-140 day cycle); the season engine does not judge it anyway.
+# Source: FAO EcoCrop database (copy from the OpenCLIM/ecocrop GitHub repository, read 2026-11-15). Temperatures in C, cycle in days. Generic global values, not Egypt-specific; data licence unconfirmed, see data/catalog.yaml (fao_ecocrop).

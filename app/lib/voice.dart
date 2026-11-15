@@ -2,11 +2,33 @@
 // Egyptian Arabic is requested first (ar-EG), then any Arabic. Whether the phone has an Arabic
 // voice, and whether recognition needs internet, depends on the device and is unconfirmed:
 // the app keeps working with typing and tap-to-answer chips if either is missing.
+import 'dart:convert';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+/// Pre-generated Egyptian-voice clips of Eyad's fixed lines (assets/audio, made by scripts/hamsa_tts.py with the Hamsa voice Ibrahim; AI-generated, disclosed in
+/// docs/ai-disclosure.md). A line with a clip is played; every other line falls back to the phone's own voice.
+class Clips {
+  static Map<String, String>? _idx;
+  static Future<String?> lookup(String text) async {
+    if (_idx == null) {
+      try {
+        final j = jsonDecode(await rootBundle.loadString('assets/audio/index.json')) as Map<String, dynamic>;
+        _idx = j.map((k, v) => MapEntry(k, v as String));
+      } catch (_) {
+        _idx = {};
+      }
+    }
+    return _idx![text.trim()];
+  }
+}
+
 class Voice {
+  final AudioPlayer _player = AudioPlayer();
   final SpeechToText _stt = SpeechToText();
   final FlutterTts _tts = FlutterTts();
   bool sttReady = false, ttsReady = false, listening = false;
@@ -117,7 +139,21 @@ class Voice {
   }
 
   Future<void> speak(String text) async {
-    if (!ttsReady || muted) return;
+    if (muted) return;
+    final clip = await Clips.lookup(text);
+    if (clip != null) {
+      try {
+        await _player.stop();
+        if (ttsReady) await _tts.stop();
+        speaking.value = true;
+        _player.onPlayerComplete.first.then((_) => speaking.value = false);
+        await _player.play(AssetSource('audio/$clip'));
+        return;
+      } catch (_) {
+        speaking.value = false; // the clip could not be played: use the phone's voice below
+      }
+    }
+    if (!ttsReady) return;
     await _tts.stop();
     speaking.value = true;
     try {
@@ -129,6 +165,9 @@ class Voice {
 
   Future<void> stopSpeaking() async {
     speaking.value = false;
+    try {
+      await _player.stop();
+    } catch (_) {}
     if (ttsReady) await _tts.stop();
   }
 }

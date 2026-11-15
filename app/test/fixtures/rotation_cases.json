@@ -72,7 +72,14 @@
     "salt_summer": null,
     "salt_wheat": null
    }
-  ]
+  ],
+  "advice": {
+   "primary": "wheat_late",
+   "closeness": 50,
+   "also": [
+    "water_heavy"
+   ]
+  }
  },
  {
   "site": "gharbia",
@@ -147,7 +154,14 @@
     "salt_summer": "fine",
     "salt_wheat": "fine"
    }
-  ]
+  ],
+  "advice": {
+   "primary": "combo_late_salt",
+   "closeness": 67,
+   "also": [
+    "salt_not_advised_alt"
+   ]
+  }
  },
  {
   "site": "gharbia",
@@ -222,7 +236,14 @@
     "salt_summer": "reduced",
     "salt_wheat": "not advised"
    }
-  ]
+  ],
+  "advice": {
+   "primary": "combo_late_salt",
+   "closeness": 67,
+   "also": [
+    "water_heavy"
+   ]
+  }
  },
  {
   "site": "beheira",
@@ -297,7 +318,14 @@
     "salt_summer": null,
     "salt_wheat": null
    }
-  ]
+  ],
+  "advice": {
+   "primary": "water_heavy",
+   "closeness": 67,
+   "also": [
+    "no_salt_info"
+   ]
+  }
  },
  {
   "site": "beheira",
@@ -372,7 +400,12 @@
     "salt_summer": "fine",
     "salt_wheat": "fine"
    }
-  ]
+  ],
+  "advice": {
+   "primary": "salt_not_advised_alt",
+   "closeness": 100,
+   "also": []
+  }
  },
  {
   "site": "beheira",
@@ -447,7 +480,14 @@
     "salt_summer": "reduced",
     "salt_wheat": "not advised"
    }
-  ]
+  ],
+  "advice": {
+   "primary": "salt_not_advised",
+   "closeness": 100,
+   "also": [
+    "water_heavy"
+   ]
+  }
  },
  {
   "site": "kafr_el_sheikh",
@@ -522,7 +562,14 @@
     "salt_summer": null,
     "salt_wheat": null
    }
-  ]
+  ],
+  "advice": {
+   "primary": "wheat_late",
+   "closeness": 50,
+   "also": [
+    "water_heavy"
+   ]
+  }
  },
  {
   "site": "kafr_el_sheikh",
@@ -597,7 +644,14 @@
     "salt_summer": "fine",
     "salt_wheat": "fine"
    }
-  ]
+  ],
+  "advice": {
+   "primary": "combo_late_salt",
+   "closeness": 67,
+   "also": [
+    "salt_not_advised_alt"
+   ]
+  }
  },
  {
   "site": "kafr_el_sheikh",
@@ -672,7 +726,14 @@
     "salt_summer": "reduced",
     "salt_wheat": "not advised"
    }
-  ]
+  ],
+  "advice": {
+   "primary": "combo_late_salt",
+   "closeness": 67,
+   "also": [
+    "water_heavy"
+   ]
+  }
  },
  {
   "site": "dakahlia",
@@ -747,7 +808,14 @@
     "salt_summer": null,
     "salt_wheat": null
    }
-  ]
+  ],
+  "advice": {
+   "primary": "wheat_late",
+   "closeness": 50,
+   "also": [
+    "water_heavy"
+   ]
+  }
  },
  {
   "site": "dakahlia",
@@ -822,7 +890,14 @@
     "salt_summer": "fine",
     "salt_wheat": "fine"
    }
-  ]
+  ],
+  "advice": {
+   "primary": "combo_late_salt",
+   "closeness": 67,
+   "also": [
+    "salt_not_advised_alt"
+   ]
+  }
  },
  {
   "site": "dakahlia",
@@ -897,6 +972,13 @@
     "salt_summer": "reduced",
     "salt_wheat": "not advised"
    }
-  ]
+  ],
+  "advice": {
+   "primary": "combo_late_salt",
+   "closeness": 67,
+   "also": [
+    "water_heavy"
+   ]
+  }
  }
 ]

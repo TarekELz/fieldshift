@@ -40,3 +40,6 @@ docs/text_review_answers/
 
 # wording votes (names and opinions)
 docs/text_vote_answers/
+
+# build-time API keys for the app (never commit)
+app/assets/secrets/secrets.json

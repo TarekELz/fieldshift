@@ -24,7 +24,8 @@ def sides():
 
 # Texts reworded on purpose AFTER the review page (docs/text_review/index.html) was sent to friends. texts.json stays frozen so
 # their answers still match by id; these items therefore no longer appear in the source in their old form.
-REWORDED_AFTER_SENDING = {63, 81, 131}
+# #36 is the "Understood:" label that was removed from the question screen (the dialogue's own note already says it).
+REWORDED_AFTER_SENDING = {36, 63, 81, 131}
 
 
 @pytest.mark.parametrize("id_,lang,side", list(sides()))

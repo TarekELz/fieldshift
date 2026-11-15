@@ -6,6 +6,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'advice_card.dart';
 import 'engine.dart';
 import 'eyad.dart';
 import 'i18n.dart';
@@ -25,11 +26,12 @@ const _sitePixel = <String, Offset>{
 
 
 class ResultView extends StatefulWidget {
-  const ResultView({super.key, required this.c, required this.data, required this.mood, required this.onRestart, required this.onReadAloud});
+  const ResultView({super.key, required this.c, required this.data, required this.mood, required this.onRestart, required this.onReadAloud, this.onSpeak});
   final Comparison c;
   final EngineData data;
   final EyadMood mood;
   final VoidCallback onRestart, onReadAloud;
+  final void Function(String text)? onSpeak;
   @override
   State<ResultView> createState() => _ResultViewState();
 }
@@ -47,6 +49,8 @@ class _ResultViewState extends State<ResultView> {
     final cav = caveatN(c);
     return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 28), children: [
       _headline(),
+      const SizedBox(height: 14),
+      AdviceCard(c: c, onSpeak: widget.onSpeak),
       const SizedBox(height: 14),
       _heroArt(r),
       if (cav != null) _notice(cav, c.caveatKind == 'sea' ? Fs.warning : Fs.accent),
@@ -127,12 +131,26 @@ class _ResultViewState extends State<ResultView> {
               final bubbles = <_BubbleSpec>[
                 _BubbleSpec(Icons.thermostat_rounded, Fs.heat, '${nd(r.heatMedian.round())} ${tr('يوم', 'days')}', const Offset(0.15, 0.27)),
                 _BubbleSpec(Icons.water_drop_rounded, Fs.water, '${nn(r.ratio, dec: 2)}×', const Offset(0.85, 0.27)),
-                _BubbleSpec(Icons.grain_rounded, s == null ? Fs.dim : Fs.status(s.status), s == null ? '—' : saltN(s.status), const Offset(0.5, 0.76)),
+                _BubbleSpec(Icons.grain_rounded, s == null ? Fs.dim : Fs.status(s.status), s == null ? '—' : saltN(s.status), const Offset(0.5, 0.80)),
               ];
               // a bubble that would sit on top of the pin (Menoufia's pin is under the salt bubble) moves sideways
+              // the salt verdict stays on the bottom row: it takes the first of centre, left, right that is clear of the pin
+              Offset saltAt(Offset want) {
+                for (final dx in const [0.5, 0.2, 0.8]) {
+                  final o = Offset(dx, want.dy);
+                  if ((pin - Offset(o.dx * w, o.dy * h)).distance >= 62) return o;
+                }
+                return want;
+              }
+
               final placed = [
                 for (final b in bubbles)
-                  ((pin - Offset(b.at.dx * w, b.at.dy * h)).distance < 70) ? _BubbleSpec(b.icon, b.color, b.text, Offset(b.at.dx + (pin.dx < w / 2 ? 0.3 : -0.3), b.at.dy)) : b
+                  if (b.icon == Icons.grain_rounded)
+                    _BubbleSpec(b.icon, b.color, b.text, saltAt(b.at))
+                  else if ((pin - Offset(b.at.dx * w, b.at.dy * h)).distance < 70)
+                    _BubbleSpec(b.icon, b.color, b.text, Offset(b.at.dx + (pin.dx < w / 2 ? 0.3 : -0.3), b.at.dy))
+                  else
+                    b
               ];
               return Stack(children: [
                 Positioned.fill(child: Image.asset('assets/img/delta_winter.jpg', fit: BoxFit.cover)),
