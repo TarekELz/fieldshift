@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Rice in a flooded paddy"><title>Rice</title>
+<defs><linearGradient id="r-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe9f2"/><stop offset="1" stop-color="#eaf5e4"/></linearGradient></defs>
+<rect width="160" height="120" rx="14" fill="url(#r-sky)"/>
+<circle cx="130" cy="26" r="13" fill="#ffe08a"/>
+<rect y="84" width="160" height="36" fill="#6fb7c9"/><path d="M0 92h160M0 104h160" stroke="#a6dbe6" stroke-width="2" opacity=".7"/>
+<g stroke="#3f8f3a" stroke-width="3" stroke-linecap="round" fill="none"><path d="M40 98V50"/><path d="M62 98V38"/><path d="M84 98V46"/><path d="M106 98V34"/><path d="M126 98V52"/></g>
+<g fill="none" stroke="#3f8f3a" stroke-width="2.5" stroke-linecap="round"><path d="M40 62q-14-6-18-18M62 50q-16-4-22-16M84 58q14-6 20-18M106 46q14-4 18-16M126 64q12-6 16-18"/></g>
+<g fill="#e8c24a" stroke="#b8902a" stroke-width="1"><ellipse cx="38" cy="46" rx="3" ry="6" transform="rotate(-20 38 46)"/><ellipse cx="44" cy="52" rx="3" ry="6" transform="rotate(10 44 52)"/><ellipse cx="60" cy="34" rx="3" ry="6" transform="rotate(-20 60 34)"/><ellipse cx="67" cy="42" rx="3" ry="6" transform="rotate(15 67 42)"/><ellipse cx="86" cy="42" rx="3" ry="6" transform="rotate(-15 86 42)"/><ellipse cx="92" cy="50" rx="3" ry="6" transform="rotate(15 92 50)"/><ellipse cx="104" cy="30" rx="3" ry="6" transform="rotate(-20 104 30)"/><ellipse cx="111" cy="38" rx="3" ry="6" transform="rotate(15 111 38)"/><ellipse cx="124" cy="48" rx="3" ry="6" transform="rotate(-15 124 48)"/><ellipse cx="130" cy="56" rx="3" ry="6" transform="rotate(15 130 56)"/></g>
+<path d="M0 100q20-6 40 0t40 0 40 0 40 0" stroke="#fff" stroke-width="2" fill="none" opacity=".6"/></svg>

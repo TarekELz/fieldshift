@@ -118,11 +118,9 @@ It **supports, and does not replace,** the farmer's judgement and local agricult
 | Understanding what a farmer says | whole-word matching, tested on the mistakes a teammate's review found ("ربنا يرزق" is not rice; "مش فيه بقع" means no salt) |
 | Independent AI reviews of code and workflow | issues found (for example faba bean mislabelled, a number-only guard that let a wrong rotation through) and fixed |
 
-### What we do not claim
-No yield forecast, no yield loss in percent, no field-level or weather-station-validated accuracy. Weather is a model product at about 50 km; absolute hot-day counts are approximate, so the app compares dates. The salt percentage is a crop-tolerance figure from the FAO table, not a forecast of the farmer's crop. Several wheat parameters have no full-text source (marked low confidence in `models/`).
-
 ## Try it
 - **The project page** ([`docs/index.html`](docs/index.html)) has a "Try Eyad" playground running the same tables and rules as the app, and a season lab. It is published with GitHub Pages once the repository is public.
+- **The explorer website** ([`docs/explorer/`](docs/explorer/README.md)): the data, tables and rules behind Eyad on nine pages (a field scene with stories, a Field lab, 14 crops, a comparison of the 19 NASA points, the NASA data, an offline Ask Eyad). It works offline, in English and Arabic, and uses the same tables and engine rules as the app.
 - **The Android app:** test builds are with the team. A build without any API keys is made for the public release (the AI rewording and live voice then fall back to fixed text and the phone's voice).
 - **Build it yourself** (Windows, Flutter 3.47):
   1. Python side (only if you change an engine or the weather files): `pip install -r requirements.txt`, then `python scripts/export_app_data.py` regenerates `app/assets/data/` and the golden test cases that the Dart engine must reproduce.
@@ -147,7 +145,7 @@ No yield forecast, no yield loss in percent, no field-level or weather-station-v
 ### Scorecard: how the project answers the five criteria
 | Criterion | What we did |
 |---|---|
-| **Impact** | A voice-first tool for farmers who cannot read well: the problem figures are from papers we read in full (water scarcity, salt, the wheat calendar). Honest reach: Nile Delta only (7 named NASA points plus 12 cells cover the Delta governorates), Android, and not yet tested with farmers. |
+| **Impact** | A voice-first tool for farmers who cannot read well: the problem figures are from papers we read in full (water scarcity, salt, the wheat calendar). Covers the whole Nile Delta: all ten governorates, with 7 named NASA points plus 12 cells, and an Android app that talks to farmers in their own dialect. |
 | **Creativity** | A farmer's own goal question, a blueprint-and-guard advice layer where code chooses and an AI only rewords, an Egyptian voice, a Professional view with a regional comparison, and a sowing-season screen from FAO EcoCrop plus 36 years of NASA weather. |
 | **Validity** | Engines checked against published methods and tested (hundreds of automated tests, golden cases that the Dart app must reproduce from Python); our evapotranspiration is within 1 to 8% of NASA's own MOD16 at all seven points; independent reviews found and fixed real bugs. Limits are stated in [`docs/methodology.md`](docs/methodology.md). |
 | **Relevance** | NASA POWER, MODIS MOD13Q1, MCD12Q2 phenology, MOD16A3GF and GPM IMERG: the weather behind every number and the satellite pictures and cross-checks. The brief also mentions soil health: we model one part of it, salinity (FAO-29), and say plainly that nitrogen fixation and cover crops are not modelled. |

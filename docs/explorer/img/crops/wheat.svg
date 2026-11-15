@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Wheat ears"><title>Wheat</title>
+<defs><linearGradient id="w-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3f0f7"/><stop offset="1" stop-color="#f6ecc8"/></linearGradient></defs>
+<rect width="160" height="120" rx="14" fill="url(#w-bg)"/>
+<path d="M0 102h160v18H0z" fill="#b98a4e"/>
+<g stroke="#b88a22" stroke-width="3" stroke-linecap="round" fill="none"><path d="M50 108V50"/><path d="M80 108V32"/><path d="M110 108V50"/></g>
+<g fill="#e3b83a" stroke="#b88a22" stroke-width="1.2">
+<g id="ear"><ellipse cx="80" cy="40" rx="5" ry="8"/><ellipse cx="71" cy="46" rx="5" ry="8" transform="rotate(-25 71 46)"/><ellipse cx="89" cy="46" rx="5" ry="8" transform="rotate(25 89 46)"/><ellipse cx="71" cy="58" rx="5" ry="8" transform="rotate(-25 71 58)"/><ellipse cx="89" cy="58" rx="5" ry="8" transform="rotate(25 89 58)"/><ellipse cx="80" cy="30" rx="4" ry="7"/></g>
+<use href="#ear" x="-30" y="18"/><use href="#ear" x="30" y="18"/></g>
+<g stroke="#b88a22" stroke-width="1" fill="none"><path d="M80 24v-12M74 26l-6-12M86 26l6-12M50 42v-10M110 42v-10M44 44l-6-10M56 44l6-10M104 44l-6-10M116 44l6-10"/></g>
+<path d="M50 90q-14-4-20-16M110 90q14-4 20-16" stroke="#7aa84a" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
