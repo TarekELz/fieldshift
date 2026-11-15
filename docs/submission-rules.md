@@ -10,7 +10,7 @@ Everything below is CONFIRMED from those pages unless marked UNVERIFIED. The sit
 ## Deadline
 - Submission opens Saturday Nov 14, 9:00 a.m. and closes **Sunday Nov 15, 11:59 p.m., in the time zone of the team's Local Event** (Universal Event: Team Owner's local time).
 - "Any projects saved or submitted past this deadline will not be eligible for judging." Edits and resubmits are allowed until then; only the last saved submission is judged.
-- UNVERIFIED: which Local Event our team is registered for, and whether that Local Lead sets an earlier local judging or pitch time. The guide says to check with the Local Lead.
+- The team is registered at the **Mansoura Local Event** (Tarek, 2026-11-15), so the deadline is 11:59 PM Egypt time (UTC+2) tonight. STILL UNVERIFIED: whether the Mansoura Local Lead sets an earlier local judging or pitch time; ask the Local Lead.
 - "Teams are not allowed to begin working on the challenges prior to the hackathon." (FAQ)
 
 ## Required fields on the Project page

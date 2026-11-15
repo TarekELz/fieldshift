@@ -59,6 +59,9 @@ Other data: ESA WorldCover 2021 (not NASA) to confirm the points are farmland; a
 
 Raw data (`data/raw/`), paper PDFs (`literature/pdfs/`) and `.env` are not in the repo.
 
+## License
+MIT (see [`LICENSE`](LICENSE)) for the code and the team's documents. Data and fonts keep their own licences, listed at the end of the license file.
+
 ## Working rules
 - Read [`AGENTS.md`](AGENTS.md). In short: no secrets in git (use `.env`, copy from [`.env.example`](.env.example)); never invent data or citations; `main` must always run; work on short branches and merge by pull request.
 - Decisions that change the problem, scope, region, data, method or claims go through Tarek and are logged in `docs/decisions.md`.

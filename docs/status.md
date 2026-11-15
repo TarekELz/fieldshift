@@ -2,7 +2,7 @@
 
 AUDIT 2026-11-14 ~19:00: team-downloaded NASA data added: IMERG daily rain (Delta area mean 2015-2025), MODIS NDVI area statistics for the Delta box (rasters still to come from Hussain), SRTM 30 m tiles for the whole Delta. First push to GitHub on Tarek's instruction: merged so main shows only our files; Youssef Nada's and Hussain's earlier commits stay in the history (also backed up locally as branch backup/youssef-remote).
 
-**Current step: building the Flutter app (Step 7). Updated 2026-11-15 ~08:10.** Deadline Sunday 15 Nov 23:59, Local Event time (still UNVERIFIED which event; Tarek to confirm).
+**Current step: building the Flutter app (Step 7). Updated 2026-11-15 ~08:10.** Deadline Sunday 15 Nov 23:59 Egypt time (Mansoura Local Event, confirmed by Tarek; whether the Local Lead sets an earlier cutoff is still to ask).
 
 Done: problem and region (D1, D5), grounded engines (D2), voice kept (D3), methods (D7, after two independent reviews). Built and tested (43 tests): wheat calendar, water (FAO-56), salt (FAO paper 29), rotation comparison. NASA POWER 1990-2025 for six Delta points; IMERG and MODIS statistics for the Delta; SRTM tiles; MODIS rasters downloading (about 70 of 254 dates, slow).
 
@@ -111,3 +111,5 @@ Left for Tarek: README rewrite and LICENSE choice; AI-use disclosure; whether th
 ## 2026-11-15 update: voice-first mode and two input checks
 - Voice-first (offline): one spoken or typed sentence can now give several answers (place, crop, both sowing dates, canal interval, salt signs); Eyad keeps them and asks only for what is missing, and gives the comparison straight away when everything is there. It reuses the existing parsers (no model, no key, no internet needed for the understanding step); a language model could replace it later without touching the engines. Tested on Arabic and English sentences in tests (app/test/voice_first_test.dart); NOT tested with real farmers' speech or on a phone. The first question now invites the farmer to tell about the field in his own words.
 - Input checks with new data (no token needed): NASA MOD16A3GF yearly potential ET agrees with the engine's yearly ET0 within 1 to 8% at all seven points (a consistency check, not station validation); ESA WorldCover (not NASA) shows 73 to 91% cropland near six points and 50% at Damietta. NASA datasets held: POWER, MODIS MOD13Q1, IMERG, SRTM, MOD16A3GF (five; two feed what the farmer sees: POWER numbers and the MODIS pictures).
+- Decisions 2026-11-15 (D13): MIT licence added; the welcome text keeps "AI assistant"; the team is at the Mansoura Local Event; the old local branch backup/pre-history-rewrite was deleted (it held the purged prompt file; that file is in nothing that was pushed).
+- Clock lesson: times in earlier notes of this day that say 12:30 to 14:45 were wrong; the machine is on Egypt Standard Time and read 11:47 at the time of the voice-first commit. Read the clock, do not add hours.
