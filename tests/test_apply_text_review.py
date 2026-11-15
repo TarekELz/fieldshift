@@ -24,12 +24,15 @@ def sides():
 
 # Texts reworded on purpose AFTER the review page (docs/text_review/index.html) was sent to friends. texts.json stays frozen so
 # their answers still match by id; these items therefore no longer appear in the source in their old form.
+# Reworded on purpose after Tarek's one-question-at-a-time Arabic review (2026-11-15): دورتك -> اللي بتزرعه دلوقتي, the goal question.
 # #36 is the "Understood:" label that was removed from the question screen (the dialogue's own note already says it).
-REWORDED_AFTER_SENDING = {36, 63, 81, 131}
+REWORDED_AFTER_SENDING = {8, 12, 36, 63, 81, 117, 118, 119, 120, 131, 133}
 
 
 @pytest.mark.parametrize("id_,lang,side", list(sides()))
 def test_round_trip_unchanged(id_, lang, side):
+    if side["file"] not in SOURCES:
+        pytest.skip("that screen was replaced (result_view.dart -> result_pages.dart); the frozen review list refers to the old screen")
     text = SOURCES[side["file"]]
     quotes = [q for q in ("'", '"') if q + side["raw"] + q in text]
     if not quotes and id_ in REWORDED_AFTER_SENDING:

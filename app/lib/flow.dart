@@ -5,17 +5,18 @@ import 'package:flutter/material.dart' hide Step;
 
 import 'dialogue.dart';
 import 'goals.dart';
+import 'result_pages.dart';
+import 'terms.dart';
 import 'interpret.dart';
 import 'engine.dart';
 import 'eyad.dart';
 import 'i18n.dart';
 import 'map_picker.dart';
-import 'result_view.dart';
 import 'ui_kit.dart';
 import 'voice.dart';
 
 /// Test builds show which voice each line used (and why the phone voice was used) under Eyad's name. Set to false for the final build.
-const kVoiceDiagnostics = true;
+const kVoiceDiagnostics = false;
 
 class FlowScreen extends StatefulWidget {
   const FlowScreen({super.key, required this.onHome, this.speakReplies = true, this.demo = false});
@@ -86,7 +87,7 @@ class _FlowScreenState extends State<FlowScreen> {
       await voice.setLanguage(isAr);
       current = dialogue!.opening();
       if (widget.demo) {
-        for (final a in ['gharbia', 'rice', '06-15', '12-01', '10', 'patches']) {
+        for (final a in ['gharbia', 'improve', 'rice', '06-15', '12-01', '10', 'patches']) {
           current = dialogue!.handle(a).last;
         }
       }
@@ -221,15 +222,15 @@ class _FlowScreenState extends State<FlowScreen> {
           const LangPill(),
           const SizedBox(width: 8),
           const ThemeButton(),
+          const SizedBox(width: 8),
+          RoundButton(icon: Icons.info_outline_rounded, onTap: () => showTerms(context), tooltip: tr('الشروط والأحكام', 'Terms')),
           const Spacer(),
           RoundButton(icon: Icons.refresh_rounded, onTap: _restart, tooltip: tr('ابدأ من جديد', 'Start again')),
         ]),
       );
 
-  Widget _result() => ResultView(
+  Widget _result() => ResultPager(
         c: current!.result!,
-        data: dialogue!.data,
-        mood: _mood,
         onRestart: _restart,
         onReadAloud: _readAgain,
         onSpeak: (s) => voice.speak(s),
@@ -267,22 +268,6 @@ class _FlowScreenState extends State<FlowScreen> {
           valueListenable: voice.status,
           builder: (context, s, _) => s.isEmpty ? const SizedBox.shrink() : Padding(padding: const EdgeInsets.only(top: 2, left: 16, right: 16), child: Text(s, textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: Fs.dim))),
         ),
-      ValueListenableBuilder<bool>(
-        valueListenable: voice.aiVoice,
-        builder: (context, ai, _) => AnimatedSize(
-          duration: const Duration(milliseconds: 200),
-          child: ai
-              ? Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                    decoration: BoxDecoration(color: Fs.card2, borderRadius: BorderRadius.circular(12)),
-                    child: Text(tr('صوت مولَّد بالذكاء الاصطناعي', 'AI-generated voice'), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Fs.dim)),
-                  ),
-                )
-              : const SizedBox.shrink(),
-        ),
-      ),
       const SizedBox(height: 8),
       _bubble(msgText(m), compact),
       if (note != null) Padding(padding: const EdgeInsets.fromLTRB(28, 6, 28, 0), child: Text(msgText(note!), textAlign: TextAlign.center, style: TextStyle(fontSize: 13, height: 1.4, color: Fs.dim))),

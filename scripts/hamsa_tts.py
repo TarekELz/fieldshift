@@ -73,6 +73,8 @@ def generate(text, ks, wait_s=90):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--test", action="store_true")
+    ap.add_argument("--redo", action="store_true", help="regenerate every clip (for example after tashkeel changed)")
+    ap.add_argument("--prune", action="store_true", help="delete clips for lines that no longer exist")
     a = ap.parse_args()
     ks = keys()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -83,14 +85,21 @@ def main():
         print("ok", len(data), "bytes", ext, "cost reported:", cost)
         return 0
     lines = json.loads((ROOT / "scripts" / "spoken_lines.json").read_text(encoding="utf8"))
+    # the voice reads the voweled text (scripts/add_tashkeel.py, hand edits win) while the app looks the clip up by the plain text
+    vowels = {}
+    for name in ("spoken_tashkeel.json", "spoken_tashkeel_manual.json"):
+        f = ROOT / "scripts" / name
+        if f.exists():
+            vowels.update(json.loads(f.read_text(encoding="utf8")))
+    redo = a.redo
     idx_path = OUT / "index.json"
     idx = json.loads(idx_path.read_text(encoding="utf8")) if idx_path.exists() else {}
     bad = 0
     for text in lines:
-        if text in idx and (OUT / idx[text]).exists():
+        if text in idx and (OUT / idx[text]).exists() and not redo:
             continue
         try:
-            data, url, cost = generate(text, ks)
+            data, url, cost = generate(vowels.get(text, text), ks)
         except RuntimeError as e:
             print("FAILED", text[:40], e)
             bad += 1
@@ -101,6 +110,16 @@ def main():
         idx[text] = name
         idx_path.write_text(json.dumps(idx, ensure_ascii=False, indent=1), encoding="utf8")
         print("ok", name, len(data), "bytes, cost", cost, "|", text[:40], flush=True)
+    if a.prune:  # drop clips and index entries for lines that no longer exist
+        keep = set(lines)
+        for text in [k for k in idx if k not in keep]:
+            (OUT / idx.pop(text)).unlink(missing_ok=True)
+        idx_path.write_text(json.dumps(idx, ensure_ascii=False, indent=1), encoding="utf8")
+        used = set(idx.values()) | {"index.json"}
+        for f in OUT.glob("*"):
+            if f.name not in used:
+                f.unlink()
+        print("pruned; clips now:", len(idx))
     return 1 if bad else 0
 
 

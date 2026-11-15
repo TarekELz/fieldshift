@@ -18,6 +18,26 @@ final Listenable lookChanged = Listenable.merge([lang, darkMode]);
 
 String tr(String ar, String en) => isAr ? ar : en;
 
+const _egDays = {1: 'يوم', 2: 'يومين', 3: 'تلات أيام', 4: 'أربع أيام', 5: 'خمس أيام', 6: 'ست أيام', 7: 'سبع أيام', 8: 'تمان أيام', 9: 'تسع أيام', 10: 'عشر أيام',
+  11: 'حداشر يوم', 12: 'اتناشر يوم', 13: 'تلتاشر يوم', 14: 'أربعتاشر يوم', 15: 'خمستاشر يوم', 16: 'ستاشر يوم', 17: 'سبعتاشر يوم', 18: 'تمنتاشر يوم', 19: 'تسعتاشر يوم', 20: 'عشرين يوم'};
+
+/// The day phrases, longest first (so "عشرين يوم" is found before "يوم").
+final List<String> egDayPhrases = (_egDays.values.toSet().toList()..sort((a, b) => b.length.compareTo(a.length)));
+
+/// A count of days as Egyptians say it in a sentence ("ست أيام"), for 1 to 20; digits with the right noun beyond that. English: "6 days".
+String daysN(int n) {
+  if (!isAr) return n == 1 ? '1 day' : '$n days';
+  return _egDays[n] ?? '${nd(n)} يوم';
+}
+
+/// The same as digits with the right Arabic noun, for big numbers on screen ("٦ أيام", "١٣ يوم").
+String daysDigitsN(int n) {
+  if (!isAr) return n == 1 ? '1 day' : '$n days';
+  if (n == 1) return 'يوم';
+  if (n == 2) return 'يومين';
+  return n <= 10 ? '${nd(n)} أيام' : '${nd(n)} يوم';
+}
+
 /// Digits in the current language.
 String nd(Object n) => isAr ? arDigits(n) : '$n';
 String nn(num v, {int dec = 0}) => isAr ? arNum(v, dec: dec) : v.toStringAsFixed(dec);

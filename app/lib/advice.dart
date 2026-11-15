@@ -154,6 +154,8 @@ String fillAdvice(Map<String, dynamic> blueprint, Map<String, dynamic> f) {
     'wheat_date': dateN(f['wheat_date'] as String),
     'gap': nd(f['gap']),
     'heat_extra': nd(f['heat_extra'] ?? 0),
+    'gap_days': daysN(f['gap'] as int),
+    'heat_extra_days': daysN((f['heat_extra'] ?? 0) as int),
     'alt_crop': f['alt_crop'] == null ? '' : cropN(f['alt_crop'] as String),
     'alt_pct': f['alt_pct'] == null ? '' : nd(f['alt_pct']),
     'summer_best': f['summer_best'] == null ? '' : dateN(f['summer_best'] as String),
@@ -189,6 +191,12 @@ String? guardAdvice(AdviceData a, String tailored, String filled, Map<String, dy
   if (have.difference(want).isNotEmpty) return 'new number';
   if (want.difference(have).isNotEmpty) return 'missing number';
   final lang = isAr ? 'ar' : 'en';
+  if (isAr) {
+    // day counts are words (ست أيام), so digits cannot protect them: each one in the filled text must survive
+    for (final ph in egDayPhrases) {
+      if (filled.contains(ph) && !t.contains(ph)) return 'missing day count';
+    }
+  }
   for (final w in (a.blueprints['forbidden_$lang'] as List).cast<String>()) {
     if (t.toLowerCase().contains(w)) return 'forbidden word';
   }

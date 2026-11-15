@@ -110,11 +110,22 @@ def _fmt_date(md, lang):
     return None if md is None else (f"{md[1]} {MONTH_AR[md[0] - 1]}".translate(TO_AR) if lang == "ar" else f"{md[1]} {MONTH_EN[md[0] - 1]}")
 
 
+EG_DAYS = {1: "يوم", 2: "يومين", 3: "تلات أيام", 4: "أربع أيام", 5: "خمس أيام", 6: "ست أيام", 7: "سبع أيام", 8: "تمان أيام", 9: "تسع أيام", 10: "عشر أيام", 11: "حداشر يوم",
+           12: "اتناشر يوم", 13: "تلتاشر يوم", 14: "أربعتاشر يوم", 15: "خمستاشر يوم", 16: "ستاشر يوم", 17: "سبعتاشر يوم", 18: "تمنتاشر يوم", 19: "تسعتاشر يوم", 20: "عشرين يوم"}
+
+
+def days(n, lang):
+    """A count of days as Egyptians say it in a sentence (ست أيام); English: 6 days."""
+    if lang != "ar":
+        return "1 day" if n == 1 else f"{n} days"
+    return EG_DAYS.get(n) or f"{str(n).translate(TO_AR)} يوم"
+
+
 def fill(blueprint, facts, lang="ar"):
     names = CROP_AR if lang == "ar" else CROP_EN
     num = (lambda n: str(n).translate(TO_AR)) if lang == "ar" else str
     slots = {"crop": names.get(facts["summer_crop"], facts["summer_crop"]), "summer_date": _fmt_date(facts["summer_date"], lang), "wheat_date": _fmt_date(facts["wheat_date"], lang),
-             "gap": num(facts["gap"]), "heat_extra": num(facts["heat_extra"]), "alt_crop": names.get(facts["alt_crop"], facts["alt_crop"] or ""),
+             "gap": num(facts["gap"]), "heat_extra": num(facts["heat_extra"]), "gap_days": days(facts["gap"], lang), "heat_extra_days": days(facts["heat_extra"], lang), "alt_crop": names.get(facts["alt_crop"], facts["alt_crop"] or ""),
              "alt_pct": num(facts["alt_pct"]) if facts["alt_pct"] is not None else "", "summer_best": _fmt_date(facts["summer_best"], lang) or "",
              "wheat_best": _fmt_date(facts["wheat_best"], lang) or ""}
     text = blueprint[lang]
@@ -142,6 +153,10 @@ def guard(tailored, filled, blueprint, bp_all, lang="ar"):
         return False, "new number: " + ",".join(sorted(set(have) - set(want)))
     if set(want) - set(have):
         return False, "missing number: " + ",".join(sorted(set(want) - set(have)))
+    # day counts are written as words (ست أيام), so digits cannot protect them: each day phrase of the filled text must survive
+    for ph in sorted(set(EG_DAYS.values()), key=len, reverse=True):
+        if lang == "ar" and ph in filled and ph not in t:
+            return False, "missing day count: " + ph
     for w in bp_all["forbidden_" + lang]:
         if w in t.lower():
             return False, "forbidden word: " + w

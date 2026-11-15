@@ -10,6 +10,8 @@
   var SALT_EN = { fine: 'Suitable', reduced: 'Reduced', 'not advised': 'Not suitable' };
   var SALT_AR = { fine: 'مناسب', reduced: 'أقل', 'not advised': 'مش مناسب' };
   var DEFAULT_SUMMER = { rice: '05-15', maize: '05-01', cotton: '04-01' }, ALT_WHEAT = '11-15';
+  var EG_DAYS = {1:'يوم',2:'يومين',3:'تلات أيام',4:'أربع أيام',5:'خمس أيام',6:'ست أيام',7:'سبع أيام',8:'تمان أيام',9:'تسع أيام',10:'عشر أيام',11:'حداشر يوم',12:'اتناشر يوم',13:'تلتاشر يوم',14:'أربعتاشر يوم',15:'خمستاشر يوم',16:'ستاشر يوم',17:'سبعتاشر يوم',18:'تمنتاشر يوم',19:'تسعتاشر يوم',20:'عشرين يوم'};
+  var daysW = function (n) { return lang === 'ar' ? (EG_DAYS[n] || (String(n).replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[d]; }) + ' يوم')) : (n === 1 ? '1 day' : n + ' days'); };
   var toAr = function (s) { return String(s).replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[d]; }); };
   var num = function (n) { return lang === 'ar' ? toAr(n) : String(n); };
   var dlab = function (k) { var p = k.split('-'); return lang === 'ar' ? toAr(+p[1]) + ' ' + MONTH_AR[p[0] - 1] : (+p[1]) + ' ' + MONTH_EN[p[0] - 1]; };
@@ -93,7 +95,7 @@
     return keep;
   }
   function fill(b, f) {
-    var slots = { crop: CROP[lang][f.summer_crop], summer_date: dlab(f.summer_date), wheat_date: dlab(f.wheat_date), gap: num(f.gap), heat_extra: num(f.heat_extra),
+    var slots = { crop: CROP[lang][f.summer_crop], summer_date: dlab(f.summer_date), wheat_date: dlab(f.wheat_date), gap: num(f.gap), heat_extra: num(f.heat_extra), gap_days: daysW(f.gap), heat_extra_days: daysW(f.heat_extra),
       alt_crop: f.alt_crop ? CROP[lang][f.alt_crop] : '', alt_pct: f.alt_pct != null ? num(f.alt_pct) : '', summer_best: f.summer_best ? dlab(f.summer_best) : '', wheat_best: f.wheat_best ? dlab(f.wheat_best) : '' };
     var t = b[lang];
     Object.keys(slots).forEach(function (k) { t = t.split('{' + k + '}').join(slots[k]); });
@@ -107,11 +109,11 @@
     var rows = compare(site, crop, sow, wheat, signs), f = facts(site, rows), sel = select(f), ex = rows[0];
     var box = $('t_advice'); box.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
     box.innerHTML = '<div style="font-size:18px;line-height:1.6">' + fill(sel[0].b, f) + '</div>' + sel.slice(1).map(function (s) { return '<div style="margin-top:10px;color:var(--dim)">' + fill(s.b, f) + '</div>'; }).join('') +
-      '<div class="note" style="margin-top:12px">' + (lang === 'ar' ? 'مبنية على أرقام ناسا · تشابه مع حالة نموذجية ' + num(sel[0].closeness) + '٪' : 'Built from the NASA numbers · match with a typical case ' + sel[0].closeness + '%') + ' · ' + sel[0].id + '</div>';
+      '';
     var alts = rows.slice(1).map(function (r) { return CROP[lang][r.crop] + ' ×' + (lang === 'ar' ? toAr(r.ratio.toFixed(2)) : r.ratio.toFixed(2)); }).join(' · ');
     var saltTxt = ex.saltS ? ((lang === 'ar' ? SALT_AR : SALT_EN)[ex.saltS.status] + (ex.saltS.pct != null ? ' (' + num(ex.saltS.pct) + '%)' : '')) : (lang === 'ar' ? 'مفيش معلومة' : 'Not given');
     $('t_tiles').innerHTML =
-      '<div class="stat"><span>' + (lang === 'ar' ? 'احتياج المية (مقارنة بدورتك)' : 'Crop water need vs your rotation') + '</span><b style="font-size:20px;margin-top:6px">' + (lang === 'ar' ? 'بدائل: ' : 'Alternatives: ') + alts + '</b></div>' +
+      '<div class="stat"><span>' + (lang === 'ar' ? 'احتياج المية (مقارنة باللي بتزرعه دلوقتي)' : 'Crop water need vs your rotation') + '</span><b style="font-size:20px;margin-top:6px">' + (lang === 'ar' ? 'بدائل: ' : 'Alternatives: ') + alts + '</b></div>' +
       '<div class="stat"><span>' + (lang === 'ar' ? 'أيام حر وقت امتلاء حبوب القمح' : 'Hot days in wheat grain filling') + '</span><b>' + num(ex.heat) + '</b><span>' + (lang === 'ar' ? '+' + num(ex.extra32) + ' عن زراعته ١٥ نوفمبر' : '+' + ex.extra32 + ' vs sowing on 15 Nov') + '</span></div>' +
       '<div class="stat"><span>' + (lang === 'ar' ? 'الملوحة (' + CROP.ar[crop] + ')' : 'Salt (' + crop + ')') + '</span><b style="font-size:22px;margin-top:6px">' + saltTxt + '</b></div>' +
       '<div class="stat"><span>' + (lang === 'ar' ? 'مواعيد الزراعة' : 'Sowing dates') + '</span><div style="margin-top:8px">' + pill(f.summer_label) + ' ' + pill(f.wheat_label) + '</div><span style="display:block;margin-top:6px">' + (lang === 'ar' ? CROP.ar[crop] + ' · القمح' : crop + ' · wheat') + '</span></div>';
@@ -132,13 +134,29 @@
     Array.prototype.forEach.call($('t_salt').options, function (o) { o.textContent = opts[o.value]; });
     Array.prototype.forEach.call($('t_crop').options, function (o) { o.textContent = CROP[lang][o.value]; });
     $('t_lang').textContent = ar ? 'English' : 'عربي';
-    fillSelects(); render();
+    fillSelects(); render(); presetButtons();
+  }
+  var PRESETS = [
+    { en: 'Rice on salty patches (Gharbia)', ar: 'رز على بقع ملح (الغربية)', site: 'gharbia', crop: 'rice', sow: '06-15', wheat: '12-01', salt: 'patches' },
+    { en: 'Late wheat in January (Kafr El-Sheikh)', ar: 'قمح متأخر في يناير (كفر الشيخ)', site: 'kafr_el_sheikh', crop: 'rice', sow: '06-15', wheat: '01-10', salt: 'unknown' },
+    { en: 'Maize in May, clean soil (Beheira)', ar: 'ذرة في مايو وأرض نضيفة (البحيرة)', site: 'beheira', crop: 'maize', sow: '05-01', wheat: '11-15', salt: 'none' },
+    { en: 'Cotton in April, white crust (Sharqia)', ar: 'قطن في أبريل وقشرة بيضاء (الشرقية)', site: 'sharqia', crop: 'cotton', sow: '04-01', wheat: '11-15', salt: 'crust' },
+    { en: 'Rice early May (Dakahlia)', ar: 'رز في أول مايو (الدقهلية)', site: 'dakahlia', crop: 'rice', sow: '05-01', wheat: '11-15', salt: 'patches' },
+    { en: 'Coast of Damietta (mostly sea)', ar: 'ساحل دمياط (أغلبه بحر)', site: 'damietta', crop: 'maize', sow: '05-01', wheat: '12-01', salt: 'unknown' }
+  ];
+  function applyPreset(p) {
+    $('t_site').value = p.site; $('t_crop').value = p.crop; fillSelects();
+    $('t_sow').value = p.sow; $('t_wheat').value = p.wheat; $('t_salt').value = p.salt; render();
+  }
+  function presetButtons() {
+    var box = $('t_presets'); if (!box) return; box.innerHTML = '';
+    PRESETS.forEach(function (p) { var b = document.createElement('button'); b.type = 'button'; b.className = 'preset'; b.textContent = lang === 'ar' ? p.ar : p.en; b.onclick = function () { applyPreset(p); }; box.appendChild(b); });
   }
   function start(d) {
     D = d; var s = $('t_site');
     Object.keys(D.meta.sites).forEach(function (k) { var o = document.createElement('option'); o.value = k; o.textContent = D.meta.sites[k].name_en; s.appendChild(o); });
     s.value = 'gharbia'; $('t_crop').value = 'rice'; $('t_salt').value = 'patches';
-    labels(); $('t_sow').value = '06-15'; $('t_wheat').value = '12-01'; render();
+    labels(); $('t_sow').value = '06-15'; $('t_wheat').value = '12-01'; render(); presetButtons();
     ['t_site', 't_crop'].forEach(function (id) { $(id).addEventListener('change', function () { fillSelects(); render(); }); });
     ['t_sow', 't_wheat', 't_salt'].forEach(function (id) { $(id).addEventListener('change', render); });
     $('t_lang').addEventListener('click', function () { lang = lang === 'ar' ? 'en' : 'ar'; labels(); });

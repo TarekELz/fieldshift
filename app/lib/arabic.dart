@@ -38,10 +38,10 @@ const arNotModelled = 'مش محسوب: النيتروجين وخصوبة الت
 
 /// "Water compared with your current rotation" in words.
 String arRatio(double ratio) {
-  if (ratio == 1.0) return 'نفس احتياج دورتك الحالية';
+  if (ratio == 1.0) return 'نفس احتياج اللي بتزرعه دلوقتي';
   final pct = ((ratio - 1).abs() * 100).round();
-  if (pct == 0) return 'تقريباً نفس احتياج دورتك الحالية';
-  return ratio < 1 ? 'أقل ${arDigits(pct)}٪ من دورتك الحالية' : 'أكتر ${arDigits(pct)}٪ من دورتك الحالية';
+  if (pct == 0) return 'تقريباً نفس احتياج اللي بتزرعه دلوقتي';
+  return ratio < 1 ? 'أقل ${arDigits(pct)}٪ من اللي بتزرعه دلوقتي' : 'أكتر ${arDigits(pct)}٪ من اللي بتزرعه دلوقتي';
 }
 
 /// Number in Arabic digits with an Arabic decimal mark: 1.12 -> "١٫١٢".

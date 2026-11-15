@@ -75,20 +75,7 @@ class _AdviceCardState extends State<AdviceCard> {
         const SizedBox(height: 8),
         AnimatedSwitcher(duration: const Duration(milliseconds: 300), child: Text(r.text, key: ValueKey(r.text), style: const TextStyle(fontSize: 17, height: 1.5))),
         for (final t in r.also) ...[const SizedBox(height: 8), Text(t, style: TextStyle(fontSize: 15, height: 1.5, color: Fs.dim))],
-        const SizedBox(height: 10),
-        Wrap(spacing: 8, runSpacing: 6, children: [
-          _chip(r.ai ? tr('أعاد صياغتها الذكاء الاصطناعي، والأرقام متراجعة', 'Reworded by AI, numbers checked') : tr('مبنية على أرقام ناسا', 'Built from the NASA numbers'), r.ai ? Fs.accent : Fs.dim),
-          if (r.closeness != null) _chip(tr('تشابه مع حالة نموذجية: ${nd(r.closeness!)}٪', 'Match with a typical case: ${r.closeness}%'), Fs.dim),
-        ]),
-        const SizedBox(height: 6),
-        Text(tr('ده تقدير من البيانات، مش وعد بمحصول.', 'This is an estimate from the data, not a promise.'), style: TextStyle(fontSize: 12, color: Fs.dim)),
       ]),
     );
   }
-
-  Widget _chip(String t, Color c) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-        decoration: BoxDecoration(color: Color.alphaBlend(c.withValues(alpha: 0.14), Fs.card), borderRadius: BorderRadius.circular(12)),
-        child: Text(t, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: c)),
-      );
 }

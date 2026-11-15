@@ -42,7 +42,7 @@
           ]
         }
       ],
-      "ar": "فيه حاجتين: القمح في {wheat_date} متأخر، وهيقابل حوالي {heat_extra} يوم حر زيادة، والملوحة عالية على {crop}. ابدأ بتقديم القمح، واعمل تحليل تربة.",
+      "ar": "بلاش تزرع القمح متأخر كده، الجو هيبقى حر عليه، والملوحة هتبقى عالية جدًا على {crop}. ازرع القمح الأول. ولو تعرف تعمل تحليل تربة هيكون ممتاز جدًا.",
       "en": "Two things: wheat on {wheat_date} is late and meets about {heat_extra} more hot days, and the salt is high for {crop}. Start by sowing wheat earlier, and test the soil.",
       "keep": [
         "ملوحة",
@@ -70,8 +70,8 @@
           "lte": 3
         }
       ],
-      "ar": "الملوحة اللي وصفتها عالية على {crop} حسب جداول الفاو. {alt_crop} بيستحمل أكتر في نفس الملوحة. اعمل تحليل تربة قبل ما تقرر.",
-      "en": "The salt you described is high for {crop} according to the FAO tables. {alt_crop} tolerates the same salt better. Test the soil before you decide.",
+      "ar": "فكّر في {alt_crop} بدل {crop}، لأن الملوحة اللي وصفتها عالية على {crop} و{alt_crop} بيستحمل الملوحة أكتر. واعمل تحليل تربة قبل ما تقرر.",
+      "en": "Think about {alt_crop} instead of {crop}, because the salt you described is high for {crop} and {alt_crop} tolerates salt better. And test the soil before you decide.",
       "keep": [
         "ملوحة",
         "تحليل"
@@ -89,8 +89,8 @@
         }
       ],
       "bonus": [],
-      "ar": "الملوحة اللي وصفتها عالية على {crop} حسب جداول الفاو. اعمل تحليل تربة قبل ما تقرر، واسأل مهندس زراعي عن محصول بيستحمل أكتر.",
-      "en": "The salt you described is high for {crop} according to the FAO tables. Test the soil before you decide, and ask an agricultural engineer about a crop that tolerates more.",
+      "ar": "اعمل تحليل تربة قبل ما تقرر، لأن الملوحة اللي وصفتها عالية على {crop}. واسأل مهندس زراعي عن محصول بيستحمل أكتر.",
+      "en": "Test the soil before you decide, because the salt you described is high for {crop}. And ask an agricultural engineer about a crop that tolerates more.",
       "keep": [
         "ملوحة",
         "تحليل"
@@ -166,8 +166,8 @@
           ]
         }
       ],
-      "ar": "القمح في {wheat_date} متأخر شوية: هيقابل حوالي {heat_extra} يوم حر زيادة وقت امتلاء الحبوب عن زراعته في ١٥ نوفمبر. لو قدرت تقدّمه يبقى أحسن للحرارة.",
-      "en": "Wheat on {wheat_date} is on the late side: it meets about {heat_extra} more hot days in grain filling than a 15 November sowing. If you can sow earlier, it is better for heat.",
+      "ar": "ازرع القمح بدري، عشان لو اتأخر الجو هيبقى حر عليه وقت امتلاء الحبوب.",
+      "en": "Sow wheat earlier, because if it is late the weather will be hot on it during grain filling.",
       "keep": [
         "حر"
       ]
@@ -182,11 +182,9 @@
         }
       ],
       "bonus": [],
-      "ar": "الفرق بين حصاد {crop} وزراعة القمح {gap} يوم بس، وده ضيق. فكّر في ميعاد أبكر للمحصول الصيفي أو محصول أقصر.",
+      "ar": "الفرق بين حصاد {crop} وزراعة القمح {gap_days} بس، وده ضيق. فكّر في ميعاد أبكر للمحصول الصيفي أو محصول أقصر.",
       "en": "Only {gap} days between harvesting {crop} and sowing wheat, which is tight. Think about an earlier summer sowing or a shorter crop.",
-      "keep": [
-        "يوم"
-      ]
+      "keep": []
     },
     {
       "id": "salt_reduced",
@@ -200,8 +198,8 @@
         }
       ],
       "bonus": [],
-      "ar": "الملوحة هتقلل قدرة {crop} شوية حسب جداول الفاو. راقب الأرض، واعمل تحليل تربة للتأكد.",
-      "en": "The salt will reduce what {crop} can tolerate a little, according to the FAO tables. Watch the field and test the soil to be sure.",
+      "ar": "راقب الأرض واعمل تحليل تربة، لأن الملوحة هتقلل {crop} شوية.",
+      "en": "Watch the field and test the soil, because the salt will reduce {crop} a little.",
       "keep": [
         "ملوحة"
       ]
@@ -227,8 +225,8 @@
           "truthy": true
         }
       ],
-      "ar": "الرز بياخد مية كتير. {alt_crop} محتاج حوالي {alt_pct}٪ بس من احتياج {crop} للمية في موسمه، من غير فقد الري. ده يفيد لو المية ناقصة عندك.",
-      "en": "Rice needs a lot of water. {alt_crop} needs only about {alt_pct}% of what {crop} needs in its season, not counting irrigation losses. That helps if water is short on your land.",
+      "ar": "الرز بياخد مية كتير. {alt_crop} محتاج حوالي {alt_pct}٪ بس من احتياج {crop} للمية في موسمه، من غير فقد الري. ده هيبقى مفيد لو المية ناقصة عندك: {alt_crop} بيحتاج مية أقل من {crop}.",
+      "en": "Rice needs a lot of water. {alt_crop} needs only about {alt_pct}% of what {crop} needs in its season, not counting irrigation losses. That helps if water is short on your land: {alt_crop} needs less water than {crop}.",
       "keep": [
         "مية"
       ]
@@ -289,8 +287,8 @@
           "truthy": true
         }
       ],
-      "ar": "دورتك ماشية كويس: {crop} في {summer_date} وقمح في {wheat_date}. المواعيد مناسبة للحرارة، والملوحة مش مشكلة حسب اللي قلته.",
-      "en": "Your rotation looks fine: {crop} on {summer_date} and wheat on {wheat_date}. The dates suit the temperature and salt is not a problem from what you told me.",
+      "ar": "إنت كده زي الفل: {crop} في {summer_date} وقمح في {wheat_date}. المواعيد مناسبة للحرارة، والملوحة مش مشكلة.",
+      "en": "You are doing great: {crop} on {summer_date} and wheat on {wheat_date}. The dates suit the temperature and salt is not a problem.",
       "keep": [
         "مناسبة"
       ]
@@ -300,7 +298,7 @@
       "priority": 0,
       "must": [],
       "bonus": [],
-      "ar": "دي مقارنة بسيطة من بيانات ناسا. قارن دورتك بالبدائل في الأرقام اللي تحت.",
+      "ar": "دي مقارنة بسيطة من بيانات ناسا. قارن اللي بتزرعه دلوقتي بالبدائل في الأرقام اللي تحت.",
       "en": "This is a simple comparison from NASA data. Compare your rotation with the alternatives in the numbers below.",
       "keep": []
     }
