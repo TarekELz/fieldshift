@@ -24,17 +24,16 @@ def albers5070(lon, lat):
 
 def _get(url, **kw):
     import time
-    for i in range(6):
+    for i in range(4):
         try:
             r = S.get(url, timeout=240, **kw); r.raise_for_status(); return r
         except Exception:
-            if i == 5: raise
-            time.sleep(10 * (i + 1))
+            if i == 3: raise
+            time.sleep(5 * (i + 1))
 
 
 def modis():
     for site, (lat, lon) in SITES.items():
-        if (RAW / "modis_ndvi" / f"{site}_MOD13Q1_2015_2025.json").exists(): continue
         base = "https://modis.ornl.gov/rst/api/v1/MOD13Q1"
         dates = _get(f"{base}/dates", params=dict(latitude=lat, longitude=lon)).json()["dates"]
         dates = [d["modis_date"] for d in dates if "A2015" <= d["modis_date"] <= "A2025366"]
