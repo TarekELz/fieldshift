@@ -6,7 +6,7 @@ nasa_power_daily:
   access: open, no account
   variables: [T2M, T2M_MAX, T2M_MIN, PRECTOTCORR, ALLSKY_SFC_SW_DWN, RH2M, WS2M, GWETTOP, GWETROOT, GWETPROF, EVPTRNS]
   resolution: ~0.5 x 0.625 deg, daily
-  coverage: 1990-01-01..2025-12-31 at Mead and at 30.79N 31.00E (Tanta city point; to be moved)
+  coverage: 1990-01-01..2025-12-31 at Mead and at 30.79N 31.00E (Tanta city point, an early test; the seven Delta points of models/sites.yaml are in data/raw/power, one file each, 1990-2025 daily, no missing values; the seventh, east Dakahlia, was added 2026-11-15)
   license: NASA open data
   citation: NASA Langley Research Center POWER Project
   status: on disk, verified (13,149 days, no missing values)
@@ -75,13 +75,6 @@ nex_gddp_cmip6:
 
 usda_cdl, prism, ssurgo, nwis:
   status: on disk for Mead only; not used by the Egypt engines
-
-mcd12q2_phenology:
-  source: NASA LP DAAC MCD12Q2 v061 (MODIS land cover dynamics)
-  access: Earthdata token
-  resolution: 500 m, yearly, 2001 onwards; up to two vegetation cycles per year
-  status: not downloaded (top priority for the calendar engine)
-  used_by: [calendar]
 
 mod16a2gf_et:
   source: NASA LP DAAC MOD16A2GF v061
@@ -162,9 +155,74 @@ modis_delta_rasters:
   access: open, no account; script src/fieldshift/ingest/fetch_modis_delta.py
   layers: [250m_16_days_NDVI, 250m_16_days_EVI, 250m_16_days_pixel_reliability]
   resolution: 250 m (231.66 m sinusoidal grid), 16-day
-  coverage: 254 dates, 2014-12-19..2025-12-19, clipped to the Delta box 29.64-32.49E, 30.21-31.67N (same granules as the AppEEARS request)
+  coverage: "242 of 254 dates on disk (2014-12-19..2025-12-19 expected). Missing, HTTP 404 from the Planetary Computer mirror: 2023049, 2024225, 2024353, 2025145 and nine consecutive composites 2025193-2025305 (July-October 2025). Clipped to the Delta box 29.64-32.49E, 30.21-31.67N (same granules as the AppEEARS request)"
   format: GeoTIFF, MODIS sinusoidal projection (not reprojected), NDVI/EVI int16 scale 0.0001, nodata -3000
   status: on disk in data/raw/modis_delta_tif/ (not in git)
   check: for 2014-12-19 the NDVI mean inside the box is 0.4882 (AppEEARS statistics file 0.4879), median 0.5597 (0.5596)
   citation: Didan, K. (2021). MODIS/Terra Vegetation Indices 16-Day L3 Global 250m SIN Grid V061. NASA EOSDIS LP DAAC
   used_by: [calendar]
+
+egypt_map:
+  source: "Governorates: HDX COD-AB Egypt (CAPMAS via OCHA, CC BY-IGO, modified 2026-01-26). Rivers and lakes: Natural Earth (public domain). Built by scripts/build_egypt_map.py"
+  access: open, no account (HDX GeoJSON zip about 17 MB, kept in data/raw/hdx_egy, gitignored)
+  resolution: "governorate polygons simplified to about 0.6 km; rivers generalized by Natural Earth, NOT a survey"
+  status: "in the app at app/assets/data/egypt_map.json (79 KB), switched from Natural Earth governorates to HDX on 2026-11-15 at Tarek's request. The Halayeb Triangle (Natural Earth 'Halayib Triangle', public domain, 163 points, ne_10m_admin_0_disputed_areas.geojson, 0.7 MB, kept in data/raw/natural_earth) is drawn and named 'حلايب وشلاتين' as its own area inside Egypt's outline; our outline already contains 100% of it (checked by sampling); Halayeb, Shalateen and Halaib all resolve to it. An earlier version wrongly highlighted the two HDX admin-2 divisions instead. Bir Tawil (south of 22N, Natural Earth, lon 33.18-34.08, 5 points) is outside Egypt's official 22N outline; it is drawn like the other territory, same fill and outline, no label (Tarek's decision D12). Checked 2026-11-15: every NASA data point lies inside its labelled governorate (test); the Rosetta and Damietta branch lines from Natural Earth lie within 0.4 km (median 0.1 km) of the HDX borders wherever they are not inside a polygon, i.e. the two independent sources agree. Not checked: canal network (OSM canals not added), Arabic spelling of names (HDX writes Alexandria without the hamza)"
+  used_by: [app]
+
+map_sources_candidates:
+  hdx_cod_ab_egypt:
+    source: HDX "Egypt - Subnational Administrative Boundaries" (cod-ab-egy), from CAPMAS (Egypt's statistics agency), vetted by OCHA/ITOS; admin levels 0-3; modified 2026-01-26
+    license: CC BY-IGO
+    access: open; GeoJSON zip 16.9 MB at data.humdata.org (resource list read through the HDX API on 2026-11-15)
+    caveats: 23 English names map to several Arabic names at admin 2
+    status: admin 1 USED in the app since 2026-11-15 (see egypt_map); admin 2 (markaz/qism) available but not used
+  geoboundaries_egy:
+    source: geoBoundaries gbOpen EGY. ADM1 (27 units, from OpenStreetMap, ODbL, 2017); ADM2 (365 units, from OCHA/CAPMAS, CC BY 3.0 IGO, 2020)
+    status: candidate
+  osm_waterways_delta:
+    source: "OpenStreetMap via Overpass: 175 named river/canal ways, 43 names, about 2,100 km in the Delta box (Damietta Branch 246 km, Rosetta Branch 238 km, Bahr Shebin 143 km, Ismailia Canal 131 km)"
+    license: ODbL
+    status: candidate for drawing the main canals; the Delta's full network is about 40,000 km of canals and 18,000 km of drains (JICA figure, not verified here)
+
+app_hero_images:
+  source: "Rendered by scripts/make_delta_images.py from the MODIS MOD13Q1 NDVI rasters already in data/raw (2015-2022 median at 2 Feb and 13 Aug)"
+  files: app/assets/img/delta_winter.jpg, delta_summer.jpg (about 440 KB each)
+  status: used as the hero picture on the welcome and result screens, captioned as NASA MODIS greenness. Data art, not a map or a photograph
+
+mod16a3gf_et_yearly:
+  source: "NASA MOD16A3GF v061 (Terra, yearly gap-filled evapotranspiration, 500 m), read from the open Microsoft Planetary Computer copy"
+  coverage: "2015-2024, 3x3 pixel median at each of the 7 Delta points (data/raw/nasa_extra/mod16_site_years.csv); fetched by src/fieldshift/ingest/fetch_input_checks.py"
+  result: "yearly potential ET 1,787 to 2,011 mm (Gharbia 1,962); the engine's yearly ET0 is 92 to 99% of it (2015-2023). Actual ET 385 to 677 mm a year, not comparable with irrigated crop need"
+  used_by: ["water (input check only, no farmer-facing number)"]
+  caveat: "MOD16 is a model product on MERRA-2 meteorology, so this is a consistency check, not validation against measurements"
+
+esa_worldcover_2021:
+  source: "ESA WorldCover 2021 v200 (10 m land cover, European Space Agency, CC BY 4.0), NOT NASA data, read from Planetary Computer"
+  coverage: "share of land-cover classes within about 2.5 km of each of the 7 points (data/raw/nasa_extra/worldcover_sites.csv)"
+  result: "cropland 73 to 91% at six points, 50% at Damietta; built-up 4 to 16%; open water about 0"
+  used_by: ["site selection check (are the points farmland)"]
+
+power_cells_delta_24:
+  source: "NASA POWER daily point API, community AG, 11 parameters (same as the 7 site files), one request per MERRA-2 cell centre"
+  coverage: "24 cells: latitudes 30.0, 30.5, 31.0, 31.5 by longitudes 29.375, 30.0, 30.625, 31.25, 31.875, 32.5; 1990-01-01 to 2025-12-31, 13149 days each, no missing values; data/raw/power_cells/ (gitignored, 54 MB); fetched by src/fieldshift/ingest/fetch_power_cells.py on 2026-11-15"
+  caveat: "The 31.5 N row is mostly Mediterranean sea (Tmax mean 21 to 25 C, elevation about 0); cells at 100 to 284 m elevation on the 30.0 and 30.5 N rows are desert plateau, not farmland. Not yet used in any app number (D15)"
+  used_by: ["water", "wheat calendar (planned: nearest cell for any field)"]
+
+modis_mod13q1_user_download_2026_11_15:
+  source: "NASA MODIS MOD13Q1 v061 (Terra, 250 m, 16-day), downloaded by Tarek and sent as MODIS.zip; extracted to data/raw/modis_user_2026-11-15/MODIS/ (1.1 GB, 1010 GeoTIFFs, gitignored)"
+  coverage: "2014-12-19 to 2025-12-19; bounding box 29.64-32.50 E, 30.21-31.67 N (EPSG:4326, 1373 x 701 pixels, int16, nodata -3000). Layers: EVI 251 dates, NDVI 251, VI_Quality 254, pixel_reliability 254"
+  result: "Fills the 12 dates missing from data/raw/modis_delta_tif (2023-02-18, 2024-08-12, 2024-12-18 and nine from 2025-05-25 to 2025-11-01). It lacks 2022-07-28, 2022-08-13 and 2022-08-29, which the older set has; EVI and NDVI also lack 2023-03-06, 2023-03-22 and 2023-04-07 (quality layers exist). Together the two sets cover all 254 NDVI dates. 26 sampled files opened without error; not all files were opened"
+  used_by: ["Delta pictures (not yet rebuilt from the combined set)", "crop phenology check (not yet re-run)"]
+
+fao_ecocrop:
+  source: "FAO EcoCrop database (2,568 plant species), copy EcoCrop_DB.csv from the OpenCLIM/ecocrop GitHub repository (code under the Open Government Licence), downloaded 2026-11-15 to data/raw/ecocrop/ (gitignored). FAO discontinued the original site around 2015; the data now sits in FAO GAEZ (https://gaez.fao.org/pages/ecocrop)"
+  coverage: "per crop: TOPMN/TOPMX (optimal temperature), TMIN/TMAX (absolute temperature), KTMP (killing temperature), GMIN/GMAX (growing cycle days), rainfall, soil pH, texture, salinity class. A 15-crop extract is in models/ecocrop_subset.csv"
+  caveat: "A generic global table, not Egypt-specific: ranges are wide and coarse (for example wheat TMAX 27 C is below the grain-filling heat Delta wheat meets). Use only as a coarse season suitability screen against NASA POWER temperatures, never as a yield model. The data licence is NOT confirmed (FAO states CC BY 4.0 for its statistical databases, EcoCrop is not clearly one): check on the GAEZ page before publishing the table, and cite FAO EcoCrop"
+  used_by: ["out-of-season check (src/fieldshift/season_engine.py, Python only, not yet in the app)"]
+
+mcd12q2_phenology:
+  source: "NASA MCD12Q2 v061 (MODIS Terra+Aqua land cover dynamics, yearly phenology, 500 m, tile h20v05, HDF4), downloaded by Tarek via Earthdata; extracted to data/raw/mcd12q2_user_2026-11-15/ (3.3 GB, 12 files, gitignored). Read with pyhdf (installed in .venv) by scripts/phenology_mcd12q2.py"
+  coverage: "yearly 2015 to 2025 (2025 has two production versions; the later one is used), one tile covering the whole Delta; layers Greenup, MidGreenup, Peak, Maturity, Senescence, MidGreendown, Dormancy, EVI minimum/amplitude/area, NumCycles, QA; up to 2 growth cycles a year per pixel; dates are days since 1970-01-01"
+  result: "median over 2015-2025 at Gharbia (day of year, 3x3-pixel median): winter cycle greenup 307 (about 3 Nov), maturity 37, peak 62, senescence 85, dormancy 131 (about 11 May); summer cycle greenup 168 (about 17 Jun), maturity 202, peak 215, senescence 229, dormancy 265 (about 22 Sep). All 7 sites show the same two-cycle shape. Kafr El-Sheikh and Beheira are mostly one-cycle in the algorithm's output. Output table: data/interim/phenology_sites.csv"
+  caveat: "Satellite greenness at 500 m, mixed fields: it says WHEN the land is green, not WHICH crop. Cycles are numbered by the algorithm, not by crop. Consistent with the calendar assumptions (winter green-up in November, dormancy in May, summer green-up in June) but that is a consistency check, not a validation. Not a farmer-facing number yet"
+  used_by: ["calendar cross-check (scripts/phenology_mcd12q2.py)", "planned: when farmers in an area actually sow, for the out-of-season story"]

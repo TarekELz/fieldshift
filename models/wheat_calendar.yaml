@@ -1,0 +1,47 @@
+# Wheat calendar engine: parameters. DRAFT until gate G3.
+# Every rule carries `evidence` (citekeys from literature/papers.csv, or a named source)
+# and `confidence`. Parameters with empty evidence are placeholders that an agronomist
+# must review; the app must say so.
+
+recommended_sowing:
+  month: 11
+  day: 15
+  evidence: [elbasyoni2018]   # "The recommended sowing date for wheat in Egypt is around mid-November" (full text)
+  confidence: medium
+
+late_sowing_reference:
+  # Trial late dates were 7-13 January; late sowing lost about 40% yield (with more rust).
+  month: 1
+  day: 10
+  yield_loss_reported_pct: 40
+  evidence: [elbasyoni2018]
+  confidence: medium (field trial, 3 seasons, two sites; not a farmer survey)
+
+phenology:
+  # Method A: fixed number of days from sowing to maturity.
+  days_to_maturity_fixed: 160
+  # Method B: thermal time. Degree-days above base, from daily (Tmax+Tmin)/2.
+  base_temp_c: 0.0
+  # Calibrated, not taken from a paper: one target for the whole Delta, chosen so that a 15 November
+  # sowing matures in late April on average at the calibration site, 1990-2025. Maturity at that site
+  # is therefore true by construction. Thermal time only: no vernalisation or photoperiod term.
+  gdd_to_maturity: null        # if null, calibrated once on calibration_site and used for every site
+  calibration_site: gharbia
+  calibration_target_maturity: {month: 4, day: 25}
+  evidence: []                 # Delta harvest window (mid-April to early May) seen only in a search summary of the Global Yield Gap Atlas: UNVERIFIED
+  confidence: low
+
+grain_filling:
+  # Window assumed to be the last N days (method A) or last fraction of thermal time (method B) before maturity.
+  last_days: 35
+  last_gdd_fraction: 0.30
+  # Anthesis is the more heat-sensitive stage and is not counted separately here.
+  evidence: []
+  confidence: low
+
+heat:
+  # A day counts as a heat day when Tmax is at or above this value.
+  tmax_threshold_c: 32.0     # PLACEHOLDER; the ranking of sowing dates holds at 30, 32 and 34 C
+  sensitivity_thresholds_c: [30.0, 32.0, 34.0]
+  evidence: []                 # commonly used range; no full-text source read yet
+  confidence: low

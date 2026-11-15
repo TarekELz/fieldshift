@@ -27,3 +27,19 @@ Thumbs.db
 .vscode/
 .idea/
 .claude/
+
+# build logs
+build_apk.log
+*.log
+
+# copied from app/assets/fonts by scripts/make_text_review.py
+docs/text_review/fonts/
+
+# friends' answers and the decision page (names and opinions)
+docs/text_review_answers/
+
+# wording votes (names and opinions)
+docs/text_vote_answers/
+
+# build-time API keys for the app (never commit)
+app/assets/secrets/secrets.json

@@ -2,15 +2,17 @@
 
 AUDIT 2026-11-14 ~19:00: team-downloaded NASA data added: IMERG daily rain (Delta area mean 2015-2025), MODIS NDVI area statistics for the Delta box (rasters still to come from Hussain), SRTM 30 m tiles for the whole Delta. First push to GitHub on Tarek's instruction: merged so main shows only our files; Youssef Nada's and Hussain's earlier commits stay in the history (also backed up locally as branch backup/youssef-remote).
 
-**Current step: 4/10 (data plan), waiting for Tarek at gate G2 (region, points, accounts).** G1 decided (D1-D3 in docs/decisions.md).
+**Current step: building the Flutter app (Step 7). Updated 2026-11-15 ~08:10.** Deadline Sunday 15 Nov 23:59 Egypt time (Mansoura Local Event, confirmed by Tarek; whether the Local Lead sets an earlier cutoff is still to ask).
 
-AUDIT 2026-11-14 evening: Mead MODIS NDVI now on disk (506 rows; someone re-ran fetch_retry.py with longer retries; that edit is uncommitted and not mine). Egypt MODIS via ORNL failed (503). Teammate's AppEEARS MODIS extract for 3 Damietta farm points (2000-2026) added to data/raw/appeears_damietta/. The Egypt pilot point 30.79N 31.00E appears to be in Tanta city (SoilGrids masked). Local server 192.168.4.110:8000 not reachable from this machine.
+Done: problem and region (D1, D5), grounded engines (D2), voice kept (D3), methods (D7, after two independent reviews). Built and tested (43 tests): wheat calendar, water (FAO-56), salt (FAO paper 29), rotation comparison. NASA POWER 1990-2025 for six Delta points; IMERG and MODIS statistics for the Delta; SRTM tiles; MODIS rasters downloading (about 70 of 254 dates, slow).
 
-AUDIT 2026-11-14 about 15:20: Steps 2 and 3 outputs written (docs/brief.md, docs/submission-rules.md, literature/search_log.csv, literature/papers.csv, docs/problem_statement_options.md). No new data on disk. MODIS retry (PID 27152) still running after about 3 hours with no output folder; probably hung, left alone pending Tarek's word. Still no `.env`. Three other public Field Shift repos found on GitHub (huiliijiang/spaceapp26, Zul-Qarnain/field-shift, chhra/field-shift).
+App (Flutter, D8): assistant is named Eyad (cartoon avatar with a visible AI mark, moods by situation); location is chosen by tapping a map of Egypt made of the 27 real governorate boundaries with Arabic names (Natural Earth, generalized, not an official survey; checked against OpenStreetMap): tap a Delta governorate to zoom, tap again to choose; governorates with their own NASA data point use it, the others use the nearest and say so; taps outside the Delta are refused; redesigned (dark, welcome screen, rings, stat tiles, climate chart); analysis clean; 7 Dart tests pass, including a check against the Python engines. Debug APK built 2026-11-15 08:36 at app/build/app/outputs/flutter-apk/app-debug.apk (163 MB, not in git). Seen only in a browser copy at phone size; NOT yet tried on a real phone, and the Arabic text is an AI draft not yet reviewed by a native speaker. MODIS Delta rasters: 120 of 254 dates downloaded, resumable.
 
-Rule changes found in Step 2 that affect later steps: demo is a 30-second video or 7 slides; AI may not be used to come up with the solution idea; AI-generated code must be acknowledged in the project; final project link must be public.
+Not done: voice layer, picture card and web page; Arabic conversation text (Tarek); voice tests (Youssef); input checks (POWER Tmax and ET0 against ground data); AI disclosure (on hold); LICENSE; demo (30-second video or 7 slides); submission page.
 
-Open for Tarek: G1 choice; four paywalled papers (see G1 message); AI-disclosure wording vs AGENTS.md; Youssefnada-Engineer repo access; teammate roles; which Local Event (sets the deadline clock).
+Known problems: Damietta weather cell is mostly sea; Menoufia and Sharqia share a cell; ET0 looks high, so use ratios not millimetres; several wheat parameters have no full-text source (marked low confidence); the repo is private and the final link must be public.
+
+Open for Tarek: confirm the Local Event deadline; make the repo public before submitting (G6); AI disclosure wording; whether to accept git commit emails being public.
 
 ---
 Step 1 audit follows (2026-11-14 12:50).
@@ -62,3 +64,62 @@ Last audit: 2026-11-14 12:50 local (Step 1, full audit). Files were opened and c
 - Earthdata token in `.env` (never in chat).
 - Confirm whether Youssefnada-Engineer should have repo access.
 - Teammate ownership areas.
+
+## 2026-11-15 update: official borders and setup flow
+- Map: governorate borders now come from the official CAPMAS boundaries (HDX COD-AB, CC BY-IGO) instead of Natural Earth; the Rosetta and Damietta lines lie within 0.4 km of them. Rivers and lakes are still Natural Earth. Canals not added. Arabic spellings follow HDX (Alexandria without the hamza).
+- Setup flow: three screens laid out like the team's reference (welcome with Skip / Get started, what Eyad does, voice or typing choice). The voice-or-typing choice is a real setting (mutes spoken replies). Arabic text is a draft and needs a native-speaker review.
+- Not done: APK not rebuilt since these changes (the MODIS download is still using memory); not tested on a phone; nothing pushed.
+
+- Corrections after the independent review (2026-11-15): MODIS is 242 of 254 dates on disk (not 120, not all); the 12 missing include nine consecutive composites from July to October 2025, so any 2025 summer analysis has a hole. Dart tests are now 23. The sea warning now appears only for Damietta; Menoufia and Sharqia get a neutral shared-cell note. Salt ring and heat tile wording no longer imply yield or an exact hot-day count.
+
+## 2026-11-15 update: redesign and language switch
+- The scrolling chat is replaced by a guided screen: one question at a time, big answer buttons, the map, a big mic button. The result screen follows the car-control reference (hero picture, rotation switcher, one ring, two cards, round buttons for water, heat, salt, weather).
+- Hero pictures are real NASA MODIS greenness renderings of the Delta made from our own data (scripts/make_delta_images.py), replacing the painted Earth.
+- Arabic / English switch (one language at a time) on every screen; the layout flips right-to-left or left-to-right; English answers are understood when typed or spoken; voice follows the language when the phone has that voice.
+- Not done: tested only in a browser preview at phone size (no real phone, no voice test); APK not rebuilt; Arabic and English text unreviewed by a native speaker.
+
+## 2026-11-15 update: design system from the team's Advanced Monitor app
+- Tarek asked for the colours, boxes and general design to follow his Advanced Monitor app (his own project, found in C:\Users\tarek\dev\am-v2-ui\app\design). Ported: the dark palette (neutral near-black canvas and surfaces, one blue accent, green/amber/red for state only), soft cards without outlines, radius 22/14, IBM Plex Sans + IBM Plex Sans Arabic (SIL OFL licences copied to app/assets/fonts), two-weight headlines, icon bubbles, the 240-degree dial, and the hero picture with readings on dotted leaders (here the real MODIS picture of the Delta with the chosen place pinned at its true position).
+- Not taken: the Lotus Power logo and mark, and the hive and device art.
+- Dark theme only; the monitor app also has a light palette (could be added; outdoors in sun a light theme may read better).
+- Still only seen in a browser preview at phone size: no real phone, no voice test; APK not rebuilt.
+
+## 2026-11-15 update: light mode, Halayeb and Shalateen, a date bug
+- Light mode added with the palette from the Advanced Monitor app (warm off-white canvas, white cards on a faint shadow, deep blue accent, darker state colours); a sun/moon button switches, Arabic and English both work in both modes. Default is dark.
+- Halayeb and Shalateen are drawn on the map from the official HDX admin-2 sub-divisions (Red Sea governorate) with Arabic names; tapping or naming them says they are outside the Delta.
+- Bug found and fixed: the answer buttons for 1 November and 1 December were read as 12 January / 10 January (the typed-date parser read "12-01" as day 12 of month 1). Buttons now keep their exact date; a test covers every date button. Earlier previews and any earlier APK have this bug.
+- Preview-only URL switches for the web build: ?theme=light, ?lang=en, ?skip=1, ?demo=1 (ignored on phones).
+- Still only seen in a browser preview: no phone, no voice test, APK not rebuilt.
+
+## 2026-11-15 update: Dakahlia / Mansoura weather
+- Tarek asked where Dakahlia and Mansoura get their data: before, from the nearest point (Gharbia at 37 km for Mansoura, Damietta for the governorate's middle). Checked and fixed (D11): Mansoura lies in the same NASA POWER cell as Gharbia (identical weather), so it now uses Gharbia's data and the app says so; a seventh point, east Dakahlia, was downloaded (1990-2025, no gaps) and the app picks by weather cell first. Mean Tmax differs from Gharbia by about 0.8 C. Not checked: whether the east Dakahlia point is cropland (task 2 in tasks.md now covers seven points); POWER temperatures still not checked against stations.
+- Tests: 27 Flutter, 43 Python.
+
+## 2026-11-15 update: Halayeb triangle and avatar
+- Tarek said the Halayeb and Shalateen shapes were wrong and that a southern triangle was missing from the border. Checked: our national outline follows 22N all along the south and already contains 100% of the Natural Earth Halayib Triangle; the shapes I had drawn were two HDX administrative divisions, not the triangle. Now the triangle itself is drawn and named. OPEN: which "missing triangle" Tarek means exactly (Bir Tawil, south of 22N, is not drawn and is not in Egypt's outline).
+- Avatar: smaller everywhere (welcome 84, question 78, result 50) and the calm "main" pose is the default; the arms-up pose is no longer used. Which poses Tarek wants where is OPEN.
+- Bir Tawil added (Tarek, 2026-11-15) and drawn like the rest of the map: same fill and outline, no label, not selectable (D12). The first dashed, labelled version was rejected.
+- Avatar: Tarek approved the reactive poses (calm close-up as the default and on the first question; open hands on questions, thumbs-up or worried on results, thoughtful on a retry), saying it is better than one pose (2026-11-15). Pose switching stays.
+- Correction: this machine is on Egypt Standard Time. At 10:57 local on 2026-11-15 about 13 hours remained before the 23:59 deadline (an earlier note that said about 7 hours came from a mislabelled shell time zone).
+- Halayeb and Shalateen are now drawn like the rest of the map (neutral label); the amber had no meaning there and amber is the warning colour. The web preview shows the app inside a phone-sized frame when the browser window is wide (web only; a phone is unaffected).
+- Avatar identity (2026-11-15): sized by role (welcome 132, setup 90 and 150, questions 108, result headline 64); the name under him on the question screens; a soft pulsing ring while he speaks or the mic listens; tap him to hear the question again. The pulse depends on the phone's text-to-speech reporting when speech starts and ends, so it is untested until a phone test.
+
+## 2026-11-15 update: fixes from the second independent review (Opus)
+Fixed: (1) the mic screen could stay on "Listening" after a speech timeout or error (voice.dart/flow.dart now reset it; Back also stops speech); (2) a tap in Sharqia picked Menoufia because the two share a POWER cell: the governorate's own point now wins (test added); (3) scripts/apply_text_review.py escaped placeholders and broke 47 strings: rewritten, and tests/test_apply_text_review.py proves every one of the 164 strings round-trips exactly (six reworded since the page was sent are skipped by name); (4) shared-cell note now says only the temperatures/heat results are the same (solar radiation, so water use, differs slightly); (5) the main dial says it compares the summer crop only; (6) the hero picture has a NASA MODIS credit caption; the HDX licence (CC BY-IGO) is named under the map; (7) D11 added to the decision log; (8) English parser traps (2 weeks, 1st December, no white crust, maybe vs May); (9) a hero bubble that sat on a pin is moved; (10) about 46 stray preview-server processes killed.
+Left for Tarek: README rewrite and LICENSE choice; AI-use disclosure; whether the welcome text should say "AI assistant" (the conversation is scripted; the AI mark on the avatar is separate); whether to delete the local branch backup/pre-history-rewrite (it still holds docs/agent_prompt.md); the Local Event deadline.
+
+## 2026-11-15 update: voice-first mode and two input checks
+- Voice-first (offline): one spoken or typed sentence can now give several answers (place, crop, both sowing dates, canal interval, salt signs); Eyad keeps them and asks only for what is missing, and gives the comparison straight away when everything is there. It reuses the existing parsers (no model, no key, no internet needed for the understanding step); a language model could replace it later without touching the engines. Tested on Arabic and English sentences in tests (app/test/voice_first_test.dart); NOT tested with real farmers' speech or on a phone. The first question now invites the farmer to tell about the field in his own words.
+- Input checks with new data (no token needed): NASA MOD16A3GF yearly potential ET agrees with the engine's yearly ET0 within 1 to 8% at all seven points (a consistency check, not station validation); ESA WorldCover (not NASA) shows 73 to 91% cropland near six points and 50% at Damietta. NASA datasets held: POWER, MODIS MOD13Q1, IMERG, SRTM, MOD16A3GF (five; two feed what the farmer sees: POWER numbers and the MODIS pictures).
+- Decisions 2026-11-15 (D13): MIT licence added; the welcome text keeps "AI assistant"; the team is at the Mansoura Local Event; the old local branch backup/pre-history-rewrite was deleted (it held the purged prompt file; that file is in nothing that was pushed).
+- Clock lesson: times in earlier notes of this day that say 12:30 to 14:45 were wrong; the machine is on Egypt Standard Time and read 11:47 at the time of the voice-first commit. Read the clock, do not add hours.
+- Wording vote (2026-11-15): docs/text_vote/index.html (single file for teammates) asks, for 17 key texts, which of three wordings works better (A = what the app says now, B and C = drafts by the assistant in simple Egyptian Arabic and English, or the voter's own). Answers come back as text_vote_<name>.json into docs/text_vote_answers/ (not committed) and scripts/collect_text_votes.py tallies them. Drafts B and C are NOT approved wording.
+- Design research (2026-11-15) for the redesign: Medhi et al., CHI 2009 (full text read): non-literate users strongly preferred non-text designs; spoken dialogue was faster and needed less help than text; recommendations include graphical cues, voice annotation, local language, minimal hierarchy, avoiding scrolling menus and typed text. FarmChat (UW, abstract only): farmers' preferred interface depended on literacy. Others are vendor or practitioner pages and are only inspiration.
+
+## 2026-11-15 update (afternoon): advice layer, season check, voice, cells, project page
+- Advice: 13 blueprint advices (models/blueprints.json) are chosen BY CODE from the engines' facts (src/fieldshift/advice.py, app/lib/advice.dart; the same 18 golden cases pass in both). Gemini may reword the text behind a guard that keeps every number and key fact and refuses new numbers, yield or money words; fixed blueprint text is the fallback (decisions D16, D18). Keys are bundled at build time from .env (gitignored) via scripts/write_app_secrets.py.
+- Season check (D17): temperature-only labels from FAO EcoCrop and NASA POWER (src/fieldshift/season_engine.py), after an independent review: faba bean, sugar beet, tomato, berseem and tree crops are "cannot judge".
+- Data: NASA MCD12Q2 phenology read at the 7 points (scripts/phenology_mcd12q2.py), the second MODIS set fills the 12 missing dates, 24 POWER cells downloaded; 12 of them are used as extra data points in the app (D19).
+- Voice: 33 fixed lines pre-generated with the Hamsa Egyptian voice Ibrahim (app/assets/audio), live generation for other short lines, phone voice as the last resort, "AI-generated voice" label on screen.
+- Project page: docs/index.html (Try Eyad playground, season lab, NASA data table), data from scripts/build_pages_data.py.
+- Tests: 403 Python and 43 Flutter pass. NOT done: phone test (friends have the APK), native-speaker review of the Arabic, AI disclosure update, demo video and slides, making the repo public.

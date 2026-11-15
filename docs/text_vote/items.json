@@ -1,0 +1,413 @@
+{
+ "version": "f23887a6f9",
+ "items": [
+  {
+   "id": 1,
+   "where": "Welcome screen, Eyad introduces himself",
+   "options": [
+    {
+     "key": "A",
+     "ar": "أنا إياد، مساعدك الذكي",
+     "en": "I am Eyad, your AI assistant",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "أنا إياد، مساعدك الذكي في الغيط",
+     "en": "I'm Eyad, your smart helper in the field",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "أهلاً، أنا إياد. مساعد ذكي بيسمعك وبيحسبلك",
+     "en": "Hi, I'm Eyad, a smart assistant who listens and works it out for you",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "where": "Welcome screen, the big headline",
+   "options": [
+    {
+     "key": "A",
+     "ar": "اعرف أرضك\nقبل ما تزرع",
+     "en": "Know your field\nbefore you sow",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "قبل ما تزرع، اسأل إياد",
+     "en": "Before you sow, ask Eyad",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "ازرع في الميعاد المظبوط",
+     "en": "Sow at the right time",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "where": "Welcome screen, under the headline",
+   "options": [
+    {
+     "key": "A",
+     "ar": "الطقس من بيانات ناسا،\nوالملوحة من جداول الفاو وكلامك",
+     "en": "Weather from NASA data,\nsalt from FAO tables and what you tell me",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "الجو من ناسا، والملوحة من جداول الفاو، وكلامك أنت",
+     "en": "The weather from NASA, the salt from FAO tables, and what you tell me",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "بنقارن دورتك بدورتين تانيين، وبنستخدم بيانات من ناسا",
+     "en": "We compare your rotation with two others, using NASA data",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "where": "Setup screen 2, what Eyad is and is not",
+   "options": [
+    {
+     "key": "A",
+     "ar": "إياد بيدعم خبرتك، ومبيحلش مكانها.",
+     "en": "Eyad supports your experience; he does not replace it.",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "إياد بيساعدك، لكن القرار قرارك والمرشد الزراعي أدرى",
+     "en": "Eyad helps, but the decision is yours and the agricultural adviser knows best",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "إياد مساعد بس. خبرتك وكلام المرشد الزراعي هما الأساس",
+     "en": "Eyad is only a helper. Your experience and the adviser's word come first",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "where": "Setup screen 3, voice or typing",
+   "options": [
+    {
+     "key": "A",
+     "ar": "تحب نتكلم إزاي؟",
+     "en": "How would you like to talk?",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "تحب أرد عليك بالصوت ولا بالكتابة؟",
+     "en": "Should I answer you aloud or in writing?",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "نتكلم ولا نكتب؟",
+     "en": "Shall we talk or type?",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "where": "First question (also invites free speech)",
+   "options": [
+    {
+     "key": "A",
+     "ar": "احكيلي عن أرضك بصوتك: فين هي، وبتزرع إيه، وإمتى؟ أو اضغط على مكانها في الخريطة.",
+     "en": "Tell me about your field in your own words: where it is, what you grow and when. Or tap it on the map.",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "احكيلي: أرضك فين وبتزرع إيه؟ أو دوس على الخريطة",
+     "en": "Tell me: where is your field and what do you grow? Or tap the map",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "قولّي أرضك في أنهي محافظة، أو دوس عليها في الخريطة",
+     "en": "Tell me which governorate your field is in, or tap it on the map",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "where": "Question: summer crop",
+   "options": [
+    {
+     "key": "A",
+     "ar": "إيه المحصول الصيفي اللي بتزرعه دلوقتي؟ رز ولا ذرة ولا قطن؟",
+     "en": "Which summer crop do you grow now: rice, maize or cotton?",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "بتزرع إيه في الصيف؟ رز ولا ذرة ولا قطن؟",
+     "en": "What do you grow in summer? Rice, maize or cotton?",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "المحصول بتاع الصيف عندك إيه؟",
+     "en": "What is your summer crop?",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "where": "Question: when the summer crop is sown",
+   "options": [
+    {
+     "key": "A",
+     "ar": "بتزرع {arCrop} إمتى تقريباً؟ قول الشهر، وأول ولا نص ولا آخر الشهر.",
+     "en": "When do you sow the summer crop? Say the month and early, middle or late.",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "إمتى بتزرع {arCrop}؟ قول الشهر.",
+     "en": "When do you sow {arCrop}? Say the month.",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "{arCrop} بتتزرع في أنهي شهر؟ أول الشهر ولا نصه ولا آخره؟",
+     "en": "In which month is {arCrop} sown? Early, middle or late?",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "where": "Question: when the wheat is sown",
+   "options": [
+    {
+     "key": "A",
+     "ar": "والقمح بعد كده بتزرعه إمتى؟ (نوفمبر لحد يناير)",
+     "en": "When do you sow the wheat that follows? (November to January)",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "وبعد كده القمح بتزرعه إمتى؟ من نوفمبر لحد يناير",
+     "en": "And when do you sow the wheat after it? From November to January",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "القمح بتزرعه في أنهي شهر؟",
+     "en": "In which month do you sow the wheat?",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "where": "Question: how often canal water comes",
+   "options": [
+    {
+     "key": "A",
+     "ar": "المية بتيجي أرضك كل كام يوم تقريباً؟",
+     "en": "How many days between canal turns at your field?",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "الميّه بتوصل أرضك كل كام يوم؟",
+     "en": "How many days apart does water reach your field?",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "بتروي كل كام يوم تقريباً؟",
+     "en": "Roughly how many days between your waterings?",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "where": "Question: salt on the soil",
+   "options": [
+    {
+     "key": "A",
+     "ar": "في التربة قشرة بيضاء أو بقع ملح؟ لو عملت تحليل قول الرقم (EC).",
+     "en": "Any white crust or salty patches on the soil? If you had a soil test, say the number (ECe).",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "الأرض فيها ملح؟ يعني قشرة بيضاء أو بقع؟ لو عملت تحليل قول الرقم",
+     "en": "Is there salt on the soil, meaning a white crust or patches? If you had a soil test, say the number",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "شايف على الأرض ملح أبيض أو بقع؟",
+     "en": "Do you see white salt or patches on the soil?",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "where": "When Eyad did not understand (place)",
+   "options": [
+    {
+     "key": "A",
+     "ar": "مفهمتش. قول اسم المحافظة تاني من فضلك.",
+     "en": "I did not understand. Please say the governorate again.",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "معلش مسمعتش كويس. قول اسم المحافظة تاني",
+     "en": "Sorry, I did not catch that. Say the governorate again",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "سامحني، ممكن تقولها تاني؟ اسم المحافظة بس",
+     "en": "Forgive me, could you say it again? Just the governorate",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 13,
+   "where": "While the microphone is listening",
+   "options": [
+    {
+     "key": "A",
+     "ar": "بسمعك... اتكلم دلوقتي",
+     "en": "Listening... speak now",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "أنا سامعك، اتكلم",
+     "en": "I'm listening, go ahead",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "اتفضل، قول",
+     "en": "Please, say it",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 14,
+   "where": "When the phone has no working microphone",
+   "options": [
+    {
+     "key": "A",
+     "ar": "الميكروفون مش شغال على الموبايل ده. اكتب أو اختار من الأزرار.",
+     "en": "The microphone is not available on this phone. Type or tap an answer.",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "الميكروفون مش شغال هنا. اكتب أو دوس على إجابة",
+     "en": "The microphone is not working here. Type or tap an answer",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "مقدرش أسمعك دلوقتي. اكتب أو اختار من الأزرار",
+     "en": "I can't hear you now. Type or choose a button",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "where": "Result screen, the heading",
+   "options": [
+    {
+     "key": "A",
+     "ar": "دي المقارنة لـ {arSite}:",
+     "en": "Comparison for {c.siteName}",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "ده اللي لقيته لأرضك في {arSite}",
+     "en": "This is what I found for your field in {arSite}",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "نتيجة {arSite}:",
+     "en": "Result for {arSite}:",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 16,
+   "where": "Result screen, the reminder under the numbers",
+   "options": [
+    {
+     "key": "A",
+     "ar": "الدقهلية (شرق)",
+     "en": "Dakahlia (east)",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "الأرقام دي للاسترشاد بس. اسأل المرشد الزراعي قبل ما تغير دورتك",
+     "en": "These numbers are a guide only. Ask the agricultural adviser before you change your rotation",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "ده تقدير من بيانات ناسا مش ضمان. الكلمة الأخيرة ليك وللمرشد الزراعي",
+     "en": "This is an estimate from NASA data, not a guarantee. The last word is yours and the adviser's",
+     "tag": "draft"
+    }
+   ]
+  },
+  {
+   "id": 17,
+   "where": "Result screen, under 'Water need'",
+   "options": [
+    {
+     "key": "A",
+     "ar": "مية المحصول الصيفي بس، قصاد دورتك الحالية",
+     "en": "summer crop only, compared with your current rotation",
+     "tag": "what the app says now"
+    },
+    {
+     "key": "B",
+     "ar": "استهلاك المية للمحصول الصيفي، مقارنةً بدورتك",
+     "en": "Water use of the summer crop, compared with your rotation",
+     "tag": "draft"
+    },
+    {
+     "key": "C",
+     "ar": "كام مية هياخد المحصول الصيفي بالنسبة لدورتك",
+     "en": "How much water the summer crop will take compared with your rotation",
+     "tag": "draft"
+    }
+   ]
+  }
+ ]
+}
