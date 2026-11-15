@@ -11,6 +11,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 
 import 'sentences.dart';
+import 'spoken_ar.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -58,7 +59,7 @@ class LiveVoice {
     }
   }
 
-  static Future<Uint8List?> generate(String text, {Duration budget = const Duration(seconds: 6), List<String>? keyList}) async {
+  static Future<Uint8List?> generate(String text, {Duration budget = const Duration(seconds: 15), List<String>? keyList}) async {
     if (kIsWeb) {
       lastError = 'web build';
       return null;
@@ -75,29 +76,47 @@ class LiveVoice {
       return null;
     }
     final sw = Stopwatch()..start();
+    Duration left() => budget - sw.elapsed;
     for (final k in ks) {
+      if (left() <= Duration.zero) break;
+      final h = {'Authorization': 'Token $k', 'Content-Type': 'application/json'}; // 'Bearer' is rejected as deprecated; only 'Token' works
+      // The realtime endpoint returns the WAV in the same response (about one second on a good connection, several on mobile data). One retry on the same key,
+      // because a first request on a phone often fails on a cold connection; the jobs endpoint below is a slower fallback that has to be polled.
+      for (var attempt = 0; attempt < 2 && left() > const Duration(seconds: 2); attempt++) {
+        try {
+          final rt = await http
+              .post(Uri.parse('$_base/v1/realtime/tts'), headers: h, body: jsonEncode({'text': text, 'speaker': _voiceId, 'dialect': 'egy'}))
+              .timeout(left() < const Duration(seconds: 10) ? left() : const Duration(seconds: 10));
+          if (rt.statusCode == 200 && rt.bodyBytes.length > 44 && String.fromCharCodes(rt.bodyBytes.take(4)) == 'RIFF') return _cache[text] = rt.bodyBytes;
+          lastError = 'Hamsa realtime answered ${rt.statusCode} after ${sw.elapsed.inMilliseconds} ms';
+          if (rt.statusCode == 401 || rt.statusCode == 402 || rt.statusCode == 403) break; // this key is refused or out of credit: next key
+        } catch (e) {
+          lastError = 'realtime ${e.runtimeType} after ${sw.elapsed.inMilliseconds} ms';
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      }
+      if (left() < const Duration(seconds: 3)) continue;
       try {
-        final h = {'Authorization': 'Token $k', 'Content-Type': 'application/json'};
-        final r = await http.post(Uri.parse('$_base/v1/jobs/text-to-speech'), headers: h, body: jsonEncode({'voiceId': _voiceId, 'text': text})).timeout(budget - sw.elapsed);
+        final r = await http.post(Uri.parse('$_base/v1/jobs/text-to-speech'), headers: h, body: jsonEncode({'voiceId': _voiceId, 'text': text})).timeout(left());
         if (r.statusCode != 200 && r.statusCode != 201) {
-          lastError = 'Hamsa answered ${r.statusCode}';
+          lastError = 'Hamsa jobs answered ${r.statusCode}';
           continue;
         }
         var job = (jsonDecode(r.body) as Map)['data'] as Map;
-        while (sw.elapsed < budget) {
+        while (left() > Duration.zero) {
           final url = ((job['jobResponse'] as Map?)?['ttsMediaFile'] ?? job['mediaUrl']) as String?;
           if (job['status'] == 'COMPLETED' && url != null) {
-            final a = await http.get(Uri.parse(url)).timeout(budget - sw.elapsed);
+            final a = await http.get(Uri.parse(url)).timeout(left());
             if (a.statusCode == 200 && a.bodyBytes.isNotEmpty) return _cache[text] = a.bodyBytes;
             break;
           }
           if (job['status'] == 'FAILED') break;
           await Future<void>.delayed(const Duration(milliseconds: 1000));
-          final g = await http.get(Uri.parse('$_base/v1/jobs?jobId=${job['id']}'), headers: h).timeout(budget - sw.elapsed);
+          final g = await http.get(Uri.parse('$_base/v1/jobs?jobId=${job['id']}'), headers: h).timeout(left());
           if (g.statusCode == 200) job = (jsonDecode(g.body) as Map)['data'] as Map;
         }
       } catch (e) {
-        lastError = e.runtimeType.toString(); // offline, quota or too slow
+        lastError = 'jobs ${e.runtimeType} after ${sw.elapsed.inMilliseconds} ms';
         continue; // next key, then the phone's voice
       }
     }
@@ -243,6 +262,7 @@ class Voice {
   /// Speaks the text in Eyad's Egyptian voice: a whole-line clip if there is one, otherwise sentence by sentence (a clip, else a live line, else the phone's voice).
   Future<void> speak(String text) async {
     if (muted) return;
+    text = speakable(text); // words for digits, dates and the EC abbreviation (spoken_ar.dart)
     final my = ++_gen;
     try {
       await _player.stop();
@@ -282,7 +302,7 @@ class Voice {
   Future<({Source? src, String how})> _resolve(String part) async {
     final clip = await Clips.lookup(part);
     if (clip != null) return (src: AssetSource('audio/$clip') as Source?, how: 'clip');
-    final live = await LiveVoice.generate(part);
+    final live = await LiveVoice.generate(forVoice(part));
     if (live != null) return (src: BytesSource(fixWavHeader(live), mimeType: 'audio/wav') as Source?, how: 'live');
     return (src: null as Source?, how: 'no clip and live generation failed: ${LiveVoice.lastError}');
   }

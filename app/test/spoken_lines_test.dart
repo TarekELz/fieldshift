@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:field_shift/dialogue.dart';
 import 'package:field_shift/engine.dart';
 import 'package:field_shift/sentences.dart';
+import 'package:field_shift/spoken_ar.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _FileBundle implements AssetBundleLike {
@@ -24,7 +25,7 @@ Set<String> _spokenSentences(EngineData data) {
   void add(Iterable<BotMessage> ms) {
     for (final m in ms) {
       if (m.result != null) continue; // the result summary depends on the numbers: generated live
-      out.addAll(splitSentences(m.ar));
+      out.addAll(splitSentences(speakable(m.ar))); // the sentences as the voice gets them
     }
   }
 

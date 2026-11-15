@@ -17,7 +17,8 @@ import 'ui_kit.dart';
 import 'voice.dart';
 
 /// Test builds show which voice each line used (and why the phone voice was used) under Eyad's name. Set to false for the final build.
-const kVoiceDiagnostics = false;
+/// True only in team test builds (flutter build apk --dart-define=VOICE_DIAG=true): a grey line under Eyad says whether the last line was a recorded clip, a live Hamsa line or the phone's voice, and why.
+const kVoiceDiagnostics = bool.fromEnvironment('VOICE_DIAG');
 
 class FlowScreen extends StatefulWidget {
   const FlowScreen({super.key, required this.onHome, this.speakReplies = true, this.demo = false});
