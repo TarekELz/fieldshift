@@ -4,7 +4,10 @@
 //
 // Arabic text is a DRAFT for Tarek's review (docs/tasks.md, task 2).
 import 'arabic.dart';
+import 'advice.dart';
 import 'engine.dart';
+import 'goals.dart';
+import 'i18n.dart';
 
 String normalizeAr(String s) {
   var t = s.toLowerCase();
@@ -18,23 +21,25 @@ String normalizeAr(String s) {
 }
 
 class Choice {
-  const Choice(this.label, this.value);
+  const Choice(this.label, this.value, {this.en});
   final String label, value;
+  final String? en; // English label, when it cannot be made from the value
 }
 
 class BotMessage {
-  BotMessage(this.ar, {this.en, this.choices = const [], this.result, this.spoken, this.showMap = false, this.retry = false, this.note = false});
+  BotMessage(this.ar, {this.en, this.choices = const [], this.result, this.goalResult, this.spoken, this.showMap = false, this.retry = false, this.note = false});
   final String ar;
   final String? en;
   final List<Choice> choices;
   final Comparison? result;
+  final Object? goalResult; // a MoneyResult or a PlanResult (goals.dart)
   final String? spoken; // what to read aloud (defaults to ar)
   final bool showMap; // show the map picker under this message
   final bool retry; // the assistant did not understand
   final bool note; // an information line shown under the next question (for example which NASA point is used)
 }
 
-enum Step { site, crop, summerWhen, wheatWhen, interval, salt, done }
+enum Step { site, goal, planCrop, planWhen, crop, summerWhen, wheatWhen, interval, salt, done }
 
 const _monthKeys = ['يناير', 'فبراير', 'مارس', 'ابريل', 'مايو', 'يونيو', 'يوليو', 'اغسطس', 'سبتمبر', 'اكتوبر', 'نوفمبر', 'ديسمبر'];
 const _defaultSummer = {'rice': '05-15', 'maize': '05-01', 'cotton': '04-01'};
@@ -146,10 +151,18 @@ Salt? parseSalt(String n) {
 }
 
 class Dialogue {
-  Dialogue(this.data);
+  Dialogue(this.data, {this.askGoal = true}) {
+    goal = askGoal ? null : 'improve';
+  }
   final EngineData data;
+  /// When false the goal question is skipped and the farmer is taken to the comparison of his own rotation (the original flow).
+  final bool askGoal;
+  late final CropBook book = CropBook(data);
   Step step = Step.site;
   String? site, crop, summerSowing, wheatSowing;
+  String? goal; // money | plan | improve
+  String? planCrop, planWhen;
+  BotMessage? lastGoal;
   int? interval;
   Salt? salt;
   Comparison? last;
@@ -157,6 +170,9 @@ class Dialogue {
 
   void reset() {
     step = Step.site;
+    goal = askGoal ? null : 'improve';
+    planCrop = planWhen = null;
+    lastGoal = null;
     site = crop = summerSowing = wheatSowing = null;
     interval = null;
     salt = null;
@@ -179,6 +195,18 @@ class Dialogue {
           choices: [for (final k in data.namedSiteKeys) Choice(arSite[k]!, k)],
           showMap: true,
         );
+      case Step.goal:
+        return BotMessage('إيه اللي عايزه دلوقتي؟', en: 'What do you want to do?', choices: const [
+          Choice('أكسب أكتر', 'money', en: 'Earn more'),
+          Choice('أزرع محصول معين في ميعاد معين', 'plan', en: 'Grow a certain crop at a certain time'),
+          Choice('أحسّن اللي بزرعه دلوقتي', 'improve', en: 'Improve what I grow now'),
+        ]);
+      case Step.planCrop:
+        return BotMessage('عايز تزرع إيه؟', en: 'What do you want to grow?', choices: [for (final c in book.all) Choice(c.ar, c.key, en: c.en)]);
+      case Step.planWhen:
+        return BotMessage('وإمتى تقريباً؟ قول الشهر، وأول ولا نص ولا آخر الشهر.', en: 'When, roughly? Say the month and early, middle or late.', choices: [
+          for (var m = 1; m <= 12; m++) Choice(arMonth[m - 1], '${m.toString().padLeft(2, '0')}-15', en: enMonthNames[m - 1]),
+        ]);
       case Step.crop:
         return BotMessage('إيه المحصول الصيفي اللي بتزرعه دلوقتي؟ رز ولا ذرة ولا قطن؟', en: 'Which summer crop do you grow now: rice, maize or cotton?',
             choices: [for (final c in ['rice', 'maize', 'cotton']) Choice(arCrop[c]!, c)]);
@@ -210,8 +238,9 @@ class Dialogue {
       reset();
       return [prompt()];
     }
+    if (n == 'repeat' && lastGoal != null) return [lastGoal!];
     if (n == 'repeat' && last != null) return [resultMessage(last!)];
-    if (step != Step.done) {
+    if (step != Step.done && (goal == null || goal == 'improve')) {
       final free = _absorb(n); // a sentence that gives several answers at once
       if (free != null) return free;
     }
@@ -234,8 +263,30 @@ class Dialogue {
           return [_retry('مفهمتش. قول اسم المحافظة تاني من فضلك.', 'I did not understand. Please say the governorate again.')];
         }
         site = s;
-        step = Step.crop;
+        step = _afterSite();
         return [BotMessage('تمام، ${arSite[s]}.', en: data.siteName(s)), prompt()];
+      case Step.goal:
+        final g = parseGoal(n);
+        if (g == 'unmeasurable') {
+          return [_retry('أنا بحسب الدخل من متوسط مصر بس، مش بوعد بربح ولا بمحصول. اختار: أكسب أكتر، ولا محصول معين في ميعاد معين، ولا أحسّن اللي بزرعه؟', 'I estimate income from Egypt-wide averages only and never promise profit or yield. Choose: earn more, a certain crop at a certain time, or improve what I grow now.')];
+        }
+        if (g == null) return [_retry('مفهمتش. عايز تكسب أكتر، ولا تزرع محصول معين في ميعاد معين، ولا تحسّن اللي بتزرعه؟', 'I did not understand. Do you want to earn more, grow a certain crop at a certain time, or improve what you grow now?')];
+        goal = g;
+        step = g == 'money' ? Step.salt : (g == 'plan' ? Step.planCrop : Step.crop);
+        return [prompt()];
+      case Step.planCrop:
+        final pc = book.parse(n);
+        if (pc == null) return [_retry('مفهمتش. قول اسم المحصول، زي القمح أو البصل أو العنب.', 'I did not understand. Say the crop, for example wheat, onion or grapes.')];
+        planCrop = pc.key;
+        step = Step.planWhen;
+        return [BotMessage('تمام، ${pc.ar}.', en: pc.en), prompt()];
+      case Step.planWhen:
+        final grid = [for (var m = 1; m <= 12; m++) for (final d in ['01', '15']) '${m.toString().padLeft(2, '0')}-$d'];
+        final pw = RegExp(r'^\d\d-\d\d$').hasMatch(n) ? n : parseWhen(n, grid);
+        if (pw == null) return [_retry('مفهمتش الميعاد. قول الشهر، وأول ولا نص ولا آخر الشهر.', 'I did not understand the date. Say the month and early, middle or late.')];
+        planWhen = pw;
+        step = Step.salt;
+        return [BotMessage('تمام، ${arDate(pw)}.'), prompt()];
       case Step.crop:
         final c = parseCrop(n);
         if (c == null) return [_retry('مفهمتش. رز ولا ذرة ولا قطن؟', 'Rice, maize or cotton?')];
@@ -274,6 +325,7 @@ class Dialogue {
         if (s == null) return [_retry('مفهمتش. مفيش علامات، ولا بقع، ولا قشرة بيضاء؟', 'None, patches or white crust?')];
         salt = s;
         step = Step.done;
+        if (goal == 'money' || goal == 'plan') return [goalResultMessage()];
         last = run();
         return [resultMessage(last!)];
       case Step.done:
@@ -366,8 +418,17 @@ class Dialogue {
     return (s == null || s.skipped || s.ece != null) ? null : s;
   }
 
+  Step _afterSite() => goal == null ? Step.goal : (goal == 'money' ? Step.salt : (goal == 'plan' ? Step.planCrop : Step.crop));
+
   Step _nextMissing() {
     if (site == null) return Step.site;
+    if (goal == null) return Step.goal;
+    if (goal == 'money') return salt == null ? Step.salt : Step.done;
+    if (goal == 'plan') {
+      if (planCrop == null) return Step.planCrop;
+      if (planWhen == null) return Step.planWhen;
+      return salt == null ? Step.salt : Step.done;
+    }
     if (crop == null) return Step.crop;
     if (summerSowing == null) return Step.summerWhen;
     if (wheatSowing == null) return Step.wheatWhen;
@@ -466,6 +527,7 @@ class Dialogue {
     final found = [fSite, fCrop, fSummer, fWheat, fInt, fSalt].where((e) => e != null).length;
     if (found < 2) return null;
 
+    if (fCrop != null || fSummer != null || fWheat != null) goal ??= 'improve'; // talking about his rotation means he wants it improved
     if (fSite != null) site = fSite;
     if (fCrop != null) crop = fCrop;
     if (fSummer != null) summerSowing = fSummer;
@@ -528,6 +590,38 @@ class Dialogue {
     }
     return null;
   }
+
+  /// The goal the farmer named, 'unmeasurable' when he asks for profit or yield promises, or null.
+  String? parseGoal(String n) {
+    if (RegExp(r'ضمان|اضمن|اكيد|guarantee|promise').hasMatch(n)) return 'unmeasurable';
+    if (RegExp(r'فلوس|ربح|مكسب|اكسب|اكتر دخل|دخل|ايراد|money|profit|income|earn|revenue').hasMatch(n)) return 'money';
+    if (RegExp(r'احسن|حسن|دورتي|دورتك|الحالي|اللي بزرع|improve|current|my rotation|better').hasMatch(n)) return 'improve';
+    if (RegExp(r'معين|ميعاد|عايز ازرع|اريد ان ازرع|ازرع|خطه|plan|specific|certain|grow').hasMatch(n)) return 'plan';
+    return null;
+  }
+
+  BotMessage goalResultMessage() {
+    final e = book.eceOf(salt);
+    final assumed = salt?.signs != null;
+    final name = arSite[site] ?? site!;
+    final enName = data.siteName(site!);
+    final Object res;
+    if (goal == 'money') {
+      res = MoneyResult(site!, siteName(name, enName), {for (final g in ['winter', 'summer', 'any', 'orchard']) g: book.rank(g, e)}, e, assumed);
+    } else {
+      final c = book.info(planCrop!)!;
+      final sv = c.season ? seasonVerdict(AdviceData(const {}, data.season), site!, c.key, planWhen!) : SeasonVerdict('cannot judge', null);
+      final gr = book.gross(c.key, e);
+      final saltStatus = gr.saltKnown ? (gr.saltPct == null ? 'not advised' : saltStatus_(gr.saltPct!)) : null;
+      res = PlanResult(site!, siteName(name, enName), c, planWhen!, sv.label, sv.best, saltStatus, gr.saltPct, gr, book.rank(c.group, e), e, assumed);
+    }
+    lastGoal = BotMessage('دي النتيجة لـ $name:', en: 'The result for $enName', goalResult: res, spoken: goalSpoken(res, book),
+        choices: const [Choice('ابدأ من جديد', 'restart'), Choice('اقرأ النتيجة تاني', 'repeat')]);
+    return lastGoal!;
+  }
+
+  static String saltStatus_(int pct) => pct >= 90 ? 'fine' : (pct >= 75 ? 'reduced' : 'not advised');
+  String siteName(String ar, String en) => isAr ? ar : en;
 
   Comparison run() {
     final seqs = <SequenceInput>[

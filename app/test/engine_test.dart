@@ -78,7 +78,7 @@ void main() {
     });
 
     test('tapping Tanta picks the Gharbia data point and moves on to the crop question', () {
-      final d = Dialogue(data);
+      final d = Dialogue(data, askGoal: false);
       final msgs = d.handleLocation(30.79, 31.00);
       expect(d.site, 'gharbia');
       expect(d.step, Step.crop);
@@ -95,7 +95,7 @@ void main() {
     });
 
     test('a governorate without its own data point and outside every data cell uses the nearest one and says so', () {
-      final d = Dialogue(data);
+      final d = Dialogue(data, askGoal: false);
       final msgs = d.handleLocation(31.26, 32.30); // Port Said
       expect(d.step, Step.crop);
       expect(d.site, isNotNull);
@@ -105,23 +105,23 @@ void main() {
 
     test('Mansoura uses the Gharbia data, because both lie in the same NASA cell, and says so', () {
       expect(powerCell(31.04, 31.38), powerCell(30.86, 31.05));
-      final d = Dialogue(data);
+      final d = Dialogue(data, askGoal: false);
       final msgs = d.handleLocation(31.04, 31.38);
       expect(d.site, 'gharbia');
       expect(msgs.first.ar, contains('نفس خلية'));
-      final typed = Dialogue(data)..handle('المنصورة');
+      final typed = Dialogue(data, askGoal: false)..handle('المنصورة');
       expect(typed.site, 'gharbia');
     });
 
     test('Menoufia and Sharqia share a cell, yet each governorate gets its own data point', () {
       expect(powerCell(30.54, 30.95), powerCell(30.49, 31.43));
-      final z = Dialogue(data);
+      final z = Dialogue(data, askGoal: false);
       z.handleLocation(30.59, 31.50); // Zagazig, Sharqia
       expect(z.site, 'sharqia');
-      final s = Dialogue(data);
+      final s = Dialogue(data, askGoal: false);
       s.handleLocation(30.49, 31.43); // the Sharqia data point itself
       expect(s.site, 'sharqia');
-      final m = Dialogue(data);
+      final m = Dialogue(data, askGoal: false);
       m.handleLocation(30.55, 30.99); // Shebin El-Kom, Menoufia
       expect(m.site, 'menoufia');
     });
@@ -137,52 +137,52 @@ void main() {
 
     test('east Dakahlia has its own data point in a different cell', () {
       expect(powerCell(31.05, 31.70), isNot(powerCell(30.86, 31.05)));
-      final d = Dialogue(data);
+      final d = Dialogue(data, askGoal: false);
       final msgs = d.handleLocation(31.06, 31.68);
       expect(d.site, 'dakahlia');
       expect(msgs.first.ar, contains('الدقهلية'));
     });
 
     test('a governorate can also be named by voice or typing', () {
-      final d = Dialogue(data);
+      final d = Dialogue(data, askGoal: false);
       d.handle('الدقهلية');
       expect(d.step, Step.crop);
-      final e = Dialogue(data);
+      final e = Dialogue(data, askGoal: false);
       expect(e.handle('أنا في القليوبية').first.ar, contains('القليوبية'));
     });
 
     test('a tap in the sea or in another country is refused', () {
-      final d = Dialogue(data);
+      final d = Dialogue(data, askGoal: false);
       final msgs = d.handleLocation(32.6, 30.0); // Mediterranean, off the coast
       expect(d.step, Step.site);
       expect(msgs.first.retry, isTrue);
     });
 
     test('a governorate outside the Delta is named in the refusal', () {
-      final d = Dialogue(data);
+      final d = Dialogue(data, askGoal: false);
       expect(d.handleLocation(25.70, 32.65).first.ar, contains('الأقصر'));
     });
 
     test('the Halayeb triangle is named; Bir Tawil is drawn like the rest of the map, without a name', () {
       expect(data.areas.firstWhere((a) => a['kind'] != 'plain')['ar'], 'حلايب وشلاتين');
       expect(data.areas.firstWhere((a) => a['id'] == 'Bir Tawil')['kind'], 'plain');
-      final h = Dialogue(data).handleLocation(22.3, 36.2); // Halayeb
+      final h = Dialogue(data, askGoal: false).handleLocation(22.3, 36.2); // Halayeb
       expect(h.first.ar, contains('حلايب وشلاتين'));
       expect(h.first.ar, contains('منطقة'));
       expect(h.first.retry, isTrue);
-      final b = Dialogue(data).handleLocation(21.95, 33.6); // inside the Bir Tawil outline
+      final b = Dialogue(data, askGoal: false).handleLocation(21.95, 33.6); // inside the Bir Tawil outline
       expect(b.first.ar, contains('برا دلتا النيل'));
       expect(b.first.ar, isNot(contains('بئر')));
       for (final word in ['حلايب', 'شلاتين', 'halayeb', 'Shalateen', 'halaib']) {
-        final d = Dialogue(data);
+        final d = Dialogue(data, askGoal: false);
         expect(d.handle(word).first.ar, contains('حلايب وشلاتين'), reason: word);
         expect(d.step, Step.site);
       }
-      expect(Dialogue(data).handle('shalateen').first.en, contains('outside the Nile Delta'));
+      expect(Dialogue(data, askGoal: false).handle('shalateen').first.en, contains('outside the Nile Delta'));
     });
 
     test('a tap outside the Delta is refused and the map stays', () {
-      final d = Dialogue(data);
+      final d = Dialogue(data, askGoal: false);
       final msgs = d.handleLocation(25.70, 32.65); // Luxor
       expect(d.site, isNull);
       expect(d.step, Step.site);
@@ -192,7 +192,7 @@ void main() {
     });
 
     test('a map tap after the place is chosen does not change it', () {
-      final d = Dialogue(data);
+      final d = Dialogue(data, askGoal: false);
       d.handleLocation(30.86, 31.05);
       final before = d.site;
       d.handleLocation(31.35, 31.75);
@@ -200,7 +200,7 @@ void main() {
     });
 
     test('the opening question asks where the field is and shows the map', () {
-      final m = Dialogue(data).opening();
+      final m = Dialogue(data, askGoal: false).opening();
       expect(m.ar, contains('الخريطة'));
       expect(m.en, contains('map'));
       expect(m.showMap, isTrue);
@@ -236,7 +236,7 @@ void main() {
     });
 
     test('a full conversation reaches a comparison and speaks only engine numbers', () {
-      final d = Dialogue(data);
+      final d = Dialogue(data, askGoal: false);
       var out = d.handle('الغربية');
       expect(d.step, Step.crop);
       d.handle('رز');
@@ -256,7 +256,7 @@ void main() {
 
     test('every answer button sends a date the dialogue keeps exactly (1 November and 1 December were read as January)', () {
       for (final w in data.wheatDates('gharbia')) {
-        final d = Dialogue(data)
+        final d = Dialogue(data, askGoal: false)
           ..site = 'gharbia'
           ..crop = 'rice'
           ..summerSowing = '06-15'
@@ -265,7 +265,7 @@ void main() {
         expect(d.wheatSowing, w, reason: 'wheat button $w');
       }
       for (final s in data.summerDates('gharbia', 'rice')) {
-        final d = Dialogue(data)
+        final d = Dialogue(data, askGoal: false)
           ..site = 'gharbia'
           ..crop = 'rice'
           ..step = Step.summerWhen;
@@ -275,7 +275,7 @@ void main() {
     });
 
     test('unclear answers get a retry, not a crash', () {
-      final d = Dialogue(data);
+      final d = Dialogue(data, askGoal: false);
       expect(d.handle('هه').first.ar, contains('مفهمتش'));
       expect(d.step, Step.site);
     });

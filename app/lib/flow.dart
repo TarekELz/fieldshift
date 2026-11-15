@@ -4,6 +4,8 @@
 import 'package:flutter/material.dart' hide Step;
 
 import 'dialogue.dart';
+import 'goals.dart';
+import 'interpret.dart';
 import 'engine.dart';
 import 'eyad.dart';
 import 'i18n.dart';
@@ -11,6 +13,9 @@ import 'map_picker.dart';
 import 'result_view.dart';
 import 'ui_kit.dart';
 import 'voice.dart';
+
+/// Test builds show which voice each line used (and why the phone voice was used) under Eyad's name. Set to false for the final build.
+const kVoiceDiagnostics = true;
 
 class FlowScreen extends StatefulWidget {
   const FlowScreen({super.key, required this.onHome, this.speakReplies = true, this.demo = false});
@@ -102,14 +107,25 @@ class _FlowScreenState extends State<FlowScreen> {
     });
     input.clear();
     if (typing) focus.requestFocus(); // keep the keyboard open between typed answers
-    voice.speak(main.result != null ? spokenN(main.result!) : '${n != null ? '${msgText(n)} ' : ''}${msgText(main)}');
+    voice.speak(main.result != null
+        ? spokenN(main.result!)
+        : (main.goalResult != null && isAr ? (main.spoken ?? msgText(main)) : '${n != null ? '${msgText(n)} ' : ''}${msgText(main)}'));
   }
 
-  void send(String text) {
+  Future<void> send(String text) async {
     final d = dialogue;
     if (d == null || text.trim().isEmpty) return;
     voice.stopSpeaking();
-    _apply(d.handle(text));
+    var replies = d.handle(text);
+    // an answer that is not among the options: the AI says which option it means (it sees only this short phrase)
+    final opts = replies.last.retry ? interpretOptions(d) : null;
+    if (opts != null && !RegExp(r'^[a-z_0-9-]+$').hasMatch(text.trim())) {
+      setState(() => partial = tr('ثانية واحدة، بفهم كلامك...', 'One moment, working out what you mean...'));
+      final key = await interpretPhrase(text, opts);
+      if (!mounted) return;
+      if (key != null) replies = d.handle(key);
+    }
+    _apply(replies);
   }
 
   void _pickLocation(double lat, double lon) {
@@ -190,7 +206,7 @@ class _FlowScreenState extends State<FlowScreen> {
               ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('${tr('تعذر تحميل البيانات', 'Could not load the data')}:\n$loadError')))
               : Column(children: [
                   _topBar(),
-                  Expanded(child: dialogue == null || current == null ? Center(child: CircularProgressIndicator(color: Fs.accent)) : (current!.result != null ? _result() : _question())),
+                  Expanded(child: dialogue == null || current == null ? Center(child: CircularProgressIndicator(color: Fs.accent)) : (current!.result != null ? _result() : (current!.goalResult != null ? GoalView(result: current!.goalResult!, book: dialogue!.book, onRestart: _restart, onSpeak: (s) => voice.speak(s)) : _question()))),
                 ]),
         ),
       ),
@@ -246,6 +262,11 @@ class _FlowScreenState extends State<FlowScreen> {
       ),
       const SizedBox(height: 2),
       Text(tr('إياد', 'Eyad'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Fs.dim)),
+      if (kVoiceDiagnostics)
+        ValueListenableBuilder<String>(
+          valueListenable: voice.status,
+          builder: (context, s, _) => s.isEmpty ? const SizedBox.shrink() : Padding(padding: const EdgeInsets.only(top: 2, left: 16, right: 16), child: Text(s, textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: Fs.dim))),
+        ),
       ValueListenableBuilder<bool>(
         valueListenable: voice.aiVoice,
         builder: (context, ai, _) => AnimatedSize(

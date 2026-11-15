@@ -13,7 +13,11 @@ class _FileBundle implements AssetBundleLike {
   Future<String> loadString(String key) async => File(key).readAsString();
 }
 
-const _route = ['gharbia', 'rice', '06-15', '12-01', '10', 'patches'];
+const _routes = [
+  ['gharbia', 'improve', 'rice', '06-15', '12-01', '10', 'patches'],
+  ['gharbia', 'plan', 'onion', '11-15', 'patches'],
+  ['gharbia', 'money', 'patches'],
+];
 
 Set<String> _spokenSentences(EngineData data) {
   final out = <String>{};
@@ -25,26 +29,25 @@ Set<String> _spokenSentences(EngineData data) {
   }
 
   add([Dialogue(data).opening()]);
-  for (var i = 0; i < _route.length; i++) {
-    final probe = Dialogue(data)..opening();
-    for (var j = 0; j < i; j++) {
-      probe.handle(_route[j]);
-    }
-    final choices = [
-      for (final m in [probe.prompt()]) ...m.choices.map((c) => c.value)
-    ];
-    for (final v in choices) {
-      final d = Dialogue(data)..opening();
+  for (final route in _routes) {
+    for (var i = 0; i < route.length; i++) {
+      final probe = Dialogue(data)..opening();
       for (var j = 0; j < i; j++) {
-        d.handle(_route[j]);
+        probe.handle(route[j]);
       }
-      add(d.handle(v));
+      for (final v in probe.prompt().choices.map((c) => c.value)) {
+        final d = Dialogue(data)..opening();
+        for (var j = 0; j < i; j++) {
+          d.handle(route[j]);
+        }
+        add(d.handle(v));
+      }
+      final e = Dialogue(data)..opening();
+      for (var j = 0; j < i; j++) {
+        e.handle(route[j]);
+      }
+      add(e.handle('xyz'));
     }
-    final e = Dialogue(data)..opening();
-    for (var j = 0; j < i; j++) {
-      e.handle(_route[j]);
-    }
-    add(e.handle('xyz'));
   }
   return out;
 }

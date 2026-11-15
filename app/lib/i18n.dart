@@ -70,6 +70,7 @@ String saltN(String status) => isAr ? (arSalt[status] ?? status) : const {'fine'
 /// Label of an answer button in the current language (the Arabic label comes from the dialogue; English is made from the value).
 String choiceLabel(Choice c, Step step) {
   if (isAr) return c.label;
+  if (c.en != null) return c.en!;
   switch (step) {
     case Step.site:
       return enSite[c.value] ?? c.label;
@@ -82,6 +83,10 @@ String choiceLabel(Choice c, Step step) {
       return c.value == 'skip' ? "I don't know" : 'Every ${c.value} days';
     case Step.salt:
       return const {'none': 'No signs', 'patches': 'Salty patches', 'crust': 'White crust', 'skip': "I don't know"}[c.value] ?? c.label;
+    case Step.goal:
+    case Step.planCrop:
+    case Step.planWhen:
+      return c.label;
     case Step.done:
       return c.value == 'restart' ? 'Start again' : 'Read it again';
   }

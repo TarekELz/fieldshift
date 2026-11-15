@@ -17,6 +17,9 @@ import time
 
 import requests
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from fix_wav_headers import fix as fix_wav  # noqa: E402
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / "app" / "assets" / "audio"
 B = "https://api.tryhamsa.com"
@@ -94,7 +97,7 @@ def main():
             continue
         ext = ".wav" if ".wav" in url.lower().split("?")[0] else ".mp3"
         name = clip_name(text) + ext
-        (OUT / name).write_bytes(data)
+        (OUT / name).write_bytes(fix_wav(data) if name.endswith('.wav') else data)
         idx[text] = name
         idx_path.write_text(json.dumps(idx, ensure_ascii=False, indent=1), encoding="utf8")
         print("ok", name, len(data), "bytes, cost", cost, "|", text[:40], flush=True)
