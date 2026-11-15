@@ -324,9 +324,9 @@ class Dialogue {
   /// Halayeb or Shalateen named by voice or typing.
   Map<String, dynamic>? _areaByName(String n) {
     for (final a in data.areas) {
-      final core = normalizeAr(a['ar'] as String);
-      final id = (a['id'] as String).toLowerCase();
-      if (n.contains(core) || n.contains(id) || (id == 'halayeb' && n.contains('halaib'))) return a as Map<String, dynamic>;
+      for (final k in (a['aliases'] as List).cast<String>()) {
+        if (n.contains(normalizeAr(k))) return a as Map<String, dynamic>;
+      }
     }
     return null;
   }

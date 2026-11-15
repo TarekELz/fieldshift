@@ -94,3 +94,7 @@ Last audit: 2026-11-14 12:50 local (Step 1, full audit). Files were opened and c
 ## 2026-11-15 update: Dakahlia / Mansoura weather
 - Tarek asked where Dakahlia and Mansoura get their data: before, from the nearest point (Gharbia at 37 km for Mansoura, Damietta for the governorate's middle). Checked and fixed (D11): Mansoura lies in the same NASA POWER cell as Gharbia (identical weather), so it now uses Gharbia's data and the app says so; a seventh point, east Dakahlia, was downloaded (1990-2025, no gaps) and the app picks by weather cell first. Mean Tmax differs from Gharbia by about 0.8 C. Not checked: whether the east Dakahlia point is cropland (task 2 in tasks.md now covers seven points); POWER temperatures still not checked against stations.
 - Tests: 27 Flutter, 43 Python.
+
+## 2026-11-15 update: Halayeb triangle and avatar
+- Tarek said the Halayeb and Shalateen shapes were wrong and that a southern triangle was missing from the border. Checked: our national outline follows 22N all along the south and already contains 100% of the Natural Earth Halayib Triangle; the shapes I had drawn were two HDX administrative divisions, not the triangle. Now the triangle itself is drawn and named. OPEN: which "missing triangle" Tarek means exactly (Bir Tawil, south of 22N, is not drawn and is not in Egypt's outline).
+- Avatar: smaller everywhere (welcome 84, question 78, result 50) and the calm "main" pose is the default; the arms-up pose is no longer used. Which poses Tarek wants where is OPEN.

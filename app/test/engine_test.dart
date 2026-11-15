@@ -141,19 +141,19 @@ void main() {
       expect(d.handleLocation(25.70, 32.65).first.ar, contains('الأقصر'));
     });
 
-    test('Halayeb and Shalateen are drawn, named, and recognised outside the Delta', () {
-      expect(data.areas.map((a) => a['id']).toSet(), {'Halayeb', 'Shalateen'});
-      expect(data.areas.map((a) => a['ar']).toSet(), {'حلايب', 'شلاتين'});
+    test('the Halayeb triangle is drawn as one named area, and recognised outside the Delta', () {
+      expect(data.areas.length, 1);
+      expect(data.areas.first['ar'], 'حلايب وشلاتين');
       final h = Dialogue(data).handleLocation(22.3, 36.2); // Halayeb
-      expect(h.first.ar, contains('حلايب'));
+      expect(h.first.ar, contains('حلايب وشلاتين'));
       expect(h.first.ar, contains('منطقة'));
       expect(h.first.retry, isTrue);
-      final s = Dialogue(data).handleLocation(23.0, 34.6); // Shalateen
-      expect(s.first.ar, contains('شلاتين'));
-      final byName = Dialogue(data);
-      expect(byName.handle('حلايب').first.ar, contains('حلايب'));
-      expect(byName.step, Step.site);
-      expect(Dialogue(data).handle('shalateen').first.en, contains('Shalateen'));
+      for (final word in ['حلايب', 'شلاتين', 'halayeb', 'Shalateen', 'halaib']) {
+        final d = Dialogue(data);
+        expect(d.handle(word).first.ar, contains('حلايب وشلاتين'), reason: word);
+        expect(d.step, Step.site);
+      }
+      expect(Dialogue(data).handle('shalateen').first.en, contains('outside the Nile Delta'));
     });
 
     test('a tap outside the Delta is refused and the map stays', () {

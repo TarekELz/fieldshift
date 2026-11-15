@@ -4,6 +4,7 @@ Sources:
   HDX "Egypt - Subnational Administrative Boundaries" (COD-AB, CAPMAS via OCHA, CC BY-IGO, modified 2026-01-26),
     admin 1: the 27 governorates with their Arabic names. Downloaded to data/raw/hdx_egy/ (gitignored) if missing.
   Natural Earth (public domain), https://www.naturalearthdata.com/, nvkelso/natural-earth-vector repo:
+    ne_10m_admin_0_disputed_areas    the Halayeb Triangle (drawn and named as its own area inside Egypt's outline)
     ne_10m_rivers_lake_centerlines   the Nile, the Rosetta and Damietta branches, the Suez Canal
     ne_10m_lakes                     Lake Nasser
 Natural Earth rivers/lakes are generalized cartographic data, NOT a survey. Output coordinates are [longitude, latitude],
@@ -32,25 +33,31 @@ DELTA = ["Alexandria", "Behera", "Kafr El-Shikh", "Gharbia", "Dakahlia", "Damiet
 OWN_SITE = {"Behera": "beheira", "Kafr El-Shikh": "kafr_el_sheikh", "Gharbia": "gharbia", "Menoufia": "menoufia", "Sharkia": "sharqia", "Dakahlia": "dakahlia", "Damietta": "damietta"}
 
 
-AREAS = {"Halayib": "Halayeb", "Shallatin": "Shalateen"}  # HDX admin-2 names -> ids shown in the app (both are in the Red Sea governorate)
+NE_DISPUTED = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_disputed_areas.geojson"
 
 
-def hdx_admin2_areas():
-    """Halayeb and Shalateen, drawn as their own highlighted areas inside the Red Sea governorate (HDX admin 2)."""
-    f = HDX_DIR / "egy_admin2.geojson"
-    out = []
-    for ft in json.loads(f.read_text(encoding="utf8"))["features"]:
-        p = ft["properties"]
-        if p["adm2_name"] not in AREAS:
-            continue
-        g = ft["geometry"]
-        polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
-        rings = [simplify_ring([tuple(q) for q in poly[0]], 0.006) for poly in polys]
-        rings = [r for r in rings if len(r) >= 4]
-        big = max(rings, key=lambda r: abs(area_centroid(r)[0]))
-        _, cx, cy = area_centroid(big)
-        out.append({"id": AREAS[p["adm2_name"]], "ar": p["adm2_name1"].replace("قسم ", ""), "parent": p["adm1_name"], "label": [round(cx, 3), round(cy, 3)], "rings": [rnd(r) for r in rings]})
-    return out
+def halayeb_triangle():
+    """The Halayeb Triangle (Natural Earth 'Halayib Triangle', public domain), the area people call Halayeb and Shalateen.
+    It lies inside Egypt's official outline (north of the 22nd parallel, which is Egypt's border); the HDX governorate
+    polygons already contain it, so it is only drawn and named here as its own area. Bir Tawil (south of 22N) is NOT part of
+    this outline."""
+    f = ROOT / "data" / "raw" / "natural_earth" / "disputed.geojson"
+    if not f.exists():
+        f.parent.mkdir(parents=True, exist_ok=True)
+        r = requests.get(NE_DISPUTED, timeout=300)
+        r.raise_for_status()
+        f.write_bytes(r.content)
+    feat = [x for x in json.loads(f.read_text(encoding="utf8"))["features"] if x["properties"].get("NAME") == "Halayib Triangle"][0]
+    g = feat["geometry"]
+    polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
+    rings = [simplify_ring([tuple(q) for q in poly[0]], 0.004) for poly in polys]
+    big = max(rings, key=lambda r: abs(area_centroid(r)[0]))
+    _, cx, cy = area_centroid(big)
+    return [{
+        "id": "Halayeb and Shalateen", "ar": "حلايب وشلاتين", "parent": "Red Sea",
+        "aliases": ["حلايب", "شلاتين", "ابو رماد", "halayeb", "halaib", "halayib", "shalateen", "shalatin", "abu ramad"],
+        "label": [round(cx, 3), round(cy, 3)], "rings": [rnd(r) for r in rings],
+    }]
 
 
 def hdx_admin1():
@@ -162,7 +169,7 @@ def main():
 
     out = {
         "source": "Governorates: HDX COD-AB Egypt (CAPMAS via OCHA, CC BY-IGO), simplified to about 0.6 km. Rivers and lakes: Natural Earth (public domain), generalized.",
-        "bbox": [24.5, 21.8, 36.95, 31.9], "governorates": governorates, "areas": hdx_admin2_areas(), "water": water, "lakes": lake_polys,
+        "bbox": [24.5, 21.8, 36.95, 31.9], "governorates": governorates, "areas": halayeb_triangle(), "water": water, "lakes": lake_polys,
     }
     dest = ROOT / "app" / "assets" / "data" / "egypt_map.json"
     dest.write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False), encoding="utf8")

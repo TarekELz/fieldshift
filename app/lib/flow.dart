@@ -154,13 +154,13 @@ class _FlowScreenState extends State<FlowScreen> {
   EyadMood get _mood {
     if (listening) return EyadMood.main;
     final m = current;
-    if (m == null) return EyadMood.excited;
+    if (m == null) return EyadMood.main;
     if (m.result != null) {
       if (m.result!.caveatKind == 'sea') return EyadMood.surprised;
       return m.result!.rows.any((r) => r.warnings.isNotEmpty) ? EyadMood.worried : EyadMood.success;
     }
     if (m.retry) return EyadMood.thoughtful;
-    return dialogue?.step == Step.site ? EyadMood.excited : EyadMood.guiding;
+    return dialogue?.step == Step.site ? EyadMood.main : EyadMood.guiding;
   }
 
   @override
@@ -217,7 +217,7 @@ class _FlowScreenState extends State<FlowScreen> {
     final chips = _answered();
     return Column(children: [
       const SizedBox(height: 6),
-      EyadAvatar(mood: _mood, size: 100, progress: done / 6),
+      EyadAvatar(mood: _mood, size: 78, progress: done / 6),
       const SizedBox(height: 10),
       if (chips.isNotEmpty)
         Padding(
