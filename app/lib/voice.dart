@@ -11,6 +11,8 @@ class Voice {
   bool sttReady = false, ttsReady = false, listening = false;
   bool muted = false; // set by the setup choice "I'll type": replies are written, not spoken
   String? sttLocale, ttsLang, lastError;
+  List<LocaleName> _sttLocales = [];
+  bool arabic = true;
 
   Future<void> init() async {
     try {
@@ -25,6 +27,7 @@ class Voice {
       );
       if (sttReady) {
         final locales = await _stt.locales();
+        _sttLocales = locales;
         String norm(String s) => s.toLowerCase().replaceAll('-', '_');
         final eg = locales.where((l) => norm(l.localeId) == 'ar_eg');
         final ar = locales.where((l) => norm(l.localeId).startsWith('ar'));
@@ -51,6 +54,29 @@ class Voice {
       }
     } catch (e) {
       ttsReady = false;
+      lastError = '$e';
+    }
+  }
+
+  /// Switch recognition and speech to Arabic (ar-EG first) or English (en-US first), when the phone has them.
+  Future<void> setLanguage(bool toArabic) async {
+    arabic = toArabic;
+    String norm(String s) => s.toLowerCase().replaceAll('-', '_');
+    final exact = _sttLocales.where((l) => norm(l.localeId) == (toArabic ? 'ar_eg' : 'en_us'));
+    final any = _sttLocales.where((l) => norm(l.localeId).startsWith(toArabic ? 'ar' : 'en'));
+    sttLocale = exact.isNotEmpty ? exact.first.localeId : (any.isNotEmpty ? any.first.localeId : null);
+    try {
+      for (final l in (toArabic ? ['ar-EG', 'ar-SA', 'ar'] : ['en-US', 'en-GB', 'en'])) {
+        final ok = await _tts.isLanguageAvailable(l);
+        if (ok == true || ok == 1) {
+          ttsLang = l;
+          await _tts.setLanguage(l);
+          ttsReady = true;
+          return;
+        }
+      }
+      ttsReady = false; // no voice for this language on the phone: replies stay written
+    } catch (e) {
       lastError = '$e';
     }
   }

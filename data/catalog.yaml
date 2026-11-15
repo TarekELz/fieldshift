@@ -190,3 +190,9 @@ map_sources_candidates:
     source: "OpenStreetMap via Overpass: 175 named river/canal ways, 43 names, about 2,100 km in the Delta box (Damietta Branch 246 km, Rosetta Branch 238 km, Bahr Shebin 143 km, Ismailia Canal 131 km)"
     license: ODbL
     status: candidate for drawing the main canals; the Delta's full network is about 40,000 km of canals and 18,000 km of drains (JICA figure, not verified here)
+
+app_hero_images:
+  source: "Rendered by scripts/make_delta_images.py from the MODIS MOD13Q1 NDVI rasters already in data/raw (2015-2022 median at 2 Feb and 13 Aug)"
+  files: app/assets/img/delta_winter.jpg, delta_summer.jpg (about 440 KB each)
+  status: used as the hero picture on the welcome and result screens, captioned as NASA MODIS greenness. Data art, not a map or a photograph
+

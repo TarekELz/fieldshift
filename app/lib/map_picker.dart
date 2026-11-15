@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'engine.dart';
+import 'i18n.dart';
 import 'ui_kit.dart';
 
 const _lonMin = 24.5, _lonMax = 36.95, _latMin = 21.8, _latMax = 31.9;
@@ -106,11 +107,11 @@ class _MapPickerState extends State<MapPicker> with SingleTickerProviderStateMix
         ),
         const SizedBox(height: 8),
         Row(children: [
-          Expanded(child: Text('اضغط على محافظتك من دلتا النيل (الخضرا) عشان تكبّرها، وبعدين اضغط عليها تاني. النقط التركواز هي نقاط بيانات ناسا.', style: TextStyle(fontSize: 12, color: Fs.dim.withValues(alpha: 0.95), height: 1.35))),
-          TextButton.icon(onPressed: () => _zoomDelta(w, h), icon: const Icon(Icons.zoom_in_map_rounded, size: 18), label: const Text('الدلتا')),
-          TextButton.icon(onPressed: () => _animateTo(Matrix4.identity()), icon: const Icon(Icons.public_rounded, size: 18), label: const Text('مصر')),
+          Expanded(child: Text(tr('اضغط على محافظتك (الخضرا) عشان تكبّرها، وبعدين اضغط عليها تاني.', 'Tap your governorate (green) to zoom in, then tap it again.'), style: TextStyle(fontSize: 12, color: Fs.dim.withValues(alpha: 0.95), height: 1.35))),
+          TextButton.icon(onPressed: () => _zoomDelta(w, h), icon: const Icon(Icons.zoom_in_map_rounded, size: 18), label: Text(tr('الدلتا', 'Delta'))),
+          TextButton.icon(onPressed: () => _animateTo(Matrix4.identity()), icon: const Icon(Icons.public_rounded, size: 18), label: Text(tr('مصر', 'Egypt'))),
         ]),
-        const Text('حدود المحافظات من بيانات CAPMAS الرسمية عبر HDX (مبسّطة)، والأنهار تقريبية.', style: TextStyle(fontSize: 10, color: Fs.dim)),
+        Text(tr('حدود المحافظات من بيانات CAPMAS الرسمية عبر HDX (مبسّطة)، والأنهار تقريبية.', 'Borders: official CAPMAS data via HDX, simplified. Rivers are approximate.'), style: TextStyle(fontSize: 10, color: Fs.dim)),
       ]);
     });
   }
@@ -184,11 +185,11 @@ class _EgyptPainter extends CustomPainter {
       final delta = g['delta'] == true;
       if (delta ? zoom < 2.2 : (g['size'] as num) * zoom < 1.5) continue; // Delta governorates are always named once zoomed in
       final lbl = g['label'] as List;
-      _label(c, g['ar'] as String, p(lbl[0] as num, lbl[1] as num), size: 11, color: delta ? Colors.white : Colors.white54);
+      _label(c, (isAr ? g['ar'] : g['id']) as String, p(lbl[0] as num, lbl[1] as num), size: 11, color: delta ? Colors.white : Colors.white54);
     }
     if (zoom < 2.0) {
       final b = d.deltaBox;
-      _label(c, 'دلتا النيل', p((b[0] + b[2]) / 2, b[3] + 0.28), size: 11, color: Fs.green);
+      _label(c, tr('دلتا النيل', 'Nile Delta'), p((b[0] + b[2]) / 2, b[3] + 0.28), size: 11, color: Fs.green);
     }
     // the six NASA data points
     for (final k in d.siteKeys) {
@@ -208,5 +209,5 @@ class _EgyptPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_EgyptPainter o) => o.zoom != zoom || o.pin != pin || o.selectedId != selectedId;
+  bool shouldRepaint(_EgyptPainter o) => true; // cheap, and the labels follow the language
 }

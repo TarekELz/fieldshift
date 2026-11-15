@@ -2,3 +2,4 @@ requests
 pyyaml
 rasterio
 pytest
+pillow

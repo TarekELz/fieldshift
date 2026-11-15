@@ -1,0 +1,6 @@
+delta_winter.jpg and delta_summer.jpg
+
+Made by scripts/make_delta_images.py from NASA MODIS MOD13Q1 v061 NDVI (Terra, 250 m, 16-day composites), the data in
+data/raw/modis_delta_tif (NASA LP DAAC, Didan 2021). Each picture is the pixel-wise median of the 2015-2022 composites at
+that time of year (winter peak around 2 February, summer around 13 August), coloured by us. It is data art, not a map:
+no borders or labels. Greener = more vegetation. Not a photograph.

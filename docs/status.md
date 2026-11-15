@@ -71,3 +71,9 @@ Last audit: 2026-11-14 12:50 local (Step 1, full audit). Files were opened and c
 - Not done: APK not rebuilt since these changes (the MODIS download is still using memory); not tested on a phone; nothing pushed.
 
 - Corrections after the independent review (2026-11-15): MODIS is 242 of 254 dates on disk (not 120, not all); the 12 missing include nine consecutive composites from July to October 2025, so any 2025 summer analysis has a hole. Dart tests are now 23. The sea warning now appears only for Damietta; Menoufia and Sharqia get a neutral shared-cell note. Salt ring and heat tile wording no longer imply yield or an exact hot-day count.
+
+## 2026-11-15 update: redesign and language switch
+- The scrolling chat is replaced by a guided screen: one question at a time, big answer buttons, the map, a big mic button. The result screen follows the car-control reference (hero picture, rotation switcher, one ring, two cards, round buttons for water, heat, salt, weather).
+- Hero pictures are real NASA MODIS greenness renderings of the Delta made from our own data (scripts/make_delta_images.py), replacing the painted Earth.
+- Arabic / English switch (one language at a time) on every screen; the layout flips right-to-left or left-to-right; English answers are understood when typed or spoken; voice follows the language when the phone has that voice.
+- Not done: tested only in a browser preview at phone size (no real phone, no voice test); APK not rebuilt; Arabic and English text unreviewed by a native speaker.

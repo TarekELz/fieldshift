@@ -141,10 +141,10 @@ void main() {
       expect(d.site, before);
     });
 
-    test('the opening message introduces Eyad as an AI assistant and shows the map', () {
+    test('the opening question asks where the field is and shows the map', () {
       final m = Dialogue(data).opening();
-      expect(m.ar, contains('إياد'));
-      expect(m.ar, contains('الذكي'));
+      expect(m.ar, contains('الخريطة'));
+      expect(m.en, contains('map'));
       expect(m.showMap, isTrue);
     });
 

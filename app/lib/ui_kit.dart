@@ -6,6 +6,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'i18n.dart';
+
 class Fs {
   static const bg = Color(0xFF05070A);
   static const card = Color(0xFF0F1318);
@@ -240,4 +242,30 @@ class _EarthPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_EarthPainter o) => false;
+}
+
+/// Arabic / English switch: two segments, the active one filled.
+class LangPill extends StatelessWidget {
+  const LangPill({super.key});
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<String>(
+        valueListenable: lang,
+        builder: (context, l, _) {
+          Widget seg(String label, String code) => GestureDetector(
+                onTap: () => lang.value = code,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                  decoration: BoxDecoration(color: l == code ? Colors.white : Colors.transparent, borderRadius: BorderRadius.circular(20)),
+                  child: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: l == code ? Colors.black : Fs.dim)),
+                ),
+              );
+          return Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(24), border: Border.all(color: Fs.line)),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [seg('عربي', 'ar'), seg('EN', 'en')]),
+          );
+        },
+      );
 }

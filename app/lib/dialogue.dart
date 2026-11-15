@@ -23,7 +23,7 @@ class Choice {
 }
 
 class BotMessage {
-  BotMessage(this.ar, {this.en, this.choices = const [], this.result, this.spoken, this.showMap = false, this.retry = false});
+  BotMessage(this.ar, {this.en, this.choices = const [], this.result, this.spoken, this.showMap = false, this.retry = false, this.note = false});
   final String ar;
   final String? en;
   final List<Choice> choices;
@@ -31,6 +31,7 @@ class BotMessage {
   final String? spoken; // what to read aloud (defaults to ar)
   final bool showMap; // show the map picker under this message
   final bool retry; // the assistant did not understand
+  final bool note; // an information line shown under the next question (for example which NASA point is used)
 }
 
 enum Step { site, crop, summerWhen, wheatWhen, interval, salt, done }
@@ -67,8 +68,20 @@ String? parseWhen(String n, List<String> allowed) {
   for (var i = 0; i < 12; i++) {
     if (n.contains(_monthKeys[i])) month = i + 1;
   }
+  const enM = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+  for (var i = 0; i < 12; i++) {
+    if (RegExp(r'\b' + enM[i]).hasMatch(n)) month = i + 1;
+  }
+  int? enDay;
+  if (RegExp(r'\b(early|start|begin|first)').hasMatch(n)) {
+    enDay = 1;
+  } else if (RegExp(r'\b(mid|middle|half)').hasMatch(n)) {
+    enDay = 15;
+  } else if (RegExp(r'\b(late|end)').hasMatch(n)) {
+    enDay = 25;
+  }
   final num = RegExp(r'\b(\d{1,2})\b').allMatches(n).map((m) => int.parse(m.group(1)!)).toList();
-  int? day;
+  int? day = enDay;
   if (n.contains('اول') || n.contains('بدري') || n.contains('بدايه') || n.contains('بداية')) {
     day = 1;
   } else if (n.contains('نص') || n.contains('منتصف') || n.contains('وسط')) {
@@ -91,6 +104,8 @@ String? parseWhen(String n, List<String> allowed) {
 }
 
 int? parseDays(String n) {
+  if (n.contains('two weeks') || n.contains('fortnight')) return 14;
+  if (n.contains('three weeks')) return 21;
   if (n.contains('اسبوعين')) return 14;
   if (n.contains('ثلاث اسابيع') || n.contains('تلات اسابيع')) return 21;
   final m = RegExp(r'\b(\d{1,2})\b').firstMatch(n);
@@ -98,13 +113,13 @@ int? parseDays(String n) {
     final v = int.parse(m.group(1)!);
     return v >= 1 && v <= 60 ? v : null;
   }
-  if (n.contains('اسبوع')) return 7;
+  if (n.contains('اسبوع') || n.contains('week')) return 7;
   if (n.contains('عشره') || n.contains('عشر ايام')) return 10;
   if (n.contains('خمستاشر') || n.contains('خمسه عشر')) return 15;
   return null;
 }
 
-bool _unknown(String n) => n.contains('مش عارف') || n.contains('معرفش') || n.contains('مش متاكد') || n.contains('مش عارفه');
+bool _unknown(String n) => n.contains("don't know") || n.contains('dont know') || n.contains('not sure') || n.contains('مش عارف') || n.contains('معرفش') || n.contains('مش متاكد') || n.contains('مش عارفه');
 
 class Salt {
   Salt({this.signs, this.ece, this.skipped = false});
@@ -115,6 +130,8 @@ class Salt {
 
 Salt? parseSalt(String n) {
   if (_unknown(n)) return Salt(skipped: true);
+  if (RegExp(r'\b(no signs?|no salt|clean|nothing)\b').hasMatch(n)) return Salt(signs: 'none');
+  if (n.contains('white')) return Salt(signs: 'crust');
   final m = RegExp(r'\b(\d{1,2}(?:[.,]\d)?)\b').firstMatch(n);
   if (m != null) {
     final v = double.parse(m.group(1)!.replaceAll(',', '.'));
@@ -153,8 +170,8 @@ class Dialogue {
     switch (step) {
       case Step.site:
         return BotMessage(
-          'أهلاً بيك! أنا إياد، مساعدك الذكي. هقارن لك بين دورات زراعية ببيانات ناسا. أرضك فين؟ اضغط على مكانها في الخريطة، أو قول اسم المحافظة.',
-          en: 'Hello! I am Eyad, your AI assistant. I compare crop rotations using NASA data. Where is your field? Tap its place on the map, or say the governorate.',
+          'أرضك فين؟ اضغط على مكانها في الخريطة، أو قول اسم المحافظة.',
+          en: 'Where is your field? Tap it on the map, or say the governorate.',
           choices: [for (final k in data.siteKeys) Choice(arSite[k]!, k)],
           showMap: true,
         );
@@ -275,7 +292,7 @@ class Dialogue {
     final en = own != null
         ? 'Governorate ${g['id']}: using the NASA data point ${data.siteName(key)}${far ? '; far from where you tapped, so numbers are approximate' : ''}.'
         : 'Governorate ${g['id']} has no data point of its own: using the nearest, ${data.siteName(key)}, about ${km.round()} km away.';
-    return [BotMessage(text, en: en), prompt()];
+    return [BotMessage(text, en: en, note: true), prompt()];
   }
 
   /// The farmer tapped the map.
@@ -292,6 +309,8 @@ class Dialogue {
     for (final g in data.governorates) {
       final core = normalizeAr(g['ar'] as String).replaceFirst(RegExp('^ال'), '');
       if (core.length >= 4 && n.contains(core)) return g as Map<String, dynamic>;
+      final id = (g['id'] as String).toLowerCase();
+      if (id.length >= 4 && n.contains(id)) return g as Map<String, dynamic>;
     }
     return null;
   }
