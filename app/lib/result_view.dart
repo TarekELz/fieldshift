@@ -105,7 +105,7 @@ class _ResultViewState extends State<ResultView> {
             style: const TextStyle(fontSize: 30, height: 1.2),
           ),
         ),
-        EyadAvatar(mood: widget.mood, size: 50, glow: false),
+        EyadAvatar(mood: widget.mood, size: 64, glow: false),
       ]);
 
   /// The real NASA picture with the place pinned at its true position and three readings on dotted leaders.

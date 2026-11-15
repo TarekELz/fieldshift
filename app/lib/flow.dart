@@ -217,8 +217,16 @@ class _FlowScreenState extends State<FlowScreen> {
     final chips = _answered();
     return Column(children: [
       const SizedBox(height: 6),
-      EyadAvatar(mood: _mood, size: 78, progress: done / 6),
-      const SizedBox(height: 10),
+      ValueListenableBuilder<bool>(
+        valueListenable: voice.speaking,
+        builder: (context, speaking, _) => GestureDetector(
+          onTap: _readAgain, // tap Eyad to hear the question again
+          child: EyadAvatar(mood: _mood, size: 108, progress: done / 6, active: speaking || listening),
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(tr('إياد', 'Eyad'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Fs.dim)),
+      const SizedBox(height: 6),
       if (chips.isNotEmpty)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),

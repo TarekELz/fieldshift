@@ -2,6 +2,7 @@
 // Egyptian Arabic is requested first (ar-EG), then any Arabic. Whether the phone has an Arabic
 // voice, and whether recognition needs internet, depends on the device and is unconfirmed:
 // the app keeps working with typing and tap-to-answer chips if either is missing.
+import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -9,6 +10,7 @@ class Voice {
   final SpeechToText _stt = SpeechToText();
   final FlutterTts _tts = FlutterTts();
   bool sttReady = false, ttsReady = false, listening = false;
+  final ValueNotifier<bool> speaking = ValueNotifier<bool>(false); // true while a reply is being read aloud
   bool muted = false; // set by the setup choice "I'll type": replies are written, not spoken
   String? sttLocale, ttsLang, lastError;
   List<LocaleName> _sttLocales = [];
@@ -110,10 +112,16 @@ class Voice {
   Future<void> speak(String text) async {
     if (!ttsReady || muted) return;
     await _tts.stop();
-    await _tts.speak(text);
+    speaking.value = true;
+    try {
+      await _tts.speak(text);
+    } finally {
+      speaking.value = false;
+    }
   }
 
   Future<void> stopSpeaking() async {
+    speaking.value = false;
     if (ttsReady) await _tts.stop();
   }
 }

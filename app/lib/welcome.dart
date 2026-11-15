@@ -96,8 +96,8 @@ class _OnboardingState extends State<Onboarding> {
           ]),
         ),
         Padding(padding: const EdgeInsets.symmetric(horizontal: 24), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const SizedBox(height: 222),
-          const EyadAvatar(mood: EyadMood.main, size: 84, glow: false),
+          const SizedBox(height: 186),
+          const EyadAvatar(mood: EyadMood.main, size: 132, glow: false),
           const SizedBox(height: 10),
           Text(tr('أنا إياد، مساعدك الذكي', 'I am Eyad, your AI assistant'), style: TextStyle(fontSize: 14, color: Fs.dim, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
@@ -134,7 +134,7 @@ class _OnboardingState extends State<Onboarding> {
     ];
     return Column(children: [
       const SizedBox(height: 6),
-      const EyadAvatar(mood: EyadMood.main, size: 72, glow: false),
+      const EyadAvatar(mood: EyadMood.main, size: 90, glow: false),
       const SizedBox(height: 10),
       Text(tr('إياد هيساعدك في إيه؟', 'What can Eyad help with?'), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
       const SizedBox(height: 6),
@@ -196,7 +196,7 @@ class _OnboardingState extends State<Onboarding> {
 
     return Column(children: [
       const Spacer(),
-      const EyadAvatar(mood: EyadMood.main, size: 120, glow: false),
+      const EyadAvatar(mood: EyadMood.main, size: 150, glow: false),
       const SizedBox(height: 16),
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),

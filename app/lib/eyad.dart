@@ -26,11 +26,12 @@ Future<void> precacheEyad(BuildContext context) async {
 }
 
 class EyadAvatar extends StatelessWidget {
-  const EyadAvatar({super.key, required this.mood, required this.size, this.progress, this.glow = true});
+  const EyadAvatar({super.key, required this.mood, required this.size, this.progress, this.glow = true, this.active = false});
   final EyadMood mood;
   final double size;
   final double? progress; // when given, a progress ring is drawn around the avatar
   final bool glow;
+  final bool active; // Eyad is speaking or listening: a soft pulsing ring
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +47,8 @@ class EyadAvatar extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: Stack(alignment: Alignment.center, children: [
+      child: Stack(alignment: Alignment.center, clipBehavior: Clip.none, children: [
+        if (active) _PulseRing(size: size),
         if (progress != null)
           RingGauge(progress: progress!, size: size, stroke: 6)
         else
@@ -69,4 +71,31 @@ class EyadAvatar extends StatelessWidget {
       ]),
     );
   }
+}
+
+/// A soft ring that breathes outwards while Eyad speaks or listens.
+class _PulseRing extends StatefulWidget {
+  const _PulseRing({required this.size});
+  final double size;
+  @override
+  State<_PulseRing> createState() => _PulseRingState();
+}
+
+class _PulseRingState extends State<_PulseRing> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100))..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _c,
+        builder: (context, _) => Transform.scale(
+          scale: 1.0 + 0.14 * _c.value,
+          child: Container(width: widget.size, height: widget.size, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Fs.accent.withValues(alpha: 0.65 - 0.45 * _c.value), width: 3))),
+        ),
+      );
 }
