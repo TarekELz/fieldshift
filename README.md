@@ -17,7 +17,7 @@
 > **Status (15 Nov):** a working Flutter Android app (Arabic and English) with a goal question, tested engines on NASA POWER weather and FAO tables, short advice written from team blueprints, Eyad's Egyptian-Arabic voice, and a Professional view for people who read data. Test builds are with the team; phone testing is under way. Live status: [`docs/status.md`](docs/status.md).
 
 <p align="center">
-  <img src="assets/readme/proof.svg" width="100%" alt="Inside the project: 19 NASA POWER data points, 36 seasons of weather, 14 crops with income, 86 recorded voice lines.">
+  <img src="assets/readme/proof.svg" width="100%" alt="Inside the project: 19 NASA POWER data points, 36 seasons of weather, 14 crops with income, 103 recorded voice lines.">
 </p>
 
 ## See it working
@@ -103,18 +103,18 @@ It **supports, and does not replace,** the farmer's judgement and local agricult
 
 **Grounded, not fine-tuned (D2, D16, D20):** every number comes from engines and tables. Code chooses the advice blueprint; a language model may only reword it behind a guard that keeps every number and key fact, and may classify a phrase that is not among the options. It never calculates. Details, limits and the checks we did and did not do: [`docs/methodology.md`](docs/methodology.md).
 
-**Works offline:** the engines, the advice and 86 recorded voice lines are inside the app. Internet adds a language-model rewording of advice, live voice for other lines and understanding of free answers; without it the app falls back to fixed text and the phone's voice.
+**Works offline:** the engines, the advice and 103 recorded voice lines are inside the app. Internet adds a language-model rewording of advice, live voice for other lines and understanding of free answers; without it the app falls back to fixed text and the phone's voice.
 
 ## What we checked (validation)
 | Check | Result |
 |---|---|
-| Engine yearly reference evapotranspiration against NASA MOD16A3GF potential ET, 7 points | within 1 to 8% (consistency check, not a station validation); result files in [`docs/checks/`](docs/checks/) |
+| Engine yearly reference evapotranspiration against NASA MOD16A3GF potential ET, 7 points | the engine is 1 to 8% below MOD16 potential ET (ratios 0.92 to 0.99; consistency check, not a station validation); result files in [`docs/checks/`](docs/checks/) |
 | Are the data points farmland (ESA WorldCover 2021)? | cropland 73 to 91% within 2.5 km of six points; Damietta is mostly sea and is flagged |
 | Do the weather cells match the ground? (NASA SRTM terrain) | named points on the floodplain at 0 to 12 m; the "desert edge" warnings are confirmed by measured plateau share (flagged cells 29 to 67%, unflagged 18% or less); see [`docs/checks/`](docs/checks/) |
 | Wheat calendar against NASA MCD12Q2 satellite phenology | winter green-up in November and dormancy in May, summer green-up in June: consistent with our assumptions |
 | Season screen on known cases | rice sown in November, maize in December and wheat in March are flagged wrong; tomato, berseem, sugar beet, faba bean and tree crops are "cannot judge" |
 | Python and Dart give the same answers | 18 golden cases and 18 advice cases match |
-| Automated tests | Python: 309 pass with the raw data on disk; on a clean clone the tests that need `data/raw/` are skipped (about 266 pass, the rest skip). Flutter: 62 pass. CI runs both on every push |
+| Automated tests | Python: 309 pass with the raw data on disk; on a clean clone the tests that need `data/raw/` are skipped (272 pass, 154 skip). Flutter: 62 pass. CI runs both on every push |
 | Understanding what a farmer says | whole-word matching, tested on the mistakes a teammate's review found ("ربنا يرزق" is not rice; "مش فيه بقع" means no salt) |
 | Independent AI reviews of code and workflow | issues found (for example faba bean mislabelled, a number-only guard that let a wrong rotation through) and fixed |
 
@@ -147,8 +147,8 @@ It **supports, and does not replace,** the farmer's judgement and local agricult
 |---|---|
 | **Impact** | A voice-first tool for farmers who cannot read well: the problem figures are from papers we read in full (water scarcity, salt, the wheat calendar). Covers the whole Nile Delta: all ten governorates, with 7 named NASA points plus 12 cells, and an Android app that talks to farmers in their own dialect. |
 | **Creativity** | A farmer's own goal question, a blueprint-and-guard advice layer where code chooses and an AI only rewords, an Egyptian voice, a Professional view with a regional comparison, and a sowing-season screen from FAO EcoCrop plus 36 years of NASA weather. |
-| **Validity** | Engines checked against published methods and tested (hundreds of automated tests, golden cases that the Dart app must reproduce from Python); our evapotranspiration is within 1 to 8% of NASA's own MOD16 at all seven points; independent reviews found and fixed real bugs. Limits are stated in [`docs/methodology.md`](docs/methodology.md). |
-| **Relevance** | NASA POWER, MODIS MOD13Q1, MCD12Q2 phenology, MOD16A3GF and GPM IMERG: the weather behind every number and the satellite pictures and cross-checks. The brief also mentions soil health: we model one part of it, salinity (FAO-29), and say plainly that nitrogen fixation and cover crops are not modelled. |
+| **Validity** | Engines checked against published methods and tested (hundreds of automated tests, 18 golden cases that the Dart app must reproduce from Python); our evapotranspiration is within 1 to 8% of NASA's own MOD16 at all seven points; independent AI code reviews found bugs that we fixed. Limits are stated in [`docs/methodology.md`](docs/methodology.md). |
+| **Relevance** | Six NASA datasets: NASA POWER, MODIS MOD13Q1, MCD12Q2 phenology, MOD16A3GF, SRTM terrain and GPM IMERG: the weather behind every number, and the satellite pictures and cross-checks. The brief also mentions soil health: we model one part of it, salinity (FAO-29), and say plainly that nitrogen fixation and cover crops are not modelled. |
 | **Presentation** | [`docs/index.html`](docs/index.html): a project page with a "Try Eyad" playground running the same tables and rules as the app, and a season lab. |
 
 ## NASA data we hold (see [`data/catalog.yaml`](data/catalog.yaml))
