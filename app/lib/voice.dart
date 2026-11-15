@@ -2,11 +2,13 @@
 // Egyptian Arabic is requested first (ar-EG), then any Arabic. Whether the phone has an Arabic
 // voice, and whether recognition needs internet, depends on the device and is unconfirmed:
 // the app keeps working with typing and tap-to-answer chips if either is missing.
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:http/http.dart' as http;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -27,8 +29,58 @@ class Clips {
   }
 }
 
+/// Live generation with the same Egyptian voice (Hamsa, Ibrahim) for short lines that have no clip. Keys come from assets/secrets/secrets.json ('hamsa'),
+/// tried in turn when one fails; any failure or a slow answer returns null and the caller uses the phone's voice. Generated audio is kept for the session.
+class LiveVoice {
+  static const _voiceId = '8f329168-6604-4f13-9572-994984f894c4';
+  static const _base = 'https://api.tryhamsa.com';
+  static final Map<String, Uint8List> _cache = {};
+
+  static Future<List<String>> keys() async {
+    try {
+      final j = jsonDecode(await rootBundle.loadString('assets/secrets/secrets.json')) as Map<String, dynamic>;
+      return ((j['hamsa'] as List?) ?? const []).cast<String>().where((k) => k.isNotEmpty).toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  static Future<Uint8List?> generate(String text, {Duration budget = const Duration(seconds: 6), List<String>? keyList}) async {
+    if (kIsWeb || text.length > 300) return null; // long summaries go to the phone's voice
+    final hit = _cache[text];
+    if (hit != null) return hit;
+    final ks = keyList ?? await keys();
+    final sw = Stopwatch()..start();
+    for (final k in ks) {
+      try {
+        final h = {'Authorization': 'Token $k', 'Content-Type': 'application/json'};
+        final r = await http.post(Uri.parse('$_base/v1/jobs/text-to-speech'), headers: h, body: jsonEncode({'voiceId': _voiceId, 'text': text})).timeout(budget - sw.elapsed);
+        if (r.statusCode != 200 && r.statusCode != 201) continue;
+        var job = (jsonDecode(r.body) as Map)['data'] as Map;
+        while (sw.elapsed < budget) {
+          final url = ((job['jobResponse'] as Map?)?['ttsMediaFile'] ?? job['mediaUrl']) as String?;
+          if (job['status'] == 'COMPLETED' && url != null) {
+            final a = await http.get(Uri.parse(url)).timeout(budget - sw.elapsed);
+            if (a.statusCode == 200 && a.bodyBytes.isNotEmpty) return _cache[text] = a.bodyBytes;
+            break;
+          }
+          if (job['status'] == 'FAILED') break;
+          await Future<void>.delayed(const Duration(milliseconds: 1000));
+          final g = await http.get(Uri.parse('$_base/v1/jobs?jobId=${job['id']}'), headers: h).timeout(budget - sw.elapsed);
+          if (g.statusCode == 200) job = (jsonDecode(g.body) as Map)['data'] as Map;
+        }
+      } catch (_) {
+        continue; // offline, quota or too slow: next key, then the phone's voice
+      }
+    }
+    return null;
+  }
+}
+
 class Voice {
   final AudioPlayer _player = AudioPlayer();
+  /// True while an AI-generated voice (a bundled clip or a live line) is speaking: the screen then shows an AI label.
+  final ValueNotifier<bool> aiVoice = ValueNotifier<bool>(false);
   final SpeechToText _stt = SpeechToText();
   final FlutterTts _tts = FlutterTts();
   bool sttReady = false, ttsReady = false, listening = false;
@@ -142,16 +194,10 @@ class Voice {
     if (muted) return;
     final clip = await Clips.lookup(text);
     if (clip != null) {
-      try {
-        await _player.stop();
-        if (ttsReady) await _tts.stop();
-        speaking.value = true;
-        _player.onPlayerComplete.first.then((_) => speaking.value = false);
-        await _player.play(AssetSource('audio/$clip'));
-        return;
-      } catch (_) {
-        speaking.value = false; // the clip could not be played: use the phone's voice below
-      }
+      if (await _playAi(AssetSource('audio/$clip'))) return;
+    } else {
+      final live = await LiveVoice.generate(text);
+      if (live != null && await _playAi(BytesSource(live))) return;
     }
     if (!ttsReady) return;
     await _tts.stop();
@@ -163,8 +209,28 @@ class Voice {
     }
   }
 
+  Future<bool> _playAi(Source src) async {
+    try {
+      await _player.stop();
+      if (ttsReady) await _tts.stop();
+      speaking.value = true;
+      aiVoice.value = true;
+      _player.onPlayerComplete.first.then((_) {
+        speaking.value = false;
+        aiVoice.value = false;
+      });
+      await _player.play(src);
+      return true;
+    } catch (_) {
+      speaking.value = false; // the audio could not be played: use the phone's voice
+      aiVoice.value = false;
+      return false;
+    }
+  }
+
   Future<void> stopSpeaking() async {
     speaking.value = false;
+    aiVoice.value = false;
     try {
       await _player.stop();
     } catch (_) {}

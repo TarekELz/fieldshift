@@ -10,7 +10,8 @@ String arDigits(Object n) => n.toString().split('').map((c) {
       return i == null ? c : _digits[i];
     }).join();
 
-const arSite = {
+/// Filled with the extra NASA cells' names when the data loads (registerSiteNames in i18n.dart).
+final Map<String, String> arSite = {
   'kafr_el_sheikh': 'كفر الشيخ',
   'damietta': 'دمياط',
   'beheira': 'البحيرة',

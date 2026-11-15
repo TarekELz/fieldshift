@@ -32,7 +32,19 @@ NOT_MODELLED = ["nitrogen fixation and soil organic matter", "pests and disease"
 
 
 def load_sites():
-    return yaml.safe_load((ROOT / "models" / "sites.yaml").read_text(encoding="utf8"))["sites"]
+    """The named sites (models/sites.yaml) plus the extra NASA cells (models/cells.yaml, written by scripts/build_cells.py), if that file exists."""
+    sites = yaml.safe_load((ROOT / "models" / "sites.yaml").read_text(encoding="utf8"))["sites"]
+    cells = ROOT / "models" / "cells.yaml"
+    if cells.exists():
+        sites = {**sites, **(yaml.safe_load(cells.read_text(encoding="utf8")) or {}).get("cells", {})}
+    return sites
+
+
+def power_dir_for(site, power_dir=None):
+    """Where a site's NASA POWER daily file lives: data/raw/power for named sites, data/raw/power_cells for extra cells."""
+    if power_dir:
+        return pathlib.Path(power_dir)
+    return ROOT / "data" / "raw" / ("power_cells" if site.startswith("cell_") else "power")
 
 
 def _harvest(crop_params, month, day, year=2001):
@@ -50,7 +62,7 @@ def compare_rotations(site, sequences, ece=None, signs=None, interval_days=None,
     sites = load_sites()
     if site not in sites:
         raise ValueError("unknown site: " + site)
-    power = pathlib.Path(power_dir) if power_dir else ROOT / "data" / "raw" / "power"
+    power = power_dir_for(site, power_dir)
     ccfg, params = cal.load_config(), wat.load_params()
     cw = cal.Weather.from_power_json(power / f"{site}_daily.json")
     ww = wat.SiteWeather(power / f"{site}_daily.json")

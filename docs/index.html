@@ -94,9 +94,9 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;p
   <div class="stats" id="stats">
     <div class="stat"><b data-n="5">0</b><span>NASA datasets held</span></div>
     <div class="stat"><b data-n="36">0</b><span>years of daily NASA weather (13,149 days)</span></div>
-    <div class="stat"><b data-n="7">0</b><span>weather points in the app, 24 cells downloaded</span></div>
+    <div class="stat"><b data-n="19">0</b><span>NASA weather points in the app: 7 named places and 12 extra cells</span></div>
     <div class="stat"><b data-n="4">0</b><span>engines: heat, water, salt, season</span></div>
-    <div class="stat"><b data-n="429">0</b><span>automated tests passing (15 Nov)</span></div>
+    <div class="stat"><b data-n="446">0</b><span>automated tests passing (15 Nov)</span></div>
   </div>
 </div>
 
@@ -162,7 +162,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;p
   <p class="sub">Five NASA datasets held, two of which shape what a farmer sees. We say which is which.</p>
   <div class="card" style="padding:6px 8px;overflow-x:auto"><table>
     <tr><th>Dataset</th><th>Role</th><th>What it does</th></tr>
-    <tr><td>NASA POWER daily weather</td><td><span class="chip use">drives the numbers</span></td><td>Every number the farmer sees: heat, water, weather charts. 7 points in the app, 24 cells downloaded, 1990 to 2025.</td></tr>
+    <tr><td>NASA POWER daily weather</td><td><span class="chip use">drives the numbers</span></td><td>Every number the farmer sees: heat, water, weather charts. 19 data points in the app (7 named places and 12 extra ~50 km cells), 1990 to 2025.</td></tr>
     <tr><td>MODIS MOD13Q1 vegetation index</td><td><span class="chip use">pictures</span></td><td>The satellite pictures in the app; 2014 to 2025 at 250 m. No farmer-facing number.</td></tr>
     <tr><td>MODIS MCD12Q2 phenology</td><td><span class="chip">cross-check</span></td><td>When the land is green: green-up, peak, dormancy, up to two cycles a year, 2015 to 2025. Shown in the season lab.</td></tr>
     <tr><td>MODIS MOD16A3GF evapotranspiration</td><td><span class="chip">input check</span></td><td>Our yearly reference evapotranspiration is within 1 to 8% of NASA's potential ET at all seven points.</td></tr>
@@ -178,7 +178,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;p
     <div class="card"><h3>Numbers are computed, never made up</h3><p>Heat, water and salt come from engines on NASA POWER weather and FAO tables. The language model may rephrase a sentence; a guard throws the rewrite away if it changes a number or drops a key fact.</p></div>
     <div class="card"><h3>It says "cannot judge" when data cannot</h3><p>For berseem, tomato, sugar beet and tree crops, temperature alone does not separate the seasons, so Eyad says so and sends you to an agricultural engineer instead of guessing.</p></div>
     <div class="card"><h3>Every answer is labelled</h3><p>Advice is marked as an estimate from NASA data, never a promise of a harvest. Anything the AI wrote or voiced is marked as AI, and each decision and data source is logged in the repository.</p></div>
-    <div class="card"><h3>Built to be tested</h3><p>429 automated tests, golden cases that the Dart app must reproduce from the Python engines, and independent reviews that caught and fixed real bugs before this page was published.</p></div>
+    <div class="card"><h3>Built to be tested</h3><p>446 automated tests, golden cases that the Dart app must reproduce from the Python engines, and independent reviews that caught and fixed real bugs before this page was published.</p></div>
     <div class="card"><h3>Sources you can open</h3><p>Every problem figure cites a paper whose full text we read. Data sets are catalogued with their limits in <a href="../data/catalog.yaml">data/catalog.yaml</a>.</p></div>
     <div class="card"><h3>Next steps</h3><p>Validate heat and water against Delta weather stations, add more crops with sourced parameters, and test with farmers on real phones. The foundations to do it are already in place.</p></div>
   </div>

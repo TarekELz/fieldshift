@@ -28,10 +28,12 @@ class EngineData {
     return EngineData(await read('heat'), await read('water'), await read('salt'), await read('meta'), await read('climate'), await read('egypt_map'));
   }
 
+  /// The named places (the extra NASA cells are data points, not places a farmer would pick from a list).
+  List<String> get namedSiteKeys => siteKeys.where((k) => meta['sites'][k]['kind'] != 'cell').toList();
   List<String> get siteKeys => (meta['sites'] as Map<String, dynamic>).keys.toList();
   String siteName(String k) => meta['sites'][k]['name_en'] as String;
   String? siteCaveat(String k) => meta['sites'][k]['caveat'] as String?;
-  String? siteCaveatKind(String k) => meta['sites'][k]['caveat_kind'] as String?; // 'sea' or 'shared_cell'
+  String? siteCaveatKind(String k) => meta['sites'][k]['caveat_kind'] as String?; // 'sea', 'desert_edge' or 'shared_cell'
   String? siteSharesCellWith(String k) => meta['sites'][k]['shares_cell_with'] as String?;
   List<String> get notModelled => (meta['not_modelled'] as List).cast<String>();
   List<String> wheatDates(String site) => (heat[site] as Map<String, dynamic>).keys.toList();

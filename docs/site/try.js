@@ -115,7 +115,7 @@
       '<div class="stat"><span>' + (lang === 'ar' ? 'أيام حر وقت امتلاء حبوب القمح' : 'Hot days in wheat grain filling') + '</span><b>' + num(ex.heat) + '</b><span>' + (lang === 'ar' ? '+' + num(ex.extra32) + ' عن زراعته ١٥ نوفمبر' : '+' + ex.extra32 + ' vs sowing on 15 Nov') + '</span></div>' +
       '<div class="stat"><span>' + (lang === 'ar' ? 'الملوحة (' + CROP.ar[crop] + ')' : 'Salt (' + crop + ')') + '</span><b style="font-size:22px;margin-top:6px">' + saltTxt + '</b></div>' +
       '<div class="stat"><span>' + (lang === 'ar' ? 'مواعيد الزراعة' : 'Sowing dates') + '</span><div style="margin-top:8px">' + pill(f.summer_label) + ' ' + pill(f.wheat_label) + '</div><span style="display:block;margin-top:6px">' + (lang === 'ar' ? CROP.ar[crop] + ' · القمح' : crop + ' · wheat') + '</span></div>';
-    $('t_note').textContent = (f.sea ? (lang === 'ar' ? 'تنبيه: الخلية دي قريبة من البحر. ' : 'Caution: this cell is mostly sea. ') : '') +
+    $('t_note').textContent = (f.sea ? (lang === 'ar' ? 'تنبيه: الخلية دي قريبة من البحر. ' : 'Caution: this cell is mostly sea. ') : '') + (D.meta.sites[site].caveat_kind === 'desert_edge' ? (lang === 'ar' ? 'ملحوظة: الخلية دي أغلبها صحرا، فاعتبر الأرقام تقريبية. ' : 'Note: this cell is mostly desert plateau, so treat the numbers as rough. ') : '') +
       (lang === 'ar' ? 'تقدير من بيانات ناسا بتاعة 1990 إلى 2025، مش وعد بمحصول.' : 'An estimate from NASA data 1990 to 2025, not a promise of a harvest.');
   }
   function fillSelects() {

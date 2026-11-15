@@ -25,6 +25,13 @@ const _sitePixel = <String, Offset>{
 };
 
 
+/// Where an extra NASA cell falls on the Delta picture, from the picture's own bounds (the named places use the table above). Clamped to the picture.
+Offset _pixelFor(EngineData d, String site) {
+  final p = d.siteLatLon(site);
+  final x = (p.lon - 29.6354) / (32.4958 - 29.6354), y = (31.6687 - p.lat) / (31.6687 - 30.2083);
+  return Offset(x.clamp(0.04, 0.96), y.clamp(0.06, 0.94));
+}
+
 class ResultView extends StatefulWidget {
   const ResultView({super.key, required this.c, required this.data, required this.mood, required this.onRestart, required this.onReadAloud, this.onSpeak});
   final Comparison c;
@@ -125,7 +132,7 @@ class _ResultViewState extends State<ResultView> {
               final scale = math.max(w / 1372, h / 700);
               final iw = 1372 * scale, ih = 700 * scale;
               final ox = (w - iw) / 2, oy = (h - ih) / 2;
-              final f = _sitePixel[c.site] ?? const Offset(0.5, 0.55);
+              final f = _sitePixel[c.site] ?? _pixelFor(widget.data, c.site);
               final pin = Offset(ox + f.dx * iw, oy + f.dy * ih);
               final s = r.saltSummer;
               final bubbles = <_BubbleSpec>[

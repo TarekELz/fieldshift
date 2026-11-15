@@ -86,7 +86,7 @@ void main() {
     });
 
     test('each NASA data point lies inside the governorate it is labelled for', () {
-      for (final k in data.siteKeys) {
+      for (final k in data.namedSiteKeys) {
         final p = data.siteLatLon(k);
         final g = governorateAt(data, p.lat, p.lon);
         expect(g, isNotNull, reason: '$k is outside every governorate');

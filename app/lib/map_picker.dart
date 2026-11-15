@@ -211,6 +211,10 @@ class _EgyptPainter extends CustomPainter {
     for (final k in d.siteKeys) {
       final ll = d.siteLatLon(k);
       final o = p(ll.lon, ll.lat);
+      if (d.meta['sites'][k]['kind'] == 'cell') {
+        c.drawCircle(o, 2.4 / zoom, Paint()..color = Fs.dim.withValues(alpha: 0.55)); // an extra NASA cell: small and quiet
+        continue;
+      }
       c.drawCircle(o, 7 / zoom, Paint()..color = Fs.accent.withValues(alpha: 0.35));
       c.drawCircle(o, 3.2 / zoom, Paint()..color = Fs.accent);
       c.drawCircle(o, 1.2 / zoom, Paint()..color = Fs.bg);

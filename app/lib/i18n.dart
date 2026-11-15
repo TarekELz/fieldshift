@@ -22,7 +22,7 @@ String tr(String ar, String en) => isAr ? ar : en;
 String nd(Object n) => isAr ? arDigits(n) : '$n';
 String nn(num v, {int dec = 0}) => isAr ? arNum(v, dec: dec) : v.toStringAsFixed(dec);
 
-const enSite = {
+final Map<String, String> enSite = {
   'kafr_el_sheikh': 'Kafr El-Sheikh',
   'damietta': 'Damietta',
   'beheira': 'Beheira',
@@ -33,6 +33,17 @@ const enSite = {
 };
 const enCrop = {'rice': 'Rice', 'maize': 'Maize', 'cotton': 'Cotton', 'wheat': 'Wheat'};
 const enMonthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+/// The extra NASA cells (data points that are not a named place) get their names from the exported meta.json.
+void registerSiteNames(EngineData d) {
+  for (final k in d.siteKeys) {
+    final m = d.meta['sites'][k] as Map<String, dynamic>;
+    if (m['kind'] == 'cell') {
+      arSite[k] = (m['name_ar'] as String?) ?? k;
+      enSite[k] = m['name_en'] as String;
+    }
+  }
+}
 
 String siteN(String k) => isAr ? (arSite[k] ?? k) : (enSite[k] ?? k);
 String cropN(String k) => isAr ? (arCrop[k] ?? k) : (enCrop[k] ?? k);
@@ -91,6 +102,7 @@ String? caveatN(Comparison c) {
   if (isAr) return caveatAr(c);
   if (c.caveat == null) return null;
   if (c.caveatKind == 'sea') return 'Warning: weather data here is unreliable because the area is mostly sea. Do not rely on the heat numbers.';
+  if (c.caveatKind == 'desert_edge') return 'Note: this NASA cell is mostly desert plateau. Farmland along the Nile is usually greener and cooler at night than the cell suggests, so treat the numbers as rough.';
   return 'Note: the NASA temperatures for this area are the same as for ${enSite[c.sharesCellWith] ?? ''}, so the heat results will be the same.';
 }
 

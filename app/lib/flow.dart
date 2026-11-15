@@ -75,6 +75,7 @@ class _FlowScreenState extends State<FlowScreen> {
   Future<void> _start() async {
     try {
       final data = await EngineData.load();
+      registerSiteNames(data);
       dialogue = Dialogue(data);
       await voice.init();
       await voice.setLanguage(isAr);
@@ -244,6 +245,22 @@ class _FlowScreenState extends State<FlowScreen> {
       ),
       const SizedBox(height: 2),
       Text(tr('إياد', 'Eyad'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Fs.dim)),
+      ValueListenableBuilder<bool>(
+        valueListenable: voice.aiVoice,
+        builder: (context, ai, _) => AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          child: ai
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                    decoration: BoxDecoration(color: Fs.card2, borderRadius: BorderRadius.circular(12)),
+                    child: Text(tr('صوت مولَّد بالذكاء الاصطناعي', 'AI-generated voice'), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Fs.dim)),
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ),
       const SizedBox(height: 8),
       _bubble(msgText(m), compact),
       if (note != null) Padding(padding: const EdgeInsets.fromLTRB(28, 6, 28, 0), child: Text(msgText(note!), textAlign: TextAlign.center, style: TextStyle(fontSize: 13, height: 1.4, color: Fs.dim))),

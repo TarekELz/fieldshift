@@ -176,7 +176,7 @@ class Dialogue {
         return BotMessage(
           'احكيلي عن أرضك بصوتك: فين هي، وبتزرع إيه، وإمتى؟ أو اضغط على مكانها في الخريطة.',
           en: 'Tell me about your field in your own words: where it is, what you grow and when. Or tap it on the map.',
-          choices: [for (final k in data.siteKeys) Choice(arSite[k]!, k)],
+          choices: [for (final k in data.namedSiteKeys) Choice(arSite[k]!, k)],
           showMap: true,
         );
       case Step.crop:
@@ -566,6 +566,7 @@ String warningAr(RotationRow r, String w) {
 String? caveatAr(Comparison c) {
   if (c.caveat == null) return null;
   if (c.caveatKind == 'sea') return 'تنبيه: بيانات الطقس للمنطقة دي مش دقيقة لأنها قريبة من البحر. ما تعتمدش على أرقام الحر هنا.';
+  if (c.caveatKind == 'desert_edge') return 'ملحوظة: خلية بيانات ناسا هنا أغلبها صحرا مرتفعة. الأرض الزراعية على النيل بتبقى أخضر وأبرد بالليل من اللي الخلية بتقول، فاعتبر الأرقام تقريبية.';
   final other = arSite[c.sharesCellWith] ?? '';
   return 'ملحوظة: درجات الحرارة من ناسا للمنطقة دي هي نفسها بتاعة $other، فنتايج الحر هتطلع زي بعض.';
 }

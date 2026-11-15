@@ -20,7 +20,9 @@ from fieldshift import advice, calendar_engine as cal, rotation, salt_engine as 
 
 OUT = ROOT / "app" / "assets" / "data"
 FIX = ROOT / "app" / "test" / "fixtures"
-SITES = ["gharbia", "kafr_el_sheikh", "beheira", "menoufia", "sharqia", "damietta", "dakahlia"]
+NAMED = ["gharbia", "kafr_el_sheikh", "beheira", "menoufia", "sharqia", "damietta", "dakahlia"]
+_CELLS = rotation.load_sites()
+SITES = NAMED + sorted(k for k in _CELLS if k.startswith("cell_"))  # the named sites first, then the extra NASA cells (decision D15)
 SOWING_WINDOWS = {"rice": ((5, 1), (6, 30)), "maize": ((4, 15), (5, 31)), "cotton": ((3, 15), (5, 15))}
 
 
@@ -58,7 +60,7 @@ def main():
     wheat_dates = list(days((11, 1), (1, 31)))
     heat, water = {}, {}
     for s in SITES:
-        w = cal.Weather.from_power_json(ROOT / "data/raw/power" / f"{s}_daily.json")
+        w = cal.Weather.from_power_json(rotation.power_dir_for(s) / f"{s}_daily.json")
         c = cal.compare_sowing(w, wheat_dates, cfg)
         heat[s] = {}
         for (m, d), row in zip(wheat_dates, c["rows"]):
@@ -67,7 +69,7 @@ def main():
             heat[s][key(m, d)] = {"median": row["heat_days_median"], "p10": row["heat_days_p10_p90"][0], "p90": row["heat_days_p10_p90"][1],
                                   "extra": {"30": e[30.0], "32": e[32.0], "34": e[34.0]}, "dropped": row["seasons_dropped"],
                                   "series": [per[y] for y in sorted(per)], "first_season": min(per)}
-        sw = wat.SiteWeather(ROOT / "data/raw/power" / f"{s}_daily.json")
+        sw = wat.SiteWeather(rotation.power_dir_for(s) / f"{s}_daily.json")
         water[s] = {}
         for crop, (a, b) in SOWING_WINDOWS.items():
             water[s][crop] = {}
@@ -79,7 +81,7 @@ def main():
              "sign_to_ece": salt.SIGN_TO_ECE, "sign_note": salt.SIGN_NOTE}
     meta = {
         "generated": dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "sites": {s: {"name_en": sites[s]["name_en"], "caveat": sites[s].get("weather_caveat"), "caveat_kind": sites[s].get("caveat_kind"), "shares_cell_with": sites[s].get("shares_cell_with"), "lat": sites[s]["lat"], "lon": sites[s]["lon"]} for s in SITES},
+        "sites": {s: {"name_en": sites[s]["name_en"], "name_ar": sites[s].get("name_ar"), "kind": sites[s].get("kind", "named"), "elevation_m": sites[s].get("elevation_m"), "caveat": sites[s].get("weather_caveat"), "caveat_kind": sites[s].get("caveat_kind"), "shares_cell_with": sites[s].get("shares_cell_with"), "lat": sites[s]["lat"], "lon": sites[s]["lon"]} for s in SITES},
         "delta_bbox": [29.6, 30.0, 32.6, 31.7],  # lon_min, lat_min, lon_max, lat_max: where the data points apply
         "crops": {c: {"stage_days": params["crops"][c]["stage_days"], "excludes": params["crops"][c].get("excludes", [])} for c in params["crops"]},
         "not_modelled": rotation.NOT_MODELLED,
@@ -88,7 +90,7 @@ def main():
     }
     climate = {}
     for s in SITES:
-        raw = json.loads((ROOT / "data/raw/power" / f"{s}_daily.json").read_text())["properties"]["parameter"]
+        raw = json.loads((rotation.power_dir_for(s) / f"{s}_daily.json").read_text())["properties"]["parameter"]
         monthly = {}
         for var in ("T2M_MAX", "T2M_MIN", "RH2M", "WS2M", "PRECTOTCORR", "ALLSKY_SFC_SW_DWN"):
             by_m = {m: [] for m in range(1, 13)}
@@ -105,14 +107,14 @@ def main():
     # season scores (temperature screen, decision D17) and the blueprint advices (D16/D18)
     sparams, season, stemps = se.load_params(), {}, {}
     for s in SITES:
-        stemps[s] = se.SiteTemps(ROOT / "data/raw/power" / f"{s}_daily.json")
+        stemps[s] = se.SiteTemps(rotation.power_dir_for(s) / f"{s}_daily.json")
         season[s] = {c: [[r["sowing"][0], r["sowing"][1], r["ideal_pct"], r["bad_pct"]] for r in se.scan_year(stemps[s], sparams, c)] for c in ("wheat", "rice", "maize", "cotton")}
     (OUT / "season.json").write_text(json.dumps({"sites": season, "min_spread": se.MIN_SPREAD, "right_within": se.RIGHT_WITHIN, "so_so_within": se.SO_SO_WITHIN, "bad_share_wrong": se.BAD_SHARE_WRONG},
                                                 separators=(",", ":")), encoding="utf8")
     (OUT / "blueprints.json").write_bytes((ROOT / "models" / "blueprints.json").read_bytes())
     # golden cases for the Dart tests
     cases = []
-    for site in ("gharbia", "beheira", "kafr_el_sheikh", "dakahlia"):
+    for site in ("gharbia", "beheira", "kafr_el_sheikh", "dakahlia", "cell_30.500_30.625", "cell_30.500_32.500"):
         for signs, interval in ((None, None), ("patches", 10), ("crust", 14)):
             res = rotation.compare_rotations(site, rotation.DEMO, signs=signs, interval_days=interval)
             cases.append({"site": site, "signs": signs, "interval_days": interval,

@@ -16,9 +16,11 @@ def main():
         OUT.unlink(missing_ok=True)
         print("removed", OUT)
         return
-    ks = [l.split("=", 1)[1].strip() for l in (ROOT / ".env").read_text().splitlines() if re.match(r"GEMINI_API_KEY(_\d+)?=", l) and l.split("=", 1)[1].strip()]
-    OUT.write_text(json.dumps({"gemini": ks}), encoding="utf8")
-    print("wrote", len(ks), "key(s) to", OUT, "(gitignored)")
+    lines = (ROOT / ".env").read_text().splitlines()
+    pick = lambda name: [l.split("=", 1)[1].strip() for l in lines if re.match(name + r"(_\d+)?=", l) and l.split("=", 1)[1].strip()]
+    gem, ham = pick("GEMINI_API_KEY"), pick("HAMSA_API_KEY")
+    OUT.write_text(json.dumps({"gemini": gem, "hamsa": ham}), encoding="utf8")
+    print("wrote", len(gem), "Gemini and", len(ham), "Hamsa key(s) to", OUT, "(gitignored)")
 
 
 if __name__ == "__main__":
