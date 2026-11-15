@@ -126,6 +126,23 @@ class _FlowScreenState extends State<FlowScreen> {
     if (main.result == null) voice.speak(main.goalResult != null && isAr ? (main.spoken ?? msgText(main)) : '${n != null ? '${msgText(n)} ' : ''}${msgText(main)}');
   }
 
+  /// Every answer that moved the conversation on (a typed or spoken answer, or a map tap), so Back can step to the previous question.
+  final List<Object> _moves = [];
+
+  /// Android Back: one question back (the answers are replayed without the last one); at the first question it leaves the app as usual.
+  void _back() {
+    final d = dialogue;
+    if (d == null || _moves.isEmpty) return;
+    voice.stopSpeaking();
+    _moves.removeLast();
+    d.reset();
+    var replies = [d.opening()];
+    for (final m in _moves) {
+      replies = m is String ? d.handle(m) : d.handleLocation((m as (double, double)).$1, m.$2);
+    }
+    _apply(replies);
+  }
+
   Future<void> send(String text) async {
     final d = dialogue;
     if (d == null || text.trim().isEmpty) return;
@@ -142,6 +159,9 @@ class _FlowScreenState extends State<FlowScreen> {
       final key = await interpretPhrase(text, opts);
       if (!mounted) return;
       if (key != null) replies = d.handle(key);
+      if (!replies.last.retry) _moves.add(key ?? text);
+    } else if (!replies.last.retry) {
+      _moves.add(text);
     }
     _apply(replies);
   }
@@ -150,7 +170,9 @@ class _FlowScreenState extends State<FlowScreen> {
     final d = dialogue;
     if (d == null) return;
     voice.stopSpeaking();
-    _apply(d.handleLocation(lat, lon));
+    final replies = d.handleLocation(lat, lon);
+    if (!replies.last.retry) _moves.add((lat, lon));
+    _apply(replies);
   }
 
   void _restart() {
@@ -158,6 +180,7 @@ class _FlowScreenState extends State<FlowScreen> {
     if (d == null) return;
     voice.stopSpeaking();
     d.reset();
+    _moves.clear();
     setState(() {
       current = d.opening();
       note = null;
@@ -219,7 +242,12 @@ class _FlowScreenState extends State<FlowScreen> {
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: lookChanged,
-      builder: (context, _) => Scaffold(
+      builder: (context, _) => PopScope(
+        canPop: _moves.isEmpty,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _back();
+        },
+        child: Scaffold(
         body: SafeArea(
           child: loadError != null
               ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('${tr('تعذر تحميل البيانات', 'Could not load the data')}:\n$loadError')))
@@ -228,6 +256,7 @@ class _FlowScreenState extends State<FlowScreen> {
                   Expanded(child: dialogue == null || current == null ? Center(child: CircularProgressIndicator(color: Fs.accent)) : (current!.result != null ? _result() : (current!.goalResult != null ? GoalView(result: current!.goalResult!, book: dialogue!.book, onRestart: _restart, onSpeak: (s) => voice.speak(s)) : _question()))),
                 ]),
         ),
+      ),
       ),
     );
   }
