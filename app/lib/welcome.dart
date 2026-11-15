@@ -58,7 +58,7 @@ class _OnboardingState extends State<Onboarding> {
           SizedBox(width: 44, child: step > 0 ? IconButton(onPressed: () => _go(step - 1), icon: const Icon(Icons.arrow_back_rounded), tooltip: tr('رجوع', 'Back')) : null),
           const SizedBox(width: 8),
           for (var i = 0; i < 3; i++) ...[
-            Expanded(child: AnimatedContainer(duration: const Duration(milliseconds: 250), height: 4, decoration: BoxDecoration(color: i <= step ? Colors.white : Fs.line, borderRadius: BorderRadius.circular(4)))),
+            Expanded(child: AnimatedContainer(duration: const Duration(milliseconds: 250), height: 4, decoration: BoxDecoration(color: i <= step ? Fs.accent : Fs.card2, borderRadius: BorderRadius.circular(4)))),
             if (i < 2) const SizedBox(width: 6),
           ],
           const SizedBox(width: 12),
@@ -70,7 +70,7 @@ class _OnboardingState extends State<Onboarding> {
         width: double.infinity,
         height: 54,
         child: FilledButton(
-          style: FilledButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.black, shape: const StadiumBorder(), textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+          style: FilledButton.styleFrom(backgroundColor: Fs.accent, foregroundColor: Fs.onAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Fs.radiusTile)), textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           onPressed: onTap,
           child: Text(label),
         ),
@@ -99,7 +99,7 @@ class _OnboardingState extends State<Onboarding> {
           const SizedBox(height: 10),
           Text(tr('أنا إياد، مساعدك الذكي', 'I am Eyad, your AI assistant'), style: const TextStyle(fontSize: 14, color: Colors.white70, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
-          Text(tr('اعرف أرضك\nقبل ما تزرع', 'Know your field\nbefore you sow'), style: const TextStyle(fontSize: 42, height: 1.12, fontWeight: FontWeight.w800)),
+          TwoWeightHeadline(tr('اعرف أرضك\nقبل ما تزرع', 'Know your field\nbefore you sow'), size: 40),
           const SizedBox(height: 12),
           Text(tr('الطقس من بيانات ناسا،\nوالملوحة من جداول الفاو وكلامك', 'Weather from NASA data,\nsalt from FAO tables and what you tell me'), style: const TextStyle(fontSize: 15, height: 1.5, color: Colors.white70)),
           const Spacer(),
@@ -109,8 +109,8 @@ class _OnboardingState extends State<Onboarding> {
               child: Container(
                 width: 66,
                 height: 66,
-                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 1.6)),
-                child: const Icon(Icons.arrow_forward_rounded, size: 30), // flips itself in right-to-left layouts
+                decoration: const BoxDecoration(shape: BoxShape.circle, color: Fs.accent),
+                child: const Icon(Icons.arrow_forward_rounded, size: 30, color: Fs.onAccent), // flips itself in right-to-left layouts
               ),
             ),
             const SizedBox(width: 14),
@@ -134,7 +134,7 @@ class _OnboardingState extends State<Onboarding> {
       const SizedBox(height: 6),
       const EyadAvatar(mood: EyadMood.guiding, size: 96, glow: false),
       const SizedBox(height: 10),
-      Text(tr('إياد هيساعدك في إيه؟', 'What can Eyad help with?'), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+      Text(tr('إياد هيساعدك في إيه؟', 'What can Eyad help with?'), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
       const SizedBox(height: 6),
       Text(tr('طقس ناسا وجداول الفاو', 'NASA weather and FAO tables'), style: const TextStyle(fontSize: 14, color: Fs.dim)),
       const SizedBox(height: 18),
@@ -149,9 +149,9 @@ class _OnboardingState extends State<Onboarding> {
             for (final c in cards)
               Container(
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(22), border: Border.all(color: Fs.line)),
+                decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard)),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Container(width: 40, height: 40, decoration: const BoxDecoration(color: Colors.white10, shape: BoxShape.circle), child: Icon(c.$1, color: Colors.white, size: 22)),
+                  IconBubble(c.$1),
                   const Spacer(),
                   Text(c.$2, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 3),
@@ -175,9 +175,9 @@ class _OnboardingState extends State<Onboarding> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(22), border: Border.all(color: on ? Colors.white : Fs.line, width: on ? 1.6 : 1)),
+          decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard), border: on ? Border.all(color: Fs.accent, width: 1.6) : null),
           child: Row(children: [
-            Icon(icon, color: on ? Colors.white : Fs.dim, size: 26),
+            Icon(icon, color: on ? Fs.accent : Fs.dim, size: 26),
             const SizedBox(width: 14),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -186,7 +186,7 @@ class _OnboardingState extends State<Onboarding> {
                 Text(sub, style: const TextStyle(fontSize: 12.5, height: 1.35, color: Fs.dim)),
               ]),
             ),
-            Icon(on ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, color: on ? Colors.white : Fs.line),
+            Icon(on ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, color: on ? Fs.accent : Fs.dim),
           ]),
         ),
       );
@@ -198,7 +198,7 @@ class _OnboardingState extends State<Onboarding> {
       const SizedBox(height: 16),
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        decoration: BoxDecoration(color: Fs.card2, borderRadius: BorderRadius.circular(18), border: Border.all(color: Fs.line)),
+        decoration: BoxDecoration(color: Fs.card2, borderRadius: BorderRadius.circular(Fs.radiusTile)),
         child: Text(tr('تحب نتكلم إزاي؟', 'How would you like to talk?'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
       ),
       const Spacer(),

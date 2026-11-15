@@ -89,7 +89,7 @@ class _MapPickerState extends State<MapPicker> with SingleTickerProviderStateMix
           child: Container(
             width: w,
             height: h,
-            decoration: BoxDecoration(color: const Color(0xFF070B10), border: Border.all(color: Fs.line), borderRadius: BorderRadius.circular(20)),
+            decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard)),
             child: InteractiveViewer(
               transformationController: _ctrl,
               minScale: 1,
@@ -150,23 +150,22 @@ class _EgyptPainter extends CustomPainter {
       }
     }
     // soft silhouette glow, then each governorate: Delta ones greener
-    c.drawPath(all, Paint()..color = Fs.teal.withValues(alpha: 0.20)..maskFilter = MaskFilter.blur(BlurStyle.normal, 6 / zoom));
     for (final g in govs) {
       final path = Path();
       for (final r in g['rings'] as List) {
         path.addPath(_ring(r as List), Offset.zero);
       }
       final delta = g['delta'] == true;
-      c.drawPath(path, Paint()..color = delta ? const Color(0xFF14402B) : const Color(0xFF0D1814));
-      c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 0.9 / zoom..color = Fs.teal.withValues(alpha: delta ? 0.7 : 0.5)..strokeJoin = StrokeJoin.round);
+      c.drawPath(path, Paint()..color = delta ? Color.alphaBlend(Fs.accent.withValues(alpha: 0.22), Fs.card2) : Fs.card2);
+      c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 0.9 / zoom..color = delta ? Fs.accent.withValues(alpha: 0.8) : Fs.line..strokeJoin = StrokeJoin.round);
       if (g['id'] == selectedId) {
-        c.drawPath(path, Paint()..color = Fs.orange.withValues(alpha: 0.18));
-        c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.8 / zoom..color = Fs.orange);
+        c.drawPath(path, Paint()..color = Fs.warning.withValues(alpha: 0.18));
+        c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.8 / zoom..color = Fs.warning);
       }
     }
     // lakes
     for (final l in d.egyptMap['lakes'] as List) {
-      c.drawPath(_ring(l['pts'] as List), Paint()..color = const Color(0xFF2D8CFF).withValues(alpha: 0.55));
+      c.drawPath(_ring(l['pts'] as List), Paint()..color = Fs.accent.withValues(alpha: 0.4));
     }
     // Nile, its two Delta branches, the canals
     for (final w in d.egyptMap['water'] as List) {
@@ -177,8 +176,7 @@ class _EgyptPainter extends CustomPainter {
         i == 0 ? path.moveTo(o.dx, o.dy) : path.lineTo(o.dx, o.dy);
       }
       final canal = (w['name'] as String).contains('Canal');
-      c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = (canal ? 3.0 : 5.0) / zoom..color = const Color(0xFF3DA9FF).withValues(alpha: 0.22)..maskFilter = MaskFilter.blur(BlurStyle.normal, 2.5 / zoom));
-      c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = (canal ? 1.0 : 1.7) / zoom..strokeCap = StrokeCap.round..color = canal ? const Color(0xFF7CC4FF).withValues(alpha: 0.6) : const Color(0xFF5BB8FF));
+      c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = (canal ? 1.0 : 1.7) / zoom..strokeCap = StrokeCap.round..color = canal ? Fs.accent.withValues(alpha: 0.55) : Fs.accent);
     }
     // governorate names: large governorates at once, small ones once zoomed in
     for (final g in govs) {
@@ -189,21 +187,21 @@ class _EgyptPainter extends CustomPainter {
     }
     if (zoom < 2.0) {
       final b = d.deltaBox;
-      _label(c, tr('دلتا النيل', 'Nile Delta'), p((b[0] + b[2]) / 2, b[3] + 0.28), size: 11, color: Fs.green);
+      _label(c, tr('دلتا النيل', 'Nile Delta'), p((b[0] + b[2]) / 2, b[3] + 0.28), size: 11, color: Fs.ok);
     }
     // the six NASA data points
     for (final k in d.siteKeys) {
       final ll = d.siteLatLon(k);
       final o = p(ll.lon, ll.lat);
-      c.drawCircle(o, 7 / zoom, Paint()..color = Fs.teal.withValues(alpha: 0.35)..maskFilter = MaskFilter.blur(BlurStyle.normal, 4 / zoom));
-      c.drawCircle(o, 3.2 / zoom, Paint()..color = Fs.teal);
+      c.drawCircle(o, 7 / zoom, Paint()..color = Fs.accent.withValues(alpha: 0.35));
+      c.drawCircle(o, 3.2 / zoom, Paint()..color = Fs.accent);
       c.drawCircle(o, 1.2 / zoom, Paint()..color = Colors.black);
     }
     // the tapped place
     if (pin != null) {
       final o = p(pin!.lon, pin!.lat);
-      c.drawCircle(o, 10 / zoom, Paint()..color = Fs.orange.withValues(alpha: 0.4)..maskFilter = MaskFilter.blur(BlurStyle.normal, 5 / zoom));
-      c.drawCircle(o, 4.5 / zoom, Paint()..color = Fs.orange);
+      c.drawCircle(o, 10 / zoom, Paint()..color = Fs.warning.withValues(alpha: 0.4));
+      c.drawCircle(o, 4.5 / zoom, Paint()..color = Fs.warning);
       c.drawCircle(o, 4.5 / zoom, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.2 / zoom..color = Colors.white);
     }
   }

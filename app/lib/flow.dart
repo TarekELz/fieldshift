@@ -167,7 +167,7 @@ class _FlowScreenState extends State<FlowScreen> {
               ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('${tr('تعذر تحميل البيانات', 'Could not load the data')}:\n$loadError')))
               : Column(children: [
                   _topBar(),
-                  Expanded(child: dialogue == null || current == null ? const Center(child: CircularProgressIndicator(color: Fs.teal)) : (current!.result != null ? _result() : _question())),
+                  Expanded(child: dialogue == null || current == null ? const Center(child: CircularProgressIndicator(color: Fs.accent)) : (current!.result != null ? _result() : _question())),
                 ]),
         ),
       ),
@@ -222,8 +222,8 @@ class _FlowScreenState extends State<FlowScreen> {
               for (final c in chips)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(border: Border.all(color: Fs.line), borderRadius: BorderRadius.circular(20)),
-                  child: Text(c, style: const TextStyle(fontSize: 12, color: Fs.dim)),
+                  decoration: BoxDecoration(color: Fs.card2, borderRadius: BorderRadius.circular(20)),
+                  child: Text(c, style: const TextStyle(fontSize: 12, color: Fs.dim, fontWeight: FontWeight.w500)),
                 ),
             ],
           ),
@@ -236,7 +236,7 @@ class _FlowScreenState extends State<FlowScreen> {
       const SizedBox(height: 8),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), child: _answers(m, d))),
       if (listening || partial.isNotEmpty)
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4), child: Text(partial.isEmpty ? tr('بسمعك... اتكلم دلوقتي', 'Listening... speak now') : partial, style: const TextStyle(fontSize: 15, color: Fs.teal))),
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4), child: Text(partial.isEmpty ? tr('بسمعك... اتكلم دلوقتي', 'Listening... speak now') : partial, style: const TextStyle(fontSize: 15, color: Fs.accent))),
       _bottom(),
     ]);
   }
@@ -257,14 +257,14 @@ class _FlowScreenState extends State<FlowScreen> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(m.showMap ? 20 : 22),
+            borderRadius: BorderRadius.circular(Fs.radiusTile),
             onTap: () => send(c.value),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: m.showMap ? 14 : 12, vertical: m.showMap ? 8 : 16),
-              decoration: BoxDecoration(color: dim ? Colors.transparent : Fs.card, borderRadius: BorderRadius.circular(m.showMap ? 20 : 22), border: Border.all(color: dim ? Fs.line : Fs.line)),
+              decoration: BoxDecoration(color: dim ? Colors.transparent : Fs.card, borderRadius: BorderRadius.circular(Fs.radiusTile), border: dim ? Border.all(color: Fs.line) : null),
               child: Row(mainAxisSize: m.showMap ? MainAxisSize.min : MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.center, children: [
-                if (icon != null) ...[Icon(icon, size: 22, color: Fs.teal), const SizedBox(width: 8)],
-                Flexible(child: Text(choiceLabel(c, d.step), textAlign: TextAlign.center, style: TextStyle(fontSize: m.showMap ? 14 : 18, fontWeight: FontWeight.w700, color: dim ? Fs.dim : Colors.white))),
+                if (icon != null) ...[Icon(icon, size: 22, color: Fs.accent), const SizedBox(width: 8)],
+                Flexible(child: Text(choiceLabel(c, d.step), textAlign: TextAlign.center, style: TextStyle(fontSize: m.showMap ? 14 : 17, fontWeight: FontWeight.w600, color: dim ? Fs.dim : Fs.text))),
               ]),
             ),
           ),
@@ -302,8 +302,8 @@ class _FlowScreenState extends State<FlowScreen> {
                 filled: true,
                 fillColor: Fs.card2,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: const BorderSide(color: Fs.line)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: const BorderSide(color: Fs.line)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(Fs.radiusTile), borderSide: BorderSide.none),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(Fs.radiusTile), borderSide: BorderSide.none),
               ),
             ),
           ),
@@ -330,11 +330,10 @@ class _FlowScreenState extends State<FlowScreen> {
             height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: listening ? Fs.teal : Fs.card,
-              border: Border.all(color: Fs.teal, width: 2),
-              boxShadow: listening ? [BoxShadow(color: Fs.teal.withValues(alpha: 0.35), blurRadius: 24, spreadRadius: 4)] : null,
+              color: listening ? Fs.accent : Fs.card,
+              border: Border.all(color: Fs.accent, width: 2),
             ),
-            child: Icon(listening ? Icons.stop_rounded : Icons.mic_rounded, size: 36, color: listening ? Colors.black : Fs.teal),
+            child: Icon(listening ? Icons.stop_rounded : Icons.mic_rounded, size: 36, color: listening ? Colors.black : Fs.accent),
           ),
         ),
         Column(mainAxisSize: MainAxisSize.min, children: [

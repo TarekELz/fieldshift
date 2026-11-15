@@ -53,7 +53,7 @@ class EyadAvatar extends StatelessWidget {
           Container(
             width: size,
             height: size,
-            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Fs.teal, width: 2.4), boxShadow: glow ? [BoxShadow(color: Fs.teal.withValues(alpha: 0.4), blurRadius: 18)] : null),
+            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Fs.accent, width: 2.4), boxShadow: glow ? [BoxShadow(color: Fs.accent.withValues(alpha: 0.18), blurRadius: 10)] : null),
           ),
         image,
         // The visible AI mark on the avatar (the pictures are AI-generated; the team acknowledges this in the

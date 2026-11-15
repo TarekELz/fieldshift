@@ -77,3 +77,9 @@ Last audit: 2026-11-14 12:50 local (Step 1, full audit). Files were opened and c
 - Hero pictures are real NASA MODIS greenness renderings of the Delta made from our own data (scripts/make_delta_images.py), replacing the painted Earth.
 - Arabic / English switch (one language at a time) on every screen; the layout flips right-to-left or left-to-right; English answers are understood when typed or spoken; voice follows the language when the phone has that voice.
 - Not done: tested only in a browser preview at phone size (no real phone, no voice test); APK not rebuilt; Arabic and English text unreviewed by a native speaker.
+
+## 2026-11-15 update: design system from the team's Advanced Monitor app
+- Tarek asked for the colours, boxes and general design to follow his Advanced Monitor app (his own project, found in C:\Users\tarek\dev\am-v2-ui\app\design). Ported: the dark palette (neutral near-black canvas and surfaces, one blue accent, green/amber/red for state only), soft cards without outlines, radius 22/14, IBM Plex Sans + IBM Plex Sans Arabic (SIL OFL licences copied to app/assets/fonts), two-weight headlines, icon bubbles, the 240-degree dial, and the hero picture with readings on dotted leaders (here the real MODIS picture of the Delta with the chosen place pinned at its true position).
+- Not taken: the Lotus Power logo and mark, and the hive and device art.
+- Dark theme only; the monitor app also has a light palette (could be added; outdoors in sun a light theme may read better).
+- Still only seen in a browser preview at phone size: no real phone, no voice test; APK not rebuilt.

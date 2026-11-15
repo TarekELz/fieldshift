@@ -16,15 +16,16 @@ class FieldShiftApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Field Shift',
-      debugShowCheckedModeBanner: false,
-      theme: Fs.theme(),
-      builder: (context, child) => ValueListenableBuilder<String>(
-        valueListenable: lang,
-        builder: (context, l, _) => Directionality(textDirection: l == 'ar' ? TextDirection.rtl : TextDirection.ltr, child: child!),
+    // The theme follows the language: IBM Plex Sans Arabic in Arabic, IBM Plex Sans in English; the layout direction too.
+    return ValueListenableBuilder<String>(
+      valueListenable: lang,
+      builder: (context, l, _) => MaterialApp(
+        title: 'Field Shift',
+        debugShowCheckedModeBanner: false,
+        theme: Fs.theme(arabicLang: l == 'ar'),
+        builder: (context, child) => Directionality(textDirection: l == 'ar' ? TextDirection.rtl : TextDirection.ltr, child: child!),
+        home: const _Root(),
       ),
-      home: const _Root(),
     );
   }
 }
