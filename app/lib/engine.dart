@@ -42,6 +42,8 @@ class EngineData {
   List<double> get deltaBox => (meta['delta_bbox'] as List).map<double>((e) => (e as num).toDouble()).toList();
   ({double lat, double lon}) siteLatLon(String k) => (lat: (meta['sites'][k]['lat'] as num).toDouble(), lon: (meta['sites'][k]['lon'] as num).toDouble());
   List get governorates => egyptMap['governorates'] as List;
+  /// Named areas inside governorates that are drawn and named on the map (Halayeb and Shalateen, in the Red Sea governorate).
+  List get areas => (egyptMap['areas'] as List?) ?? const [];
   List<String> get crops => (meta['crops'] as Map<String, dynamic>).keys.toList();
 }
 
@@ -219,4 +221,13 @@ Map<String, dynamic>? governorateAt(EngineData d, double lat, double lon) {
 }
 
 /// True when the place lies in one of the Nile Delta governorates the app covers.
+Map<String, dynamic>? areaAt(EngineData d, double lat, double lon) {
+  for (final a in d.areas) {
+    for (final ring in a['rings'] as List) {
+      if (_inRing(ring as List, lon, lat)) return a as Map<String, dynamic>;
+    }
+  }
+  return null;
+}
+
 bool insideDelta(EngineData d, double lat, double lon) => governorateAt(d, lat, lon)?['delta'] == true;

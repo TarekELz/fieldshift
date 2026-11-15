@@ -83,3 +83,10 @@ Last audit: 2026-11-14 12:50 local (Step 1, full audit). Files were opened and c
 - Not taken: the Lotus Power logo and mark, and the hive and device art.
 - Dark theme only; the monitor app also has a light palette (could be added; outdoors in sun a light theme may read better).
 - Still only seen in a browser preview at phone size: no real phone, no voice test; APK not rebuilt.
+
+## 2026-11-15 update: light mode, Halayeb and Shalateen, a date bug
+- Light mode added with the palette from the Advanced Monitor app (warm off-white canvas, white cards on a faint shadow, deep blue accent, darker state colours); a sun/moon button switches, Arabic and English both work in both modes. Default is dark.
+- Halayeb and Shalateen are drawn on the map from the official HDX admin-2 sub-divisions (Red Sea governorate) with Arabic names; tapping or naming them says they are outside the Delta.
+- Bug found and fixed: the answer buttons for 1 November and 1 December were read as 12 January / 10 January (the typed-date parser read "12-01" as day 12 of month 1). Buttons now keep their exact date; a test covers every date button. Earlier previews and any earlier APK have this bug.
+- Preview-only URL switches for the web build: ?theme=light, ?lang=en, ?skip=1, ?demo=1 (ignored on phones).
+- Still only seen in a browser preview: no phone, no voice test, APK not rebuilt.

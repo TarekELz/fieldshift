@@ -135,8 +135,8 @@ class _EgyptPainter extends CustomPainter {
     return path..close();
   }
 
-  void _label(Canvas c, String text, Offset at, {double size = 10, Color color = Colors.white70}) {
-    final tp = TextPainter(text: TextSpan(text: text, style: TextStyle(fontSize: size / zoom, color: color, fontWeight: FontWeight.w600)), textDirection: TextDirection.rtl)..layout();
+  void _label(Canvas c, String text, Offset at, {double size = 10, Color? color}) {
+    final tp = TextPainter(text: TextSpan(text: text, style: TextStyle(fontSize: size / zoom, color: color ?? Fs.dim, fontWeight: FontWeight.w600)), textDirection: TextDirection.rtl)..layout();
     tp.paint(c, at - Offset(tp.width / 2, tp.height / 2));
   }
 
@@ -163,6 +163,15 @@ class _EgyptPainter extends CustomPainter {
         c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.8 / zoom..color = Fs.warning);
       }
     }
+    // Halayeb and Shalateen: their own highlighted areas inside the Red Sea governorate
+    for (final a in d.areas) {
+      final path = Path();
+      for (final r in a['rings'] as List) {
+        path.addPath(_ring(r as List), Offset.zero);
+      }
+      c.drawPath(path, Paint()..color = Fs.warning.withValues(alpha: 0.20));
+      c.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.0 / zoom..color = Fs.warning.withValues(alpha: 0.85));
+    }
     // lakes
     for (final l in d.egyptMap['lakes'] as List) {
       c.drawPath(_ring(l['pts'] as List), Paint()..color = Fs.accent.withValues(alpha: 0.4));
@@ -183,7 +192,11 @@ class _EgyptPainter extends CustomPainter {
       final delta = g['delta'] == true;
       if (delta ? zoom < 2.2 : (g['size'] as num) * zoom < 1.5) continue; // Delta governorates are always named once zoomed in
       final lbl = g['label'] as List;
-      _label(c, (isAr ? g['ar'] : g['id']) as String, p(lbl[0] as num, lbl[1] as num), size: 11, color: delta ? Colors.white : Colors.white54);
+      _label(c, (isAr ? g['ar'] : g['id']) as String, p(lbl[0] as num, lbl[1] as num), size: 11, color: delta ? Fs.text : Fs.dim);
+    }
+    for (final a in d.areas) {
+      final lbl = a['label'] as List;
+      _label(c, (isAr ? a['ar'] : a['id']) as String, p(lbl[0] as num, lbl[1] as num), size: 9, color: Fs.warning);
     }
     if (zoom < 2.0) {
       final b = d.deltaBox;
@@ -195,14 +208,14 @@ class _EgyptPainter extends CustomPainter {
       final o = p(ll.lon, ll.lat);
       c.drawCircle(o, 7 / zoom, Paint()..color = Fs.accent.withValues(alpha: 0.35));
       c.drawCircle(o, 3.2 / zoom, Paint()..color = Fs.accent);
-      c.drawCircle(o, 1.2 / zoom, Paint()..color = Colors.black);
+      c.drawCircle(o, 1.2 / zoom, Paint()..color = Fs.bg);
     }
     // the tapped place
     if (pin != null) {
       final o = p(pin!.lon, pin!.lat);
       c.drawCircle(o, 10 / zoom, Paint()..color = Fs.warning.withValues(alpha: 0.4));
       c.drawCircle(o, 4.5 / zoom, Paint()..color = Fs.warning);
-      c.drawCircle(o, 4.5 / zoom, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.2 / zoom..color = Colors.white);
+      c.drawCircle(o, 4.5 / zoom, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.2 / zoom..color = Fs.text);
     }
   }
 

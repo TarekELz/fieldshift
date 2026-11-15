@@ -9,35 +9,47 @@ import 'i18n.dart';
 import 'ui_kit.dart';
 import 'welcome.dart';
 
-void main() => runApp(const FieldShiftApp());
+/// Preview switches for the web build (ignored on a phone): ?theme=light, ?lang=en, ?skip=1 (go straight to the questions),
+/// ?demo=1 (also answer them with a sample farmer, to see the result screen).
+void main() {
+  final q = Uri.base.queryParameters;
+  if (q['theme'] == 'light') darkMode.value = false;
+  if (q['lang'] == 'en') lang.value = 'en';
+  runApp(FieldShiftApp(skipSetup: q['skip'] == '1' || q['demo'] == '1', demo: q['demo'] == '1'));
+}
 
 class FieldShiftApp extends StatelessWidget {
-  const FieldShiftApp({super.key});
+  const FieldShiftApp({super.key, this.skipSetup = false, this.demo = false});
+  final bool skipSetup, demo;
 
   @override
   Widget build(BuildContext context) {
     // The theme follows the language: IBM Plex Sans Arabic in Arabic, IBM Plex Sans in English; the layout direction too.
-    return ValueListenableBuilder<String>(
-      valueListenable: lang,
-      builder: (context, l, _) => MaterialApp(
+    return ListenableBuilder(
+      listenable: lookChanged,
+      builder: (context, _) {
+        final l = lang.value;
+        return MaterialApp(
         title: 'Field Shift',
         debugShowCheckedModeBanner: false,
         theme: Fs.theme(arabicLang: l == 'ar'),
         builder: (context, child) => Directionality(textDirection: l == 'ar' ? TextDirection.rtl : TextDirection.ltr, child: child!),
-        home: const _Root(),
-      ),
+        home: _Root(skipSetup: skipSetup, demo: demo),
+        );
+      },
     );
   }
 }
 
 class _Root extends StatefulWidget {
-  const _Root();
+  const _Root({this.skipSetup = false, this.demo = false});
+  final bool skipSetup, demo;
   @override
   State<_Root> createState() => _RootState();
 }
 
 class _RootState extends State<_Root> {
-  bool setup = true;
+  late bool setup = !widget.skipSetup;
   bool speak = true;
 
   @override
@@ -51,6 +63,6 @@ class _RootState extends State<_Root> {
                   setup = false;
                 }),
               )
-            : FlowScreen(key: const ValueKey('flow'), speakReplies: speak, onHome: () => setState(() => setup = true)),
+            : FlowScreen(key: const ValueKey('flow'), speakReplies: widget.demo ? false : speak, demo: widget.demo, onHome: () => setState(() => setup = true)),
       );
 }

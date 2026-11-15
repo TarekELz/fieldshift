@@ -33,9 +33,9 @@ class _OnboardingState extends State<Onboarding> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: lang,
-      builder: (context, _, __) {
+    return ListenableBuilder(
+      listenable: lookChanged,
+      builder: (context, _) {
         final pages = [_welcome(), _what(), _how()];
         return Scaffold(
           body: SafeArea(
@@ -63,6 +63,8 @@ class _OnboardingState extends State<Onboarding> {
           ],
           const SizedBox(width: 12),
           const LangPill(),
+          const SizedBox(width: 6),
+          const ThemeButton(),
         ]),
       );
 
@@ -90,18 +92,18 @@ class _OnboardingState extends State<Onboarding> {
           height: 300,
           child: Stack(fit: StackFit.expand, children: [
             Image.asset('assets/img/delta_winter.jpg', fit: BoxFit.cover, alignment: const Alignment(0.1, -0.2)),
-            const DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0x66000000), Color(0x00000000), Fs.bg], stops: [0.0, 0.35, 1.0]))),
+            DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0x66000000), Color(0x00000000), Fs.bg], stops: [0.0, 0.35, 1.0]))),
           ]),
         ),
         Padding(padding: const EdgeInsets.symmetric(horizontal: 24), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const SizedBox(height: 210),
           const EyadAvatar(mood: EyadMood.excited, size: 118, glow: false),
           const SizedBox(height: 10),
-          Text(tr('أنا إياد، مساعدك الذكي', 'I am Eyad, your AI assistant'), style: const TextStyle(fontSize: 14, color: Colors.white70, fontWeight: FontWeight.w600)),
+          Text(tr('أنا إياد، مساعدك الذكي', 'I am Eyad, your AI assistant'), style: TextStyle(fontSize: 14, color: Fs.dim, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           TwoWeightHeadline(tr('اعرف أرضك\nقبل ما تزرع', 'Know your field\nbefore you sow'), size: 40),
           const SizedBox(height: 12),
-          Text(tr('الطقس من بيانات ناسا،\nوالملوحة من جداول الفاو وكلامك', 'Weather from NASA data,\nsalt from FAO tables and what you tell me'), style: const TextStyle(fontSize: 15, height: 1.5, color: Colors.white70)),
+          Text(tr('الطقس من بيانات ناسا،\nوالملوحة من جداول الفاو وكلامك', 'Weather from NASA data,\nsalt from FAO tables and what you tell me'), style: TextStyle(fontSize: 15, height: 1.5, color: Fs.dim)),
           const Spacer(),
           Row(children: [
             GestureDetector(
@@ -109,14 +111,14 @@ class _OnboardingState extends State<Onboarding> {
               child: Container(
                 width: 66,
                 height: 66,
-                decoration: const BoxDecoration(shape: BoxShape.circle, color: Fs.accent),
-                child: const Icon(Icons.arrow_forward_rounded, size: 30, color: Fs.onAccent), // flips itself in right-to-left layouts
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Fs.accent),
+                child: Icon(Icons.arrow_forward_rounded, size: 30, color: Fs.onAccent), // flips itself in right-to-left layouts
               ),
             ),
             const SizedBox(width: 14),
-            Text(tr('يلا بينا!', "LET'S GO!"), style: const TextStyle(fontSize: 16, letterSpacing: 0.5, color: Fs.dim)),
+            Text(tr('يلا بينا!', "LET'S GO!"), style: TextStyle(fontSize: 16, letterSpacing: 0.5, color: Fs.dim)),
             const Spacer(),
-            TextButton(onPressed: () => widget.onDone(true), child: Text(tr('تخطّي', 'Skip'), style: const TextStyle(fontSize: 16, color: Fs.dim))),
+            TextButton(onPressed: () => widget.onDone(true), child: Text(tr('تخطّي', 'Skip'), style: TextStyle(fontSize: 16, color: Fs.dim))),
           ]),
           const SizedBox(height: 14),
         ])),
@@ -136,7 +138,7 @@ class _OnboardingState extends State<Onboarding> {
       const SizedBox(height: 10),
       Text(tr('إياد هيساعدك في إيه؟', 'What can Eyad help with?'), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
       const SizedBox(height: 6),
-      Text(tr('طقس ناسا وجداول الفاو', 'NASA weather and FAO tables'), style: const TextStyle(fontSize: 14, color: Fs.dim)),
+      Text(tr('طقس ناسا وجداول الفاو', 'NASA weather and FAO tables'), style: TextStyle(fontSize: 14, color: Fs.dim)),
       const SizedBox(height: 18),
       Expanded(
         child: GridView.count(
@@ -149,19 +151,19 @@ class _OnboardingState extends State<Onboarding> {
             for (final c in cards)
               Container(
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard)),
+                decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard), boxShadow: Fs.lift),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   IconBubble(c.$1),
                   const Spacer(),
                   Text(c.$2, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 3),
-                  Text(c.$3, maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, height: 1.35, color: Fs.dim)),
+                  Text(c.$3, maxLines: 3, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, height: 1.35, color: Fs.dim)),
                 ]),
               ),
           ],
         ),
       ),
-      Padding(padding: const EdgeInsets.only(bottom: 12), child: Text(tr('إياد بيدعم خبرتك، ومبيحلش مكانها.', 'Eyad supports your experience; he does not replace it.'), style: const TextStyle(fontSize: 12, color: Fs.dim))),
+      Padding(padding: const EdgeInsets.only(bottom: 12), child: Text(tr('إياد بيدعم خبرتك، ومبيحلش مكانها.', 'Eyad supports your experience; he does not replace it.'), style: TextStyle(fontSize: 12, color: Fs.dim))),
       _primary(tr('التالي', 'Next'), () => _go(2)),
     ]);
   }
@@ -175,7 +177,7 @@ class _OnboardingState extends State<Onboarding> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard), border: on ? Border.all(color: Fs.accent, width: 1.6) : null),
+          decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard), border: on ? Border.all(color: Fs.accent, width: 1.6) : null, boxShadow: Fs.lift),
           child: Row(children: [
             Icon(icon, color: on ? Fs.accent : Fs.dim, size: 26),
             const SizedBox(width: 14),
@@ -183,7 +185,7 @@ class _OnboardingState extends State<Onboarding> {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 3),
-                Text(sub, style: const TextStyle(fontSize: 12.5, height: 1.35, color: Fs.dim)),
+                Text(sub, style: TextStyle(fontSize: 12.5, height: 1.35, color: Fs.dim)),
               ]),
             ),
             Icon(on ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, color: on ? Fs.accent : Fs.dim),

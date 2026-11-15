@@ -11,6 +11,11 @@ final ValueNotifier<String> lang = ValueNotifier<String>('ar');
 bool get isAr => lang.value == 'ar';
 void toggleLang() => lang.value = isAr ? 'en' : 'ar';
 
+/// Dark (default) or light. Screens rebuild when either the language or the theme changes.
+final ValueNotifier<bool> darkMode = ValueNotifier<bool>(true);
+void toggleTheme() => darkMode.value = !darkMode.value;
+final Listenable lookChanged = Listenable.merge([lang, darkMode]);
+
 String tr(String ar, String en) => isAr ? ar : en;
 
 /// Digits in the current language.

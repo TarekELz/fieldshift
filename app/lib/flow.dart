@@ -13,9 +13,10 @@ import 'ui_kit.dart';
 import 'voice.dart';
 
 class FlowScreen extends StatefulWidget {
-  const FlowScreen({super.key, required this.onHome, this.speakReplies = true});
+  const FlowScreen({super.key, required this.onHome, this.speakReplies = true, this.demo = false});
   final VoidCallback onHome;
   final bool speakReplies;
+  final bool demo; // preview only: answer the questions with a sample farmer
   @override
   State<FlowScreen> createState() => _FlowScreenState();
 }
@@ -70,8 +71,13 @@ class _FlowScreenState extends State<FlowScreen> {
       await voice.init();
       await voice.setLanguage(isAr);
       current = dialogue!.opening();
+      if (widget.demo) {
+        for (final a in ['gharbia', 'rice', '06-15', '12-01', '10', 'patches']) {
+          current = dialogue!.handle(a).last;
+        }
+      }
       if (mounted) setState(() {});
-      voice.speak(msgText(current!));
+      if (!widget.demo) voice.speak(msgText(current!));
     } catch (e) {
       if (mounted) setState(() => loadError = '$e');
     }
@@ -159,15 +165,15 @@ class _FlowScreenState extends State<FlowScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: lang,
-      builder: (context, _, __) => Scaffold(
+    return ListenableBuilder(
+      listenable: lookChanged,
+      builder: (context, _) => Scaffold(
         body: SafeArea(
           child: loadError != null
               ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('${tr('تعذر تحميل البيانات', 'Could not load the data')}:\n$loadError')))
               : Column(children: [
                   _topBar(),
-                  Expanded(child: dialogue == null || current == null ? const Center(child: CircularProgressIndicator(color: Fs.accent)) : (current!.result != null ? _result() : _question())),
+                  Expanded(child: dialogue == null || current == null ? Center(child: CircularProgressIndicator(color: Fs.accent)) : (current!.result != null ? _result() : _question())),
                 ]),
         ),
       ),
@@ -180,6 +186,8 @@ class _FlowScreenState extends State<FlowScreen> {
           RoundButton(icon: Icons.arrow_back_rounded, onTap: widget.onHome, tooltip: tr('رجوع', 'Back')),
           const Spacer(),
           const LangPill(),
+          const SizedBox(width: 8),
+          const ThemeButton(),
           const Spacer(),
           RoundButton(icon: Icons.refresh_rounded, onTap: _restart, tooltip: tr('ابدأ من جديد', 'Start again')),
         ]),
@@ -223,7 +231,7 @@ class _FlowScreenState extends State<FlowScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: Fs.card2, borderRadius: BorderRadius.circular(20)),
-                  child: Text(c, style: const TextStyle(fontSize: 12, color: Fs.dim, fontWeight: FontWeight.w500)),
+                  child: Text(c, style: TextStyle(fontSize: 12, color: Fs.dim, fontWeight: FontWeight.w500)),
                 ),
             ],
           ),
@@ -232,11 +240,11 @@ class _FlowScreenState extends State<FlowScreen> {
         padding: const EdgeInsets.fromLTRB(24, 14, 24, 4),
         child: Text(msgText(m), textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, height: 1.3, fontWeight: FontWeight.w700)),
       ),
-      if (note != null) Padding(padding: const EdgeInsets.fromLTRB(28, 0, 28, 4), child: Text(msgText(note!), textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, height: 1.4, color: Fs.dim))),
+      if (note != null) Padding(padding: const EdgeInsets.fromLTRB(28, 0, 28, 4), child: Text(msgText(note!), textAlign: TextAlign.center, style: TextStyle(fontSize: 13, height: 1.4, color: Fs.dim))),
       const SizedBox(height: 8),
       Expanded(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), child: _answers(m, d))),
       if (listening || partial.isNotEmpty)
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4), child: Text(partial.isEmpty ? tr('بسمعك... اتكلم دلوقتي', 'Listening... speak now') : partial, style: const TextStyle(fontSize: 15, color: Fs.accent))),
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4), child: Text(partial.isEmpty ? tr('بسمعك... اتكلم دلوقتي', 'Listening... speak now') : partial, style: TextStyle(fontSize: 15, color: Fs.accent))),
       _bottom(),
     ]);
   }
@@ -261,7 +269,7 @@ class _FlowScreenState extends State<FlowScreen> {
             onTap: () => send(c.value),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: m.showMap ? 14 : 12, vertical: m.showMap ? 8 : 16),
-              decoration: BoxDecoration(color: dim ? Colors.transparent : Fs.card, borderRadius: BorderRadius.circular(Fs.radiusTile), border: dim ? Border.all(color: Fs.line) : null),
+              decoration: BoxDecoration(color: dim ? Colors.transparent : Fs.card, borderRadius: BorderRadius.circular(Fs.radiusTile), border: dim ? Border.all(color: Fs.line) : null, boxShadow: dim ? null : Fs.lift),
               child: Row(mainAxisSize: m.showMap ? MainAxisSize.min : MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.center, children: [
                 if (icon != null) ...[Icon(icon, size: 22, color: Fs.accent), const SizedBox(width: 8)],
                 Flexible(child: Text(choiceLabel(c, d.step), textAlign: TextAlign.center, style: TextStyle(fontSize: m.showMap ? 14 : 17, fontWeight: FontWeight.w600, color: dim ? Fs.dim : Fs.text))),
@@ -320,7 +328,7 @@ class _FlowScreenState extends State<FlowScreen> {
         Column(mainAxisSize: MainAxisSize.min, children: [
           RoundButton(icon: Icons.keyboard_alt_rounded, onTap: () => setState(() => typing = true), tooltip: tr('اكتب', 'Type')),
           const SizedBox(height: 4),
-          Text(tr('اكتب', 'Type'), style: const TextStyle(fontSize: 11, color: Fs.dim)),
+          Text(tr('اكتب', 'Type'), style: TextStyle(fontSize: 11, color: Fs.dim)),
         ]),
         GestureDetector(
           onTap: _toggleMic,
@@ -333,13 +341,13 @@ class _FlowScreenState extends State<FlowScreen> {
               color: listening ? Fs.accent : Fs.card,
               border: Border.all(color: Fs.accent, width: 2),
             ),
-            child: Icon(listening ? Icons.stop_rounded : Icons.mic_rounded, size: 36, color: listening ? Colors.black : Fs.accent),
+            child: Icon(listening ? Icons.stop_rounded : Icons.mic_rounded, size: 36, color: listening ? Fs.onAccent : Fs.accent),
           ),
         ),
         Column(mainAxisSize: MainAxisSize.min, children: [
           RoundButton(icon: Icons.volume_up_rounded, onTap: _readAgain, tooltip: tr('اسمع تاني', 'Hear again')),
           const SizedBox(height: 4),
-          Text(tr('اسمع', 'Listen'), style: const TextStyle(fontSize: 11, color: Fs.dim)),
+          Text(tr('اسمع', 'Listen'), style: TextStyle(fontSize: 11, color: Fs.dim)),
         ]),
       ]),
     );

@@ -12,17 +12,25 @@ import 'i18n.dart';
 /// ONE accent, status colours used for state only, soft cards without outlines, IBM Plex Sans with an Arabic face).
 /// Dark palette only for now.
 class Fs {
-  static const bg = Color(0xFF0F1113); // canvas
-  static const card = Color(0xFF1A1D21); // surface: grouped content
-  static const card2 = Color(0xFF23272B); // surfaceMuted: tiles in cards, inputs, tracks
-  static const line = Color(0xFF2E3338); // hairline
-  static const text = Color(0xFFECEDEE);
-  static const dim = Color(0xFFA3A9AF); // textSecondary
-  static const accent = Color(0xFF62B2EC);
-  static const onAccent = Color(0xFF0B1A26);
-  static const ok = Color(0xFF5DC48A);
-  static const warning = Color(0xFFE3A33B);
-  static const alert = Color(0xFFF1776D);
+  static bool get dark => darkMode.value;
+  static Color _p(Color d, Color l) => dark ? d : l;
+
+  static Color get bg => _p(const Color(0xFF0F1113), const Color(0xFFF3F2EF)); // canvas
+  static Color get card => _p(const Color(0xFF1A1D21), const Color(0xFFFFFFFF)); // surface: grouped content
+  static Color get card2 => _p(const Color(0xFF23272B), const Color(0xFFF0EEEA)); // surfaceMuted: tiles in cards, inputs, tracks
+  static Color get line => _p(const Color(0xFF2E3338), const Color(0xFFE6E3DD)); // hairline
+  static Color get text => _p(const Color(0xFFECEDEE), const Color(0xFF1B1D1F));
+  static Color get dim => _p(const Color(0xFFA3A9AF), const Color(0xFF585D63)); // textSecondary
+  static Color get accent => _p(const Color(0xFF62B2EC), const Color(0xFF0067AC));
+  static Color get onAccent => _p(const Color(0xFF0B1A26), const Color(0xFFFFFFFF));
+  static Color get ok => _p(const Color(0xFF5DC48A), const Color(0xFF1A7340));
+  static Color get warning => _p(const Color(0xFFE3A33B), const Color(0xFF9A5800));
+  static Color get alert => _p(const Color(0xFFF1776D), const Color(0xFFB42318));
+  // One fixed colour per measured quantity (the monitor app's chart-series idea).
+  static Color get water => _p(const Color(0xFF55C0C6), const Color(0xFF1F7F86));
+  static Color get heat => _p(const Color(0xFFE58A5E), const Color(0xFFB4532A));
+  /// Light cards float on a faint wide shadow instead of an outline; in dark mode the lighter surface does the lifting.
+  static List<BoxShadow>? get lift => dark ? null : const [BoxShadow(color: Color(0x261B1D1F), blurRadius: 24, offset: Offset(0, 8))];
 
   static const radiusCard = 22.0;
   static const radiusTile = 14.0;
@@ -30,15 +38,25 @@ class Fs {
   static const latin = 'IBMPlexSans';
   static const arabic = 'IBMPlexSansArabic';
 
-  /// Theme for the current language: the Arabic face (with its taller line height) in Arabic, Plex Sans in English.
+  /// Theme for the current language and mode: the Arabic face (with its taller line height) in Arabic, Plex Sans in English.
   static ThemeData theme({bool arabicLang = true}) {
     final family = arabicLang ? arabic : latin;
     final base = ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: dark ? Brightness.dark : Brightness.light,
       scaffoldBackgroundColor: bg,
       fontFamily: family,
-      colorScheme: const ColorScheme.dark(primary: accent, onPrimary: onAccent, secondary: ok, surface: card, onSurface: text, error: alert),
+      colorScheme: ColorScheme(
+        brightness: dark ? Brightness.dark : Brightness.light,
+        primary: accent,
+        onPrimary: onAccent,
+        secondary: ok,
+        onSecondary: onAccent,
+        surface: card,
+        onSurface: text,
+        error: alert,
+        onError: onAccent,
+      ),
       splashFactory: NoSplash.splashFactory,
     );
     return base.copyWith(
@@ -51,16 +69,16 @@ class Fs {
 
 /// Progress ring: a quiet track and one accent arc, no glow.
 class RingGauge extends StatelessWidget {
-  const RingGauge({super.key, required this.progress, required this.size, this.color = Fs.accent, this.stroke = 7, this.child});
+  const RingGauge({super.key, required this.progress, required this.size, this.color, this.stroke = 7, this.child});
   final double progress, size, stroke;
-  final Color color;
+  final Color? color;
   final Widget? child;
 
   @override
   Widget build(BuildContext context) => SizedBox(
         width: size,
         height: size,
-        child: CustomPaint(painter: _RingPainter(progress.clamp(0.0, 1.0), color, stroke), child: Center(child: child)),
+        child: CustomPaint(painter: _RingPainter(progress.clamp(0.0, 1.0), color ?? Fs.accent, stroke), child: Center(child: child)),
       );
 }
 
@@ -90,14 +108,14 @@ class _RingPainter extends CustomPainter {
 
 /// Tiny line chart of a series; [mark] draws a horizontal reference (for example the median).
 class Sparkline extends StatelessWidget {
-  const Sparkline(this.values, {super.key, this.color = Fs.accent, this.height = 30, this.mark});
+  const Sparkline(this.values, {super.key, this.color, this.height = 30, this.mark});
   final List<num> values;
-  final Color color;
+  final Color? color;
   final double height;
   final num? mark;
 
   @override
-  Widget build(BuildContext context) => SizedBox(height: height, width: double.infinity, child: CustomPaint(painter: _SparkPainter(values, color, mark)));
+  Widget build(BuildContext context) => SizedBox(height: height, width: double.infinity, child: CustomPaint(painter: _SparkPainter(values, color ?? Fs.accent, mark)));
 }
 
 class _SparkPainter extends CustomPainter {
@@ -114,7 +132,7 @@ class _SparkPainter extends CustomPainter {
     Offset pt(int i, num y) => Offset(s.width * i / (v.length - 1), s.height - 3 - (s.height - 6) * ((y - lo) / span));
     if (mark != null) {
       final y = pt(0, mark!).dy;
-      c.drawLine(Offset(0, y), Offset(s.width, y), Paint()..color = Colors.white24..strokeWidth = 1);
+      c.drawLine(Offset(0, y), Offset(s.width, y), Paint()..color = Fs.line..strokeWidth = 1);
     }
     final path = Path()..moveTo(pt(0, v[0]).dx, pt(0, v[0]).dy);
     for (var i = 1; i < v.length; i++) {
@@ -131,14 +149,14 @@ class _SparkPainter extends CustomPainter {
 
 /// Monthly area chart with a marker on one month (like the temperature chart in the car app).
 class MonthChart extends StatelessWidget {
-  const MonthChart({super.key, required this.values, this.markMonth, this.color = Fs.warning, this.height = 110});
+  const MonthChart({super.key, required this.values, this.markMonth, this.color, this.height = 110});
   final List<double> values;
   final int? markMonth; // 1..12
-  final Color color;
+  final Color? color;
   final double height;
 
   @override
-  Widget build(BuildContext context) => SizedBox(height: height, width: double.infinity, child: CustomPaint(painter: _AreaPainter(values, markMonth, color)));
+  Widget build(BuildContext context) => SizedBox(height: height, width: double.infinity, child: CustomPaint(painter: _AreaPainter(values, markMonth, color ?? Fs.warning)));
 }
 
 class _AreaPainter extends CustomPainter {
@@ -162,14 +180,14 @@ class _AreaPainter extends CustomPainter {
     c.drawPath(line, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.2..color = color);
     const labels = ['ي', 'ف', 'م', 'أ', 'م', 'ي', 'ي', 'أ', 'س', 'أ', 'ن', 'د'];
     for (var i = 0; i < 12; i++) {
-      final tp = TextPainter(text: TextSpan(text: labels[i], style: TextStyle(fontSize: 10, color: (mark == i + 1) ? Colors.white : Fs.dim)), textDirection: TextDirection.rtl)..layout();
+      final tp = TextPainter(text: TextSpan(text: labels[i], style: TextStyle(fontSize: 10, color: (mark == i + 1) ? Fs.text : Fs.dim)), textDirection: TextDirection.rtl)..layout();
       tp.paint(c, Offset(pt(i).dx - tp.width / 2, s.height - 13));
     }
     if (mark != null) {
       final p = pt(mark! - 1);
       c.drawLine(Offset(p.dx, p.dy), Offset(p.dx, s.height - bottomPad), Paint()..color = color.withValues(alpha: 0.8)..strokeWidth = 1.2);
       c.drawCircle(p, 7, Paint()..color = color.withValues(alpha: 0.35)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5));
-      c.drawCircle(p, 4, Paint()..color = Colors.white);
+      c.drawCircle(p, 4, Paint()..color = Fs.text);
     }
   }
 
@@ -179,12 +197,12 @@ class _AreaPainter extends CustomPainter {
 
 /// Dark rounded stat tile: icon in a circle, optional sparkline, label and a big value.
 class StatTile extends StatelessWidget {
-  const StatTile({super.key, required this.icon, required this.label, required this.value, this.spark, this.accent = Fs.accent, this.note, this.barFraction});
+  const StatTile({super.key, required this.icon, required this.label, required this.value, this.spark, this.accent, this.note, this.barFraction});
   final IconData icon;
   final String label, value;
   final List<num>? spark;
   final double? barFraction; // 0..1: a thin comparison bar under the value
-  final Color accent;
+  final Color? accent;
   final String? note;
 
   @override
@@ -195,7 +213,7 @@ class StatTile extends StatelessWidget {
           Row(children: [
             Container(width: 34, height: 34, decoration: const BoxDecoration(color: Colors.white10, shape: BoxShape.circle), child: Icon(icon, size: 18, color: accent)),
             const SizedBox(width: 8),
-            Expanded(child: Text(label, style: const TextStyle(fontSize: 12, color: Fs.dim, height: 1.2))),
+            Expanded(child: Text(label, style: TextStyle(fontSize: 12, color: Fs.dim, height: 1.2))),
           ]),
           if (spark != null) Padding(padding: const EdgeInsets.only(top: 8), child: Sparkline(spark!, color: accent, mark: null)),
           const SizedBox(height: 6),
@@ -205,7 +223,7 @@ class StatTile extends StatelessWidget {
               padding: const EdgeInsets.only(top: 6, bottom: 2),
               child: ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: barFraction!.clamp(0.0, 1.0), minHeight: 6, backgroundColor: Colors.white10, valueColor: AlwaysStoppedAnimation(accent))),
             ),
-          if (note != null) Text(note!, style: const TextStyle(fontSize: 11, color: Fs.dim)),
+          if (note != null) Text(note!, style: TextStyle(fontSize: 11, color: Fs.dim)),
         ]),
       );
 }
@@ -222,7 +240,7 @@ class RoundButton extends StatelessWidget {
         message: tooltip ?? '',
         child: InkResponse(
           onTap: onTap,
-          child: Container(width: 44, height: 44, decoration: const BoxDecoration(color: Fs.card2, shape: BoxShape.circle), child: Icon(icon, size: 22)),
+          child: Container(width: 44, height: 44, decoration: BoxDecoration(color: Fs.card2, shape: BoxShape.circle), child: Icon(icon, size: 22)),
         ),
       );
 }
@@ -261,9 +279,10 @@ class LangPill extends StatelessWidget {
   const LangPill({super.key});
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<String>(
-        valueListenable: lang,
-        builder: (context, l, _) {
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: lookChanged,
+        builder: (context, _) {
+          final l = lang.value;
           Widget seg(String label, String code) => GestureDetector(
                 onTap: () => lang.value = code,
                 child: AnimatedContainer(
@@ -300,8 +319,8 @@ class ArcDial extends StatelessWidget {
       child: Stack(alignment: Alignment.center, children: [
         Positioned.fill(child: CustomPaint(painter: _ArcPainter(value, min, max, bandLow, bandHigh, rtl))),
         Align(alignment: const Alignment(0, 0.05), child: center),
-        if (minLabel != null) PositionedDirectional(start: size * 0.1, bottom: 0, child: Text(minLabel!, style: const TextStyle(fontSize: 12, color: Fs.dim))),
-        if (maxLabel != null) PositionedDirectional(end: size * 0.1, bottom: 0, child: Text(maxLabel!, style: const TextStyle(fontSize: 12, color: Fs.dim))),
+        if (minLabel != null) PositionedDirectional(start: size * 0.1, bottom: 0, child: Text(minLabel!, style: TextStyle(fontSize: 12, color: Fs.dim))),
+        if (maxLabel != null) PositionedDirectional(end: size * 0.1, bottom: 0, child: Text(maxLabel!, style: TextStyle(fontSize: 12, color: Fs.dim))),
       ]),
     );
   }
@@ -351,18 +370,18 @@ class SoftCard extends StatelessWidget {
   final Color? color;
 
   @override
-  Widget build(BuildContext context) => Container(padding: padding, decoration: BoxDecoration(color: color ?? Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard)), child: child);
+  Widget build(BuildContext context) => Container(padding: padding, decoration: BoxDecoration(color: color ?? Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard), boxShadow: Fs.lift), child: child);
 }
 
 /// An icon in a soft circle (the monitor app's IconBubble).
 class IconBubble extends StatelessWidget {
-  const IconBubble(this.icon, {super.key, this.size = 40, this.color = Fs.accent});
+  const IconBubble(this.icon, {super.key, this.size = 40, this.color});
   final IconData icon;
   final double size;
-  final Color color;
+  final Color? color;
 
   @override
-  Widget build(BuildContext context) => Container(width: size, height: size, decoration: BoxDecoration(color: color.withValues(alpha: 0.16), shape: BoxShape.circle), child: Icon(icon, size: size * 0.5, color: color));
+  Widget build(BuildContext context) => Container(width: size, height: size, decoration: BoxDecoration(color: (color ?? Fs.accent).withValues(alpha: 0.16), shape: BoxShape.circle), child: Icon(icon, size: size * 0.5, color: color ?? Fs.accent));
 }
 
 /// Two-weight headline (as in the monitor app): the first line light, the rest semibold. Lines are split at a newline.
@@ -382,4 +401,15 @@ class TwoWeightHeadline extends StatelessWidget {
       style: TextStyle(fontSize: size, height: 1.2),
     );
   }
+}
+
+/// Sun / moon button: switches between the light and dark theme.
+class ThemeButton extends StatelessWidget {
+  const ThemeButton({super.key});
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: darkMode,
+        builder: (context, _) => RoundButton(icon: Fs.dark ? Icons.light_mode_rounded : Icons.dark_mode_rounded, onTap: toggleTheme, tooltip: tr('الوضع', 'Theme')),
+      );
 }

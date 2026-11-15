@@ -21,11 +21,7 @@ const _sitePixel = <String, Offset>{
   'menoufia': Offset(0.501, 0.773),
   'sharqia': Offset(0.651, 0.807),
 };
-const _imageAspect = 1372 / 700;
 
-// One fixed colour per measured quantity (the monitor app's chart-series idea): water, heat.
-const _waterColor = Color(0xFF55C0C6);
-const _heatColor = Color(0xFFE58A5E);
 
 class ResultView extends StatefulWidget {
   const ResultView({super.key, required this.c, required this.data, required this.mood, required this.onRestart, required this.onReadAloud});
@@ -58,7 +54,7 @@ class _ResultViewState extends State<ResultView> {
       const SizedBox(height: 8),
       Text(
         '${cropN(r.input.crop)}: ${tr('زراعة', 'sown')} ${dateN(r.input.summerSowing)}, ${tr('حصاد تقريباً', 'harvest about')} ${harvestN(r.harvest)}.  ${cropN('wheat')}: ${dateN(r.input.wheatSowing)}${r.isExisting ? '' : tr(' (افتراض)', ' (assumed)')}',
-        style: const TextStyle(fontSize: 13, color: Fs.dim, height: 1.4),
+        style: TextStyle(fontSize: 13, color: Fs.dim, height: 1.4),
       ),
       const SizedBox(height: 14),
       _dialCard(r),
@@ -73,7 +69,7 @@ class _ResultViewState extends State<ResultView> {
         _round(Icons.wb_sunny_rounded, tr('طقس', 'Weather'), () => _sheet(_weather())),
       ]),
       const SizedBox(height: 22),
-      Text(noticeN(), style: const TextStyle(fontSize: 13, color: Fs.dim, height: 1.5)),
+      Text(noticeN(), style: TextStyle(fontSize: 13, color: Fs.dim, height: 1.5)),
       const SizedBox(height: 16),
       SizedBox(
         height: 52,
@@ -120,18 +116,20 @@ class _ResultViewState extends State<ResultView> {
             aspectRatio: 1.32,
             child: LayoutBuilder(builder: (context, cons) {
               final w = cons.maxWidth, h = cons.maxHeight;
-              final imgH = w / _imageAspect;
-              final top = (h - imgH) / 2;
+              // the picture covers the card (centre-cropped); the pin follows the same mapping
+              final scale = math.max(w / 1372, h / 700);
+              final iw = 1372 * scale, ih = 700 * scale;
+              final ox = (w - iw) / 2, oy = (h - ih) / 2;
               final f = _sitePixel[c.site] ?? const Offset(0.5, 0.55);
-              final pin = Offset(f.dx * w, top + f.dy * imgH);
+              final pin = Offset(ox + f.dx * iw, oy + f.dy * ih);
               final s = r.saltSummer;
               final bubbles = <_BubbleSpec>[
-                _BubbleSpec(Icons.thermostat_rounded, _heatColor, '${nd(r.heatMedian.round())} ${tr('يوم', 'days')}', const Offset(0.15, 0.27)),
-                _BubbleSpec(Icons.water_drop_rounded, _waterColor, '${nn(r.ratio, dec: 2)}×', const Offset(0.85, 0.27)),
-                _BubbleSpec(Icons.grain_rounded, s == null ? Fs.dim : Fs.status(s.status), s == null ? '—' : saltN(s.status), const Offset(0.5, 0.86)),
+                _BubbleSpec(Icons.thermostat_rounded, Fs.heat, '${nd(r.heatMedian.round())} ${tr('يوم', 'days')}', const Offset(0.15, 0.27)),
+                _BubbleSpec(Icons.water_drop_rounded, Fs.water, '${nn(r.ratio, dec: 2)}×', const Offset(0.85, 0.27)),
+                _BubbleSpec(Icons.grain_rounded, s == null ? Fs.dim : Fs.status(s.status), s == null ? '—' : saltN(s.status), const Offset(0.5, 0.76)),
               ];
               return Stack(children: [
-                Positioned(left: 0, right: 0, top: top, height: imgH, child: Image.asset('assets/img/delta_winter.jpg', fit: BoxFit.fill)),
+                Positioned.fill(child: Image.asset('assets/img/delta_winter.jpg', fit: BoxFit.cover)),
                 Positioned.fill(child: CustomPaint(painter: _LeaderPainter(pin, [for (final b in bubbles) Offset(b.at.dx * w, b.at.dy * h)]))),
                 for (final b in bubbles) Positioned(left: b.at.dx * w - 54, top: b.at.dy * h - 27, width: 108, child: _bubble(b)),
               ]);
@@ -193,12 +191,12 @@ class _ResultViewState extends State<ResultView> {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       child: Column(children: [
         Row(children: [
-          const IconBubble(Icons.water_drop_rounded, color: _waterColor),
+          IconBubble(Icons.water_drop_rounded, color: Fs.water),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(tr('احتياج المية', 'Water need'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-              Text(tr('مقارنة بدورتك الحالية', 'compared with your current rotation'), style: const TextStyle(fontSize: 13, color: Fs.dim)),
+              Text(tr('مقارنة بدورتك الحالية', 'compared with your current rotation'), style: TextStyle(fontSize: 13, color: Fs.dim)),
             ]),
           ),
         ]),
@@ -225,15 +223,15 @@ class _ResultViewState extends State<ResultView> {
   Widget _heatCard(RotationRow r) => SoftCard(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            const IconBubble(Icons.thermostat_rounded, size: 34, color: _heatColor),
+            IconBubble(Icons.thermostat_rounded, size: 34, color: Fs.heat),
             const SizedBox(width: 8),
-            Expanded(child: Text(tr('أيام فوق ٣٢°', 'Days above 32°'), style: const TextStyle(fontSize: 13, color: Fs.dim))),
+            Expanded(child: Text(tr('أيام فوق ٣٢°', 'Days above 32°'), style: TextStyle(fontSize: 13, color: Fs.dim))),
           ]),
           const SizedBox(height: 10),
           Text('${nd(r.heatMedian.round())} ${tr('يوم', 'days')}', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w600, height: 1.1)),
-          if (r.series.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 10), child: Sparkline(r.series, color: _heatColor, mark: null)),
+          if (r.series.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 10), child: Sparkline(r.series, color: Fs.heat, mark: null)),
           const SizedBox(height: 6),
-          Text(tr('وقت امتلاء حبوب القمح، قارن بين المواعيد', 'in wheat grain filling; compare dates'), style: const TextStyle(fontSize: 12, color: Fs.dim, height: 1.3)),
+          Text(tr('وقت امتلاء حبوب القمح، قارن بين المواعيد', 'in wheat grain filling; compare dates'), style: TextStyle(fontSize: 12, color: Fs.dim, height: 1.3)),
         ]),
       );
 
@@ -242,7 +240,7 @@ class _ResultViewState extends State<ResultView> {
     if (s == null) {
       return SoftCard(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [const IconBubble(Icons.grain_rounded, size: 34, color: Fs.dim), const SizedBox(width: 8), Text(tr('الملوحة', 'Salt'), style: const TextStyle(fontSize: 13, color: Fs.dim))]),
+          Row(children: [IconBubble(Icons.grain_rounded, size: 34, color: Fs.dim), const SizedBox(width: 8), Text(tr('الملوحة', 'Salt'), style: TextStyle(fontSize: 13, color: Fs.dim))]),
           const SizedBox(height: 14),
           Text(tr('مفيش بيانات', 'Not provided'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
         ]),
@@ -254,7 +252,7 @@ class _ResultViewState extends State<ResultView> {
         Row(children: [
           IconBubble(Icons.grain_rounded, size: 34, color: col),
           const SizedBox(width: 8),
-          Expanded(child: Text('${tr('ملوحة', 'Salt')}: ${cropN(r.input.crop)}', style: const TextStyle(fontSize: 13, color: Fs.dim))),
+          Expanded(child: Text('${tr('ملوحة', 'Salt')}: ${cropN(r.input.crop)}', style: TextStyle(fontSize: 13, color: Fs.dim))),
         ]),
         const SizedBox(height: 14),
         Center(
@@ -275,9 +273,9 @@ class _ResultViewState extends State<ResultView> {
   Widget _alert(RotationRow r, String w) => Container(
         margin: const EdgeInsets.only(top: 12),
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard)),
+        decoration: BoxDecoration(color: Fs.card, borderRadius: BorderRadius.circular(Fs.radiusCard), boxShadow: Fs.lift),
         child: Row(children: [
-          const IconBubble(Icons.priority_high_rounded, color: Fs.warning),
+          IconBubble(Icons.priority_high_rounded, color: Fs.warning),
           const SizedBox(width: 12),
           Expanded(child: Text(warningN(r), style: const TextStyle(fontSize: 13, height: 1.45))),
         ]),
@@ -286,10 +284,10 @@ class _ResultViewState extends State<ResultView> {
   Widget _round(IconData icon, String label, VoidCallback onTap) => Column(mainAxisSize: MainAxisSize.min, children: [
         GestureDetector(
           onTap: onTap,
-          child: Container(width: 60, height: 60, decoration: const BoxDecoration(color: Fs.card2, shape: BoxShape.circle), child: Icon(icon, size: 26, color: Fs.text)),
+          child: Container(width: 60, height: 60, decoration: BoxDecoration(color: Fs.card2, shape: BoxShape.circle), child: Icon(icon, size: 26, color: Fs.text)),
         ),
         const SizedBox(height: 6),
-        Text(label, style: const TextStyle(fontSize: 12, color: Fs.dim)),
+        Text(label, style: TextStyle(fontSize: 12, color: Fs.dim)),
       ]);
 
   void _sheet(Widget body) => showModalBottomSheet(
@@ -307,7 +305,7 @@ class _ResultViewState extends State<ResultView> {
   Widget _p(String t, {bool dim = false}) => Padding(padding: const EdgeInsets.only(top: 8), child: Text(t, style: TextStyle(fontSize: 15, height: 1.5, color: dim ? Fs.dim : Fs.text)));
   Widget _src(String t) => Padding(
         padding: const EdgeInsets.only(top: 14),
-        child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Fs.card2, borderRadius: BorderRadius.circular(12)), child: Text(t, style: const TextStyle(fontSize: 12, color: Fs.dim))),
+        child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: Fs.card2, borderRadius: BorderRadius.circular(12)), child: Text(t, style: TextStyle(fontSize: 12, color: Fs.dim))),
       );
 
   Widget _water(RotationRow r) {
@@ -339,7 +337,7 @@ class _ResultViewState extends State<ResultView> {
             'Compared with sowing on 15 November: at 30° ${_signed(e['30'] ?? 0)}, at 32° ${_signed(e['32'] ?? 0)}, at 34° ${_signed(e['34'] ?? 0)} days.')),
       if (r.series.isNotEmpty) ...[
         const SizedBox(height: 14),
-        Sparkline(r.series, color: _heatColor, height: 60),
+        Sparkline(r.series, color: Fs.heat, height: 60),
         _p(tr('كل موسم من ١٩٩٠ لـ ٢٠٢٥', 'Each season, 1990 to 2025'), dim: true),
       ],
       _src(tr('NASA POWER · حد الحر ٣٢° فرضية', 'NASA POWER · the 32° limit is an assumption')),
@@ -383,7 +381,7 @@ class _ResultViewState extends State<ResultView> {
             Icon(i, size: 20, color: Fs.dim),
             const SizedBox(height: 4),
             Text(v, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            Text(l, style: const TextStyle(fontSize: 12, color: Fs.dim)),
+            Text(l, style: TextStyle(fontSize: 12, color: Fs.dim)),
           ]),
         );
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -391,10 +389,10 @@ class _ResultViewState extends State<ResultView> {
       Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
         Text('${nn(tmax[month - 1])}°', style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w500, height: 1)),
         const SizedBox(width: 10),
-        Padding(padding: const EdgeInsets.only(bottom: 6), child: Text('${tr('عظمى', 'high')} · ${tr('صغرى', 'low')} ${nn(tmin[month - 1])}°', style: const TextStyle(fontSize: 13, color: Fs.dim))),
+        Padding(padding: const EdgeInsets.only(bottom: 6), child: Text('${tr('عظمى', 'high')} · ${tr('صغرى', 'low')} ${nn(tmin[month - 1])}°', style: TextStyle(fontSize: 13, color: Fs.dim))),
       ]),
       const SizedBox(height: 12),
-      MonthChart(values: tmax, markMonth: month, color: _heatColor),
+      MonthChart(values: tmax, markMonth: month, color: Fs.heat),
       _p(tr('متوسط الحرارة العظمى كل شهر من ١٩٩٠ لـ ٢٠٢٥. الدايرة هي شهر زراعة القمح.', 'Average monthly high, 1990 to 2025. The dot is the month you sow wheat.'), dim: true),
       const SizedBox(height: 14),
       Row(children: [

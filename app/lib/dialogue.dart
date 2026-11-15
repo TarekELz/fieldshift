@@ -216,6 +216,8 @@ class Dialogue {
             final lbl = g['label'] as List;
             return _useGovernorate(g, (lbl[1] as num).toDouble(), (lbl[0] as num).toDouble());
           }
+          final a = _areaByName(n);
+          if (a != null) return _outside(a['ar'] as String, areaEn: a['id'] as String, area: true);
           return [_retry('مفهمتش. قول اسم المحافظة تاني من فضلك.', 'I did not understand. Please say the governorate again.')];
         }
         site = s;
@@ -228,7 +230,8 @@ class Dialogue {
         step = Step.summerWhen;
         return [prompt()];
       case Step.summerWhen:
-        final d = parseWhen(n, data.summerDates(site!, crop!)) ?? (RegExp(r'^\d\d-\d\d$').hasMatch(n) ? n : null);
+        final summerAllowed = data.summerDates(site!, crop!);
+        final d = summerAllowed.contains(n) ? n : (parseWhen(n, summerAllowed) ?? (RegExp(r'^\d\d-\d\d$').hasMatch(n) ? n : null));
         if (d == null || data.water[site][crop][d] == null) {
           return [_retry('مفهمتش الميعاد، أو برا الجدول بتاعي. قول الشهر وأول ولا نص ولا آخر الشهر.', 'I did not understand the date, or it is outside my table.')];
         }
@@ -236,7 +239,8 @@ class Dialogue {
         step = Step.wheatWhen;
         return [BotMessage('تمام، ${arDate(d)}.'), prompt()];
       case Step.wheatWhen:
-        final d = parseWhen(n, data.wheatDates(site!)) ?? (RegExp(r'^\d\d-\d\d$').hasMatch(n) && data.heat[site][n] != null ? n : null);
+        final wheatAllowed = data.wheatDates(site!);
+        final d = wheatAllowed.contains(n) ? n : (parseWhen(n, wheatAllowed) ?? (RegExp(r'^\d\d-\d\d$').hasMatch(n) && data.heat[site][n] != null ? n : null));
         if (d == null) return [_retry('مفهمتش. قول شهر من نوفمبر لحد يناير، وأول ولا نص ولا آخر الشهر.', 'I did not understand. Say a month from November to January.')];
         wheatSowing = d;
         step = Step.interval;
@@ -263,10 +267,10 @@ class Dialogue {
     }
   }
 
-  List<BotMessage> _outside(String? govAr) => [
+  List<BotMessage> _outside(String? govAr, {String? areaEn, bool area = false}) => [
         BotMessage(
-          '${govAr != null ? 'محافظة $govAr' : 'المكان ده'} برا دلتا النيل. أنا دلوقتي بشتغل على الدلتا بس: الإسكندرية، البحيرة، كفر الشيخ، الغربية، الدقهلية، دمياط، المنوفية، القليوبية، الشرقية، وبورسعيد. اضغط على واحدة منهم.',
-          en: 'That place is outside the Nile Delta, which is all I cover for now.',
+          '${govAr != null ? (area ? 'منطقة $govAr' : 'محافظة $govAr') : 'المكان ده'} برا دلتا النيل. أنا دلوقتي بشتغل على الدلتا بس: الإسكندرية، البحيرة، كفر الشيخ، الغربية، الدقهلية، دمياط، المنوفية، القليوبية، الشرقية، وبورسعيد. اضغط على واحدة منهم.',
+          en: '${areaEn != null ? '$areaEn is' : 'That place is'} outside the Nile Delta, which is all I cover for now.',
           choices: prompt().choices,
           retry: true,
           showMap: true,
@@ -300,9 +304,21 @@ class Dialogue {
     if (step != Step.site) {
       return [BotMessage('عشان تغير المكان، اضغط على "ابدأ من جديد".', en: 'To change the place, tap Start again.')];
     }
+    final a = areaAt(data, lat, lon);
+    if (a != null) return _outside(a['ar'] as String, areaEn: a['id'] as String, area: true);
     final g = governorateAt(data, lat, lon);
     if (g == null) return _outside(null);
     return _useGovernorate(g, lat, lon);
+  }
+
+  /// Halayeb or Shalateen named by voice or typing.
+  Map<String, dynamic>? _areaByName(String n) {
+    for (final a in data.areas) {
+      final core = normalizeAr(a['ar'] as String);
+      final id = (a['id'] as String).toLowerCase();
+      if (n.contains(core) || n.contains(id) || (id == 'halayeb' && n.contains('halaib'))) return a as Map<String, dynamic>;
+    }
+    return null;
   }
 
   Map<String, dynamic>? _governorateByName(String n) {

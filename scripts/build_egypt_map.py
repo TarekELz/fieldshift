@@ -32,6 +32,27 @@ DELTA = ["Alexandria", "Behera", "Kafr El-Shikh", "Gharbia", "Dakahlia", "Damiet
 OWN_SITE = {"Behera": "beheira", "Kafr El-Shikh": "kafr_el_sheikh", "Gharbia": "gharbia", "Menoufia": "menoufia", "Sharkia": "sharqia", "Damietta": "damietta"}
 
 
+AREAS = {"Halayib": "Halayeb", "Shallatin": "Shalateen"}  # HDX admin-2 names -> ids shown in the app (both are in the Red Sea governorate)
+
+
+def hdx_admin2_areas():
+    """Halayeb and Shalateen, drawn as their own highlighted areas inside the Red Sea governorate (HDX admin 2)."""
+    f = HDX_DIR / "egy_admin2.geojson"
+    out = []
+    for ft in json.loads(f.read_text(encoding="utf8"))["features"]:
+        p = ft["properties"]
+        if p["adm2_name"] not in AREAS:
+            continue
+        g = ft["geometry"]
+        polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
+        rings = [simplify_ring([tuple(q) for q in poly[0]], 0.006) for poly in polys]
+        rings = [r for r in rings if len(r) >= 4]
+        big = max(rings, key=lambda r: abs(area_centroid(r)[0]))
+        _, cx, cy = area_centroid(big)
+        out.append({"id": AREAS[p["adm2_name"]], "ar": p["adm2_name1"].replace("قسم ", ""), "parent": p["adm1_name"], "label": [round(cx, 3), round(cy, 3)], "rings": [rnd(r) for r in rings]})
+    return out
+
+
 def hdx_admin1():
     f = HDX_DIR / "egy_admin1.geojson"
     if not f.exists():
@@ -141,7 +162,7 @@ def main():
 
     out = {
         "source": "Governorates: HDX COD-AB Egypt (CAPMAS via OCHA, CC BY-IGO), simplified to about 0.6 km. Rivers and lakes: Natural Earth (public domain), generalized.",
-        "bbox": [24.5, 21.8, 36.95, 31.9], "governorates": governorates, "water": water, "lakes": lake_polys,
+        "bbox": [24.5, 21.8, 36.95, 31.9], "governorates": governorates, "areas": hdx_admin2_areas(), "water": water, "lakes": lake_polys,
     }
     dest = ROOT / "app" / "assets" / "data" / "egypt_map.json"
     dest.write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False), encoding="utf8")

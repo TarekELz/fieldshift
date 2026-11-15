@@ -123,6 +123,21 @@ void main() {
       expect(d.handleLocation(25.70, 32.65).first.ar, contains('الأقصر'));
     });
 
+    test('Halayeb and Shalateen are drawn, named, and recognised outside the Delta', () {
+      expect(data.areas.map((a) => a['id']).toSet(), {'Halayeb', 'Shalateen'});
+      expect(data.areas.map((a) => a['ar']).toSet(), {'حلايب', 'شلاتين'});
+      final h = Dialogue(data).handleLocation(22.3, 36.2); // Halayeb
+      expect(h.first.ar, contains('حلايب'));
+      expect(h.first.ar, contains('منطقة'));
+      expect(h.first.retry, isTrue);
+      final s = Dialogue(data).handleLocation(23.0, 34.6); // Shalateen
+      expect(s.first.ar, contains('شلاتين'));
+      final byName = Dialogue(data);
+      expect(byName.handle('حلايب').first.ar, contains('حلايب'));
+      expect(byName.step, Step.site);
+      expect(Dialogue(data).handle('shalateen').first.en, contains('Shalateen'));
+    });
+
     test('a tap outside the Delta is refused and the map stays', () {
       final d = Dialogue(data);
       final msgs = d.handleLocation(25.70, 32.65); // Luxor
@@ -194,6 +209,26 @@ void main() {
       expect(res.rows.first.isExisting, isTrue);
       expect(out.first.spoken, contains('الرز بياخد مية أكتر'));
       expect(out.first.spoken, contains('مش بتحل محل'));
+    });
+
+    test('every answer button sends a date the dialogue keeps exactly (1 November and 1 December were read as January)', () {
+      for (final w in data.wheatDates('gharbia')) {
+        final d = Dialogue(data)
+          ..site = 'gharbia'
+          ..crop = 'rice'
+          ..summerSowing = '06-15'
+          ..step = Step.wheatWhen;
+        d.handle(w);
+        expect(d.wheatSowing, w, reason: 'wheat button $w');
+      }
+      for (final s in data.summerDates('gharbia', 'rice')) {
+        final d = Dialogue(data)
+          ..site = 'gharbia'
+          ..crop = 'rice'
+          ..step = Step.summerWhen;
+        d.handle(s);
+        expect(d.summerSowing, s, reason: 'summer button $s');
+      }
     });
 
     test('unclear answers get a retry, not a crash', () {
