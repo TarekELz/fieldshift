@@ -123,6 +123,7 @@ No yield forecast, no yield loss in percent, no field-level or weather-station-v
 
 ## Try it
 - **The project page** ([`docs/index.html`](docs/index.html)) has a "Try Eyad" playground running the same tables and rules as the app, and a season lab. It is published with GitHub Pages once the repository is public.
+- **The explorer website** ([`docs/explorer/`](docs/explorer/README.md)): the data, tables and rules behind Eyad on nine pages (a field scene with stories, a Field lab, 14 crops, a comparison of the 19 NASA points, the NASA data, an offline Ask Eyad). It works offline, in English and Arabic, and uses the same tables and engine rules as the app.
 - **The Android app:** test builds are with the team. A build without any API keys is made for the public release (the AI rewording and live voice then fall back to fixed text and the phone's voice).
 - **Build it yourself** (Windows, Flutter 3.47):
   1. Python side (only if you change an engine or the weather files): `pip install -r requirements.txt`, then `python scripts/export_app_data.py` regenerates `app/assets/data/` and the golden test cases that the Dart engine must reproduce.

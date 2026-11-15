@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Shift: Egypt · explorer</title>
+<meta name="description" content="Field Shift: Egypt. An explorer of the NASA data, tables and rules behind Eyad, a voice assistant for Nile Delta farmers. NASA Space Apps Challenge 2026.">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<a class="sr" href="#main">Skip to content</a>
+<div class="honesty" id="honesty"></div>
+<header>
+  <div class="wrap top">
+    <span class="badge" id="badge">NASA SPACE APPS<br>CHALLENGE 2026</span>
+    <a class="brand" href="#learn"><span class="dot" aria-hidden="true"></span><span id="brandName">Field Shift</span></a>
+    <button class="tbtn menubtn" id="menuBtn" aria-expanded="false" aria-controls="mainNav">Menu</button>
+    <nav class="main" id="mainNav" aria-label="Pages"></nav>
+    <button class="pillbtn" id="pillBtn" aria-haspopup="dialog" aria-expanded="false"><span class="pd" aria-hidden="true"></span><span id="pillText"></span></button>
+    <div class="tools">
+      <button class="tbtn" id="langBtn" lang="ar">عربي</button>
+      <button class="tbtn" id="themeBtn" aria-label="Switch light or dark theme">◐</button>
+    </div>
+  </div>
+  <div class="viewbar"><div class="wrap">
+    <label for="viewSel" id="viewLbl">VIEW</label>
+    <select id="viewSel"></select>
+    <a href="#views" id="viewLink"></a>
+  </div></div>
+</header>
+
+<div class="pop" id="pillPop" role="dialog" aria-labelledby="pillTitle" hidden>
+  <h4 id="pillTitle"></h4>
+  <label><span id="pillPlaceLbl"></span><select id="pillPlace"></select></label>
+  <label><span id="pillWheatLbl"></span><select id="pillWheat"></select></label>
+  <button class="btn p" id="pillDone" type="button"></button>
+</div>
+<div class="srcpop" id="srcPop" role="tooltip" hidden></div>
+
+<main id="main" tabindex="-1">
+  <section class="page wrap" id="p-views" hidden></section>
+  <section class="page wrap" id="p-learn" hidden>
+    <p class="eyebrow" id="learnEb"></p>
+    <div class="headrow"><h1 id="learnH"></h1><p class="lead" id="learnSub"></p></div>
+    <div class="scene" id="scene">
+      <div class="stage">
+      <svg viewBox="0 0 1000 560" role="img" aria-labelledby="sceneTitle">
+        <title id="sceneTitle">An illustrated Nile Delta field: a canal, rice stubble, a wheat field, a white salt patch and a NASA satellite overhead</title>
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8cc4e3"/><stop offset="1" stop-color="#e9f3ec"/></linearGradient>
+          <linearGradient id="wheatG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8bbf5a"/><stop offset="1" stop-color="#4f8f3a"/></linearGradient>
+          <linearGradient id="riceG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdb37a"/><stop offset="1" stop-color="#a98a4f"/></linearGradient>
+          <linearGradient id="canalG" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#2f78b0"/><stop offset="1" stop-color="#7fb8dc"/></linearGradient>
+        </defs>
+        <rect width="1000" height="236" fill="url(#sky)"/>
+        <circle cx="140" cy="88" r="40" fill="#ffd36b"/><circle cx="140" cy="88" r="58" fill="#ffd36b" opacity=".25"/>
+        <g opacity=".85"><ellipse cx="420" cy="70" rx="60" ry="14" fill="#fff"/><ellipse cx="455" cy="62" rx="40" ry="14" fill="#fff"/><ellipse cx="610" cy="120" rx="48" ry="11" fill="#fff"/></g>
+        <!-- satellite -->
+        <g transform="translate(820 88) rotate(-14)">
+          <rect x="-70" y="-14" width="52" height="28" fill="#2f5d8c" stroke="#dce8f2" stroke-width="2"/>
+          <line x1="-61" y1="-14" x2="-61" y2="14" stroke="#9cc0de"/><line x1="-44" y1="-14" x2="-44" y2="14" stroke="#9cc0de"/><line x1="-27" y1="-14" x2="-27" y2="14" stroke="#9cc0de"/>
+          <rect x="18" y="-14" width="52" height="28" fill="#2f5d8c" stroke="#dce8f2" stroke-width="2"/>
+          <line x1="27" y1="-14" x2="27" y2="14" stroke="#9cc0de"/><line x1="44" y1="-14" x2="44" y2="14" stroke="#9cc0de"/><line x1="61" y1="-14" x2="61" y2="14" stroke="#9cc0de"/>
+          <rect x="-18" y="-20" width="36" height="40" rx="5" fill="#e6e9ec" stroke="#8a949c" stroke-width="2"/>
+          <line x1="-18" y1="0" x2="-70" y2="0" stroke="#8a949c" stroke-width="3"/><line x1="18" y1="0" x2="70" y2="0" stroke="#8a949c" stroke-width="3"/>
+          <circle cx="0" cy="28" r="7" fill="#c9ced3"/>
+        </g>
+        <g stroke="#ffffff" stroke-width="1.5" stroke-dasharray="5 7" opacity=".7"><line x1="812" y1="122" x2="700" y2="236"/><line x1="822" y1="122" x2="860" y2="236"/></g>
+        <!-- horizon: village and palms -->
+        <rect x="0" y="222" width="1000" height="16" fill="#9db77d"/>
+        <g fill="#c9a26b" stroke="#a7834f" stroke-width="1.5"><rect x="560" y="196" width="44" height="30"/><rect x="600" y="186" width="34" height="40"/><rect x="636" y="202" width="26" height="24"/></g>
+        <g fill="#7a5a33"><rect x="574" y="208" width="8" height="10"/><rect x="611" y="200" width="7" height="9"/></g>
+        <g><rect x="680" y="160" width="5" height="66" fill="#8a6a43"/><path d="M682 162 q-26 -6 -40 10 M682 162 q24 -10 40 6 M682 162 q-14 -22 -34 -22 M682 162 q12 -24 32 -20 M682 162 q2 -16 -6 -30" stroke="#3f7a3a" stroke-width="7" fill="none" stroke-linecap="round"/></g>
+        <g><rect x="470" y="172" width="4" height="54" fill="#8a6a43"/><path d="M472 174 q-20 -4 -32 8 M472 174 q20 -8 32 4 M472 174 q-10 -18 -26 -18 M472 174 q10 -18 26 -16" stroke="#3f7a3a" stroke-width="6" fill="none" stroke-linecap="round"/></g>
+        <g><rect x="905" y="168" width="5" height="58" fill="#8a6a43"/><path d="M907 170 q-24 -6 -36 9 M907 170 q22 -9 36 5 M907 170 q-12 -20 -30 -20 M907 170 q12 -22 30 -18" stroke="#3f7a3a" stroke-width="7" fill="none" stroke-linecap="round"/></g>
+        <!-- fields -->
+        <polygon points="470,560 525,236 1000,236 1000,560" fill="url(#wheatG)"/>
+        <g stroke="#3d7a2c" stroke-width="2" opacity=".7"><line x1="540" y1="560" x2="560" y2="236"/><line x1="620" y1="560" x2="605" y2="236"/><line x1="700" y1="560" x2="650" y2="236"/><line x1="780" y1="560" x2="695" y2="236"/><line x1="860" y1="560" x2="740" y2="236"/><line x1="940" y1="560" x2="785" y2="236"/><line x1="1000" y1="520" x2="830" y2="236"/><line x1="1000" y1="430" x2="875" y2="236"/><line x1="1000" y1="350" x2="920" y2="236"/></g>
+        <polygon points="70,560 322,236 525,236 470,560" fill="url(#riceG)"/>
+        <g stroke="#8e7442" stroke-width="2" stroke-linecap="round" opacity=".8">
+          <path d="M150 520 v-10 M175 520 v-10 M200 520 v-10 M225 520 v-10 M250 520 v-10 M275 520 v-10 M300 520 v-10 M325 520 v-10 M350 520 v-10 M375 520 v-10 M400 520 v-10 M425 520 v-10"/>
+          <path d="M215 420 v-8 M238 420 v-8 M261 420 v-8 M284 420 v-8 M307 420 v-8 M330 420 v-8 M353 420 v-8 M376 420 v-8 M399 420 v-8 M422 420 v-8 M445 420 v-8"/>
+          <path d="M268 340 v-6 M288 340 v-6 M308 340 v-6 M328 340 v-6 M348 340 v-6 M368 340 v-6 M388 340 v-6 M408 340 v-6 M428 340 v-6 M448 340 v-6 M468 340 v-6"/>
+          <path d="M305 280 v-5 M322 280 v-5 M339 280 v-5 M356 280 v-5 M373 280 v-5 M390 280 v-5 M407 280 v-5 M424 280 v-5 M441 280 v-5 M458 280 v-5 M475 280 v-5 M492 280 v-5"/>
+        </g>
+        <path d="M268 470 q20 -26 62 -22 q46 -8 70 12 q22 22 -8 34 q-40 18 -82 8 q-56 -6 -42 -32z" fill="#f4f1ea" opacity=".95"/>
+        <path d="M290 468 q30 -12 60 -6 M300 482 q34 -6 70 0" stroke="#d9d2c2" stroke-width="2" fill="none"/>
+        <polygon points="0,462 0,560 70,560 322,236 300,236" fill="url(#canalG)"/>
+        <g stroke="#cfe6f5" stroke-width="2" opacity=".7" fill="none"><path d="M40 520 q12 -6 24 0"/><path d="M110 430 q10 -5 20 0"/><path d="M180 345 q8 -4 16 0"/><path d="M240 290 q6 -3 12 0"/></g>
+        <path d="M0 462 L300 236" stroke="#7d6a45" stroke-width="3"/><path d="M70 560 L322 236" stroke="#7d6a45" stroke-width="3"/>
+      </svg>
+      <div id="hotspots"></div>
+      <span class="illus" id="illus1"></span>
+      </div>
+      <div class="hud" id="hud" aria-live="polite"></div>
+      <div class="storycard" id="story" aria-live="polite"></div>
+    </div>
+    <div class="chips" id="hsChips" style="justify-content:center;margin-top:14px"></div>
+    <nav class="stepper" id="stepper" aria-label="Learn steps"></nav>
+    <div id="learnStep"></div>
+    <hr class="sep">
+    <h2 id="seeAppH"></h2><p class="dim small" id="seeAppSub"></p>
+    <div class="applist" id="appList"></div>
+  </section>
+  <section class="page wrap" id="p-lab" hidden></section>
+  <section class="page wrap" id="p-crops" hidden></section>
+  <section class="page wrap" id="p-compare" hidden></section>
+  <section class="page wrap" id="p-data" hidden></section>
+  <section class="page wrap askpage" id="p-ask" hidden></section>
+  <section class="page wrap" id="p-methods" hidden></section>
+  <section class="page wrap" id="p-judges" hidden></section>
+</main>
+
+<footer><div class="wrap"><p id="footText"></p><p id="footDraft" class="small"></p></div></footer>
+
+<button class="askfab" id="askFab" aria-expanded="false" aria-controls="askPanel"><span aria-hidden="true">💬</span><span id="askFabTxt">Ask Eyad</span></button>
+<div class="askpanel" id="askPanel" role="dialog" aria-labelledby="askPanelTitle" hidden>
+  <div class="askhead"><span class="av"><img src="img/eyad_main.jpg" alt="Eyad, the assistant (picture generated by AI)"><span class="ai">AI</span></span><b id="askPanelTitle">Ask Eyad</b><button class="tbtn" id="askClose" style="margin-inline-start:auto"></button></div>
+  <div class="chat" id="chatPanel" aria-live="polite"></div>
+  <div class="qchips" id="qchipsPanel"></div>
+  <form class="askform" id="askFormPanel"><label class="sr" for="askInPanel">Question</label><input id="askInPanel" type="text" autocomplete="off"><button class="btn p" type="submit" id="askSendPanel">Send</button></form>
+</div>
+
+<script src="data/meta.js"></script>
+<script src="data/heat.js"></script>
+<script src="data/water.js"></script>
+<script src="data/salt.js"></script>
+<script src="data/season.js"></script>
+<script src="data/blueprints.js"></script>
+<script src="data/crops.js"></script>
+<script src="data/site_data_extra.js"></script>
+<script src="data/climate.js"></script>
+<script src="data/egypt_map.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/app.js"></script>
+<script src="js/ask.js"></script>
+</body>
+</html>
