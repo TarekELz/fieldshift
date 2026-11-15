@@ -281,14 +281,15 @@ class _FlowScreenState extends State<FlowScreen> {
         ),
       ),
       const SizedBox(height: 2),
-      Text(tr('إياد', 'Eyad'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Fs.dim)),
+      if (!kb) Text(tr('إياد', 'Eyad'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Fs.dim)),
       if (kVoiceDiagnostics)
         ValueListenableBuilder<String>(
           valueListenable: voice.status,
           builder: (context, s, _) => s.isEmpty ? const SizedBox.shrink() : Padding(padding: const EdgeInsets.only(top: 2, left: 16, right: 16), child: Text(s, textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: Fs.dim))),
         ),
       const SizedBox(height: 8),
-      kb ? ConstrainedBox(constraints: const BoxConstraints(maxHeight: 110), child: SingleChildScrollView(child: _bubble(msgText(m), true))) : _bubble(msgText(m), compact),
+      // keyboard open: the bubble may shrink below 110 (Flexible) and scrolls, so the fixed rows never push the typing row off screen (1.3 px overflow at 360x640)
+      kb ? Flexible(child: ConstrainedBox(constraints: const BoxConstraints(maxHeight: 110), child: SingleChildScrollView(child: _bubble(msgText(m), true)))) : _bubble(msgText(m), compact),
       if (note != null && !kb) Padding(padding: const EdgeInsets.fromLTRB(28, 6, 28, 0), child: Text(msgText(note!), textAlign: TextAlign.center, style: TextStyle(fontSize: 13, height: 1.4, color: Fs.dim))),
       if (chips.isNotEmpty && !kb)
         Padding(
