@@ -34,7 +34,7 @@ FINAL = re.compile(r"([ء-ي])[ً-ْٰ]+(?=$|[\s،؟.,!:;()\"'])")
 
 def egyptian(s):
     """Egyptian Arabic has no case endings: drop every mark on the last letter of a word (a model tends to add formal endings such as the final damma in الصَّيْفِيُّ)."""
-    return FINAL.sub(r"", s)
+    return FINAL.sub(r"\1", s)
 
 
 def plain(s):

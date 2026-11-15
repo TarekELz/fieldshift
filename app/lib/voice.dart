@@ -77,7 +77,18 @@ class LiveVoice {
     final sw = Stopwatch()..start();
     for (final k in ks) {
       try {
-        final h = {'Authorization': 'Token $k', 'Content-Type': 'application/json'};
+        final h = {'Authorization': 'Token $k', 'Content-Type': 'application/json'}; // 'Bearer' is rejected as deprecated; only 'Token' works
+        // The realtime endpoint returns the WAV in the same response (about one second); the jobs endpoint below is a slower fallback that has to be polled.
+        try {
+          final rt = await http
+              .post(Uri.parse('$_base/v1/realtime/tts'), headers: h, body: jsonEncode({'text': text, 'speaker': _voiceId, 'dialect': 'egy'}))
+              .timeout(budget - sw.elapsed);
+          if (rt.statusCode == 200 && rt.bodyBytes.length > 44 && String.fromCharCodes(rt.bodyBytes.take(4)) == 'RIFF') return _cache[text] = rt.bodyBytes;
+          lastError = 'Hamsa realtime answered ${rt.statusCode}';
+        } catch (e) {
+          lastError = 'realtime ${e.runtimeType}';
+        }
+        if (sw.elapsed >= budget) break;
         final r = await http.post(Uri.parse('$_base/v1/jobs/text-to-speech'), headers: h, body: jsonEncode({'voiceId': _voiceId, 'text': text})).timeout(budget - sw.elapsed);
         if (r.statusCode != 200 && r.statusCode != 201) {
           lastError = 'Hamsa answered ${r.statusCode}';
