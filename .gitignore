@@ -43,3 +43,6 @@ docs/text_vote_answers/
 
 # build-time API keys for the app (never commit)
 app/assets/secrets/secrets.json
+
+# local web demo build (CI builds and publishes it)
+docs/app/
