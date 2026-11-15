@@ -7,6 +7,7 @@ The NASA Space Apps rules require every external resource used in the project (c
 - NASA MODIS MOD13Q1 v061 vegetation indices (Terra, 250 m, 16-day), 2014 to 2025: https://doi.org/10.5067/MODIS/MOD13Q1.061
 - NASA MODIS MCD12Q2 v061 land cover dynamics (phenology), 2015 to 2025: https://doi.org/10.5067/MODIS/MCD12Q2.061
 - NASA MODIS MOD16A3GF v061 yearly evapotranspiration (input check): https://doi.org/10.5067/MODIS/MOD16A3GF.061
+- NASA SRTMGL1 v003 terrain, 1 arc-second (terrain check of the data points): https://doi.org/10.5067/MEASURES/SRTM/SRTMGL1.003
 - NASA GPM IMERG daily precipitation (context): https://gpm.nasa.gov/data/imerg
 - Microsoft Planetary Computer open data service, used to read MOD16A3GF and ESA WorldCover: https://planetarycomputer.microsoft.com/
 

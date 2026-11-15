@@ -110,6 +110,7 @@ It **supports, and does not replace,** the farmer's judgement and local agricult
 |---|---|
 | Engine yearly reference evapotranspiration against NASA MOD16A3GF potential ET, 7 points | within 1 to 8% (consistency check, not a station validation); result files in [`docs/checks/`](docs/checks/) |
 | Are the data points farmland (ESA WorldCover 2021)? | cropland 73 to 91% within 2.5 km of six points; Damietta is mostly sea and is flagged |
+| Do the weather cells match the ground? (NASA SRTM terrain) | named points on the floodplain at 0 to 12 m; the "desert edge" warnings are confirmed by measured plateau share (flagged cells 29 to 67%, unflagged 18% or less); see [`docs/checks/`](docs/checks/) |
 | Wheat calendar against NASA MCD12Q2 satellite phenology | winter green-up in November and dormancy in May, summer green-up in June: consistent with our assumptions |
 | Season screen on known cases | rice sown in November, maize in December and wheat in March are flagged wrong; tomato, berseem, sugar beet, faba bean and tree crops are "cannot judge" |
 | Python and Dart give the same answers | 18 golden cases and 18 advice cases match |
@@ -135,7 +136,7 @@ No yield forecast, no yield loss in percent, no field-level or weather-station-v
 | | Requirement | Where |
 |---|---|---|
 | Yes | One official 2026 challenge | Field Shift: Adapting Farms with NASA Data |
-| Yes | NASA data is a core component | NASA POWER drives every farmer-facing number; MODIS gives the pictures and a phenology cross-check; five NASA datasets used (POWER, MOD13Q1, MCD12Q2, MOD16A3GF, IMERG), listed in [`data/catalog.yaml`](data/catalog.yaml) |
+| Yes | NASA data is a core component | NASA POWER drives every farmer-facing number; MODIS gives the pictures and a phenology cross-check; six NASA datasets used (POWER, MOD13Q1, MCD12Q2, MOD16A3GF, SRTM, IMERG), listed in [`data/catalog.yaml`](data/catalog.yaml) |
 | Yes | Open source | MIT licence, [`LICENSE`](LICENSE) |
 | Yes | External resources listed | [`docs/references.md`](docs/references.md) |
 | Yes | Decisions and sources logged | [`docs/decisions.md`](docs/decisions.md), [`literature/papers.csv`](literature/papers.csv) |
@@ -160,7 +161,7 @@ No yield forecast, no yield loss in percent, no field-level or weather-station-v
 | MODIS MCD12Q2 phenology | A cross-check of the wheat and summer crop calendar. No farmer-facing number |
 | GPM IMERG daily rainfall | Context only: summer rain is almost zero, so summer crops depend on irrigation |
 | MODIS MOD16A3GF yearly evapotranspiration, 7 points, 2015-2024 | An input check: the engine's yearly ET0 is within 1 to 8% of NASA's own potential ET. No farmer-facing number |
-| SRTM 30 m terrain | On disk only, not used in any result and not counted among the five |
+| SRTM 30 m terrain | A terrain check of the 19 data points: the 7 named points sit on the flat floodplain (about 0 to 12 m) and every cell flagged "desert edge" is 29 to 67% plateau above 100 m, while the others are 18% or less. No farmer-facing number. Results in [`docs/checks/srtm_terrain.csv`](docs/checks/srtm_terrain.csv) |
 
 Other data: FAOSTAT (Egypt yield and price), ESA WorldCover 2021 (not NASA) to confirm the points are farmland; administrative boundaries from CAPMAS via HDX (CC BY-IGO); Natural Earth for rivers, lakes and the Halayeb Triangle and Bir Tawil outlines (public domain); FAO tables for crop water and salt tolerance; FAO EcoCrop for crop temperature ranges; IBM Plex fonts (SIL Open Font License, in `app/assets/fonts/`).
 

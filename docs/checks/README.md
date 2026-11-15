@@ -8,4 +8,8 @@ These are the results behind three validation claims in the README. The raw inpu
 | `et0_check.json` | The engine's yearly reference evapotranspiration against MOD16 potential ET (ratio per site) | the water engine and the file above |
 | `modis_phenology_check.json` | NASA MCD12Q2 phenology (green-up and dormancy dates) against the wheat calendar assumptions | `scripts/phenology_mcd12q2.py` |
 
+| `srtm_terrain.csv` | Per data point: height at the point, median and 90th-percentile height of its ~50 km cell, the share of the cell below 30 m and above 100 m (NASA SRTM, 30 m) | `scripts/srtm_terrain_check.py` |
+
+The five cells at 30.0 N are only half inside our SRTM tiles (column `cell_covered_by_tiles` = 0.5); their shares describe the northern half.
+
 These are consistency checks against another NASA product, not weather-station validation (see `docs/methodology.md`).

@@ -146,9 +146,9 @@ srtm_delta:
   source: NASA SRTMGL1 v003 (1 arc-second), 8 tiles N30-N31, E029-E032
   access: Earthdata login (downloaded by the team)
   resolution: 30 m
-  status: on disk in data/raw/srtm/ (36 MB zipped); covers the whole Delta
+  status: on disk in data/raw/srtm/ (36 MB zipped); covers the whole Delta. Used (2026-11-15) for a terrain check of the 19 data points: scripts/srtm_terrain_check.py, result docs/checks/srtm_terrain.csv. No farmer-facing number
   citation: NASA JPL (2013). NASA Shuttle Radar Topography Mission Global 1 arc second. NASA EOSDIS LP DAAC
-  used_by: [salt (low-lying proxy), water (slope, drainage)]
+  used_by: [input check of the data points (terrain)]
 
 modis_delta_rasters:
   source: NASA MOD13Q1 v061 granules (tile h20v05), read from the Microsoft Planetary Computer mirror (collection modis-13Q1-061)

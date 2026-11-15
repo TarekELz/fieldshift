@@ -21,7 +21,7 @@ Tips: record on a real phone in quiet surroundings; keep the "AI" mark on Eyad v
 2. **The problem.** Three pressures, each with one figure and its source: water (58% of tail-end farmers said rice had become very difficult, ghazouani2014), salt (57.2% report rising salinity, kassem2019), the wheat calendar (about 40% yield loss in late-sown trials, elbasyoni2018). And 31.7% of Delta farmers are illiterate.
 3. **Our idea.** Eyad: a voice assistant in Egyptian Arabic that asks what the farmer wants and answers with a verdict, then water, heat and salt. Screenshots 02 and 04 from `docs/screenshots/`.
 4. **How it works.** Ask, compute, advise. Engines (heat, water, salt, season, income) on NASA data; code chooses the advice; the AI only rewords it behind a guard.
-5. **NASA data.** Five datasets and what each does (POWER drives every number; MODIS for pictures and phenology; MOD16 as a check; IMERG for context). Say plainly which are used how. Then FAO and FAOSTAT as non-NASA tables.
+5. **NASA data.** Six datasets and what each does (POWER drives every number; MODIS for pictures and phenology; MOD16 and SRTM as checks; IMERG for context). Say plainly which are used how. Then FAO and FAOSTAT as non-NASA tables.
 6. **How we checked it.** ET0 within 1 to 8% of NASA's own MOD16; phenology consistent with the calendar; golden tests between Python and the app; independent reviews. Limits: no yield forecast, income is a national-average estimate before costs.
 7. **Impact and next steps.** Who it helps; what is next (station validation, more crops with costs, tests with farmers). Link to the project page and repository.
 
