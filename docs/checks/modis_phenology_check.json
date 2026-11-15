@@ -1,0 +1,32 @@
+{
+ "gharbia": {
+  "winter_peak": "02 Feb",
+  "peak_ndvi": 0.72,
+  "summer_min_ndvi": 0.33,
+  "halfway_down": "23 Apr"
+ },
+ "kafr_el_sheikh": {
+  "winter_peak": "02 Feb",
+  "peak_ndvi": 0.76,
+  "summer_min_ndvi": 0.31,
+  "halfway_down": "23 Apr"
+ },
+ "beheira": {
+  "winter_peak": "02 Feb",
+  "peak_ndvi": 0.73,
+  "summer_min_ndvi": 0.43,
+  "halfway_down": "23 Apr"
+ },
+ "menoufia": {
+  "winter_peak": "01 Jan",
+  "peak_ndvi": 0.76,
+  "summer_min_ndvi": 0.43,
+  "halfway_down": "07 Apr"
+ },
+ "sharqia": {
+  "winter_peak": "01 Jan",
+  "peak_ndvi": 0.78,
+  "summer_min_ndvi": 0.37,
+  "halfway_down": "07 Apr"
+ }
+}

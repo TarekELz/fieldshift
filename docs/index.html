@@ -173,16 +173,17 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;p
 
 <section id="data"><div class="wrap">
   <h2>The NASA data</h2>
-  <p class="sub">Five NASA datasets held, two of which shape what a farmer sees. We say which is which.</p>
+  <p class="sub">Six NASA datasets used, two of which shape what a farmer sees. We say which is which.</p>
   <div class="card" style="padding:6px 8px;overflow-x:auto"><table>
     <tr><th>Dataset</th><th>Role</th><th>What it does</th></tr>
     <tr><td>NASA POWER daily weather</td><td><span class="chip use">drives the numbers</span></td><td>Every number the farmer sees: heat, water, weather charts. 19 data points in the app (7 named places and 12 extra ~50 km cells), 1990 to 2025.</td></tr>
     <tr><td>MODIS MOD13Q1 vegetation index</td><td><span class="chip use">pictures</span></td><td>The satellite pictures in the app; 2014 to 2025 at 250 m. No farmer-facing number.</td></tr>
     <tr><td>MODIS MCD12Q2 phenology</td><td><span class="chip">cross-check</span></td><td>When the land is green: green-up, peak, dormancy, up to two cycles a year, 2015 to 2025. Shown in the season lab.</td></tr>
     <tr><td>MODIS MOD16A3GF evapotranspiration</td><td><span class="chip">input check</span></td><td>Our yearly reference evapotranspiration is within 1 to 8% of NASA's potential ET at all seven points.</td></tr>
+    <tr><td>SRTM terrain (30 m)</td><td><span class="chip">input check</span></td><td>Measures the ground under each data point: the seven named points sit on the flat floodplain (about 0 to 12 m), and every cell we flag as "desert edge" is 29 to 67% plateau above 100 m. No farmer-facing number.</td></tr>
     <tr><td>GPM IMERG rainfall</td><td><span class="chip">context</span></td><td>Summer rain is almost zero, so summer crops depend on irrigation.</td></tr>
   </table></div>
-  <p class="note">Not NASA, and not counted: FAO crop-water and salt tables, FAO EcoCrop, ESA WorldCover 2021, CAPMAS borders via HDX, Natural Earth. SRTM terrain is on disk but no result uses it.</p>
+  <p class="note">Not NASA, and not counted: FAO crop-water and salt tables, FAO EcoCrop, ESA WorldCover 2021, CAPMAS borders via HDX, Natural Earth.</p>
 </div></section>
 
 <section id="limits"><div class="wrap">
